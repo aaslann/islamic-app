@@ -1,0 +1,68 @@
+{
+  "2026": [
+    {
+      "id": "uc-aylar-2026",
+      "date": "2026-01-12",
+      "title": "Üç Ayların Başlangıcı",
+      "description": "Receb, Şâban ve Ramazan aylarının başlangıcı. İbadet ve tevbe için büyük bir fırsat mevsimi.",
+      "type": "uc_aylar"
+    },
+    {
+      "id": "regaib-2026",
+      "date": "2026-01-15",
+      "title": "Regaib Kandili",
+      "description": "Receb ayının ilk cuma gecesi. Dua, tövbe ve salavatla değerlendirilmesi tavsiye edilir.",
+      "type": "kandil"
+    },
+    {
+      "id": "mirac-2026",
+      "date": "2026-02-12",
+      "title": "Miraç Kandili",
+      "description": "Peygamberimizin (s.a.v.) mirac hadisesini anma gecesi. Namaz ve niyazın önemine dikkat çekilir.",
+      "type": "kandil"
+    },
+    {
+      "id": "berat-2026",
+      "date": "2026-03-02",
+      "title": "Berat Kandili",
+      "description": "Kurtuluş ve af gecesi. Gecenin bir kısmını istiğfar, Kur’an tilaveti ve dua ile geçirmek güzeldir.",
+      "type": "kandil"
+    },
+    {
+      "id": "ramazan-start-2026",
+      "date": "2026-03-19",
+      "title": "Ramazan Başlangıcı",
+      "description": "Oruç ve Kur’an ayının başlangıcı. Ramazan boyunca oruç, teravih ve Kur’an hatmi için niyet tazeleme zamanı.",
+      "type": "ramazan"
+    },
+    {
+      "id": "kadir-2026",
+      "date": "2026-04-14",
+      "title": "Kadir Gecesi",
+      "description": "Bin aydan daha hayırlı olduğu bildirilen gece. Kur’an tilaveti, dua ve istiğfarla ihya edilmesi tavsiye edilir.",
+      "type": "kandil"
+    },
+    {
+      "id": "hicri-yilbasi-2026",
+      "date": "2026-07-20",
+      "title": "Hicrî Yılbaşı",
+      "description": "Yeni hicrî yılın başlangıcı. Geçen yılı muhasebe etmek ve yeni yıla dua ile başlamak için güzel bir fırsat.",
+      "type": "yilbasi"
+    },
+    {
+      "id": "asure-2026",
+      "date": "2026-07-28",
+      "title": "Aşure Günü",
+      "description": "Muharrem ayının onuncu günü. Oruç, sadaka ve dua ile değerlendirilmesi tavsiye edilir.",
+      "type": "asure"
+    },
+    {
+      "id": "mevlid-2026",
+      "date": "2026-09-29",
+      "title": "Mevlid Kandili",
+      "description": "Peygamber Efendimizin (s.a.v.) dünyaya teşrifini anma gecesi. Salavat, siyer okumaları ve şükür ibadetleriyle değerlendirilir.",
+      "type": "kandil"
+    }
+  ]
+}
+

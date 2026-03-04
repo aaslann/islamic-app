@@ -1,0 +1,316 @@
+import React, { useEffect, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STORAGE_KEY = 'prayer-log-v1';
+
+type PrayerId = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+type PrayerStatus = 'none' | 'prayed' | 'qada';
+
+type DayLog = Record<PrayerId, PrayerStatus>;
+type LogState = Record<string, DayLog>; // key: YYYY-MM-DD
+
+const PRAYERS: { id: PrayerId; label: string }[] = [
+  { id: 'fajr', label: 'Sabah' },
+  { id: 'dhuhr', label: 'Öğle' },
+  { id: 'asr', label: 'İkindi' },
+  { id: 'maghrib', label: 'Akşam' },
+  { id: 'isha', label: 'Yatsı' },
+];
+
+function formatDateKey(date: Date) {
+  return date.toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function formatDateHuman(date: Date) {
+  return date.toLocaleDateString('tr-TR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+export default function PrayerLogScreen() {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [log, setLog] = useState<LogState>({});
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as LogState;
+          setLog(parsed);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    load();
+  }, []);
+
+  const persist = async (next: LogState) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  };
+
+  const dateKey = formatDateKey(selectedDate);
+  const dayLog: DayLog =
+    log[dateKey] ?? {
+      fajr: 'none',
+      dhuhr: 'none',
+      asr: 'none',
+      maghrib: 'none',
+      isha: 'none',
+    };
+
+  const handleChangeDay = (delta: number) => {
+    const next = new Date(selectedDate);
+    next.setDate(selectedDate.getDate() + delta);
+    setSelectedDate(next);
+  };
+
+  const handleToggleStatus = (id: PrayerId) => {
+    const currentStatus = dayLog[id] ?? 'none';
+    const nextStatus: PrayerStatus =
+      currentStatus === 'none'
+        ? 'prayed'
+        : currentStatus === 'prayed'
+        ? 'qada'
+        : 'none';
+
+    const nextDay: DayLog = {
+      ...dayLog,
+      [id]: nextStatus,
+    };
+
+    const nextLog: LogState = {
+      ...log,
+      [dateKey]: nextDay,
+    };
+
+    setLog(nextLog);
+    persist(nextLog);
+  };
+
+  const prayedCount = PRAYERS.filter((p) => dayLog[p.id] === 'prayed').length;
+  const qadaCount = PRAYERS.filter((p) => dayLog[p.id] === 'qada').length;
+
+  return (
+    <ScrollView
+      style={styles.root}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.card}>
+        <Text style={styles.title}>Namaz Hatıra Defteri</Text>
+        <Text style={styles.subtitle}>
+          Hangi gün hangi vakitleri kıldığını veya kaza ettiğini basitçe
+          işaretle.
+        </Text>
+
+        <View style={styles.dateRow}>
+          <Pressable
+            onPress={() => handleChangeDay(-1)}
+            style={({ pressed }) => [
+              styles.dateButton,
+              pressed && styles.dateButtonPressed,
+            ]}
+          >
+            <Text style={styles.dateButtonText}>{'‹'}</Text>
+          </Pressable>
+          <View style={styles.dateCenter}>
+            <Text style={styles.dateText}>{formatDateHuman(selectedDate)}</Text>
+            <Text style={styles.dateKeyText}>{dateKey}</Text>
+          </View>
+          <Pressable
+            onPress={() => handleChangeDay(1)}
+            style={({ pressed }) => [
+              styles.dateButton,
+              pressed && styles.dateButtonPressed,
+            ]}
+          >
+            <Text style={styles.dateButtonText}>{'›'}</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryText}>
+            Kılınan: {prayedCount} / {PRAYERS.length}
+          </Text>
+          <Text style={styles.summaryText}>Kaza: {qadaCount}</Text>
+        </View>
+
+        <View style={styles.list}>
+          {PRAYERS.map((p) => {
+            const status = dayLog[p.id];
+            return (
+              <Pressable
+                key={p.id}
+                onPress={() => handleToggleStatus(p.id)}
+                style={({ pressed }) => [
+                  styles.row,
+                  status === 'prayed' && styles.rowPrayed,
+                  status === 'qada' && styles.rowQada,
+                  pressed && styles.rowPressed,
+                ]}
+              >
+                <Text style={styles.rowLabel}>{p.label}</Text>
+                <View style={styles.rowRight}>
+                  <View style={styles.statusPill}>
+                    <Text style={styles.statusText}>
+                      {status === 'none'
+                        ? 'Belirtilmedi'
+                        : status === 'prayed'
+                        ? 'Kılındı'
+                        : 'Kaza'}
+                    </Text>
+                  </View>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {!isLoaded && (
+          <Text style={styles.infoText}>
+            Kayıtlar yükleniyor, lütfen bekle...
+          </Text>
+        )}
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#020617',
+  },
+  content: {
+    padding: 16,
+    paddingBottom: 24,
+  },
+  card: {
+    backgroundColor: '#0B1120',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#1F2937',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#F9FAFB',
+  },
+  subtitle: {
+    marginTop: 6,
+    fontSize: 13,
+    color: '#9CA3AF',
+  },
+  dateRow: {
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#4B5563',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateButtonPressed: {
+    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+  },
+  dateButtonText: {
+    fontSize: 16,
+    color: '#E5E7EB',
+  },
+  dateCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  dateText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#F9FAFB',
+  },
+  dateKeyText: {
+    marginTop: 2,
+    fontSize: 11,
+    color: '#6B7280',
+  },
+  summaryRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  summaryText: {
+    fontSize: 13,
+    color: '#9CA3AF',
+  },
+  list: {
+    marginTop: 16,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#1F2937',
+    overflow: 'hidden',
+  },
+  row: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#020617',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#111827',
+  },
+  rowPressed: {
+    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+  },
+  rowPrayed: {
+    backgroundColor: 'rgba(34, 197, 94, 0.12)',
+  },
+  rowQada: {
+    backgroundColor: 'rgba(234, 179, 8, 0.12)',
+  },
+  rowLabel: {
+    fontSize: 14,
+    color: '#F9FAFB',
+  },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#4B5563',
+  },
+  statusText: {
+    fontSize: 12,
+    color: '#E5E7EB',
+  },
+  infoText: {
+    marginTop: 10,
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+});
+
