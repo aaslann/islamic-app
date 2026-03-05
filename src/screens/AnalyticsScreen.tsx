@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, textStyles } from '../theme/designSystem';
 import { Card } from '../components/Card';
+import { IslamicBackground } from '../components/IslamicBackground';
 
 type PrayerId = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
 type PrayerStatus = 'none' | 'prayed' | 'qada';
@@ -169,75 +170,78 @@ export default function AnalyticsScreen() {
   const maxPrayed = Math.max(...stats.map((s) => s.prayedCount), 1);
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <Card style={styles.card}>
-        <Text style={styles.title}>Manevî Analiz</Text>
-        <Text style={styles.subtitle}>
-          Son 7 gün için namaz ve zikir alışkanlıklarına dair basit bir özet.
-        </Text>
-      </Card>
+    <IslamicBackground>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Card style={styles.card}>
+          <Text style={styles.title}>Manevî Analiz</Text>
+          <Text style={styles.subtitle}>
+            Son 7 gün için namaz ve zikir alışkanlıklarına dair özet. Hangi günler
+            daha güçlü, hangi vakitler zayıf görmek için buraya göz atabilirsin.
+          </Text>
+        </Card>
 
-      <Card style={styles.card}>
-        <Text style={styles.sectionTitle}>Haftalık Namaz Grafiği</Text>
-        <Text style={styles.sectionSubtitle}>
-          Her gün kılınan vakit sayısı (maksimum 5 üzerinden).
-        </Text>
-        <View style={styles.chart}>
-          {stats.map((s) => (
-            <View key={s.dateKey} style={styles.chartRow}>
-              <Text style={styles.chartLabel}>{s.label}</Text>
-              <View style={styles.chartBarBackground}>
-                <View
-                  style={[
-                    styles.chartBarFill,
-                    { flex: s.prayedCount || 0.1 },
-                  ]}
-                />
-                <View style={{ flex: Math.max(maxPrayed - s.prayedCount, 0) }} />
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Haftalık Namaz Grafiği</Text>
+          <Text style={styles.sectionSubtitle}>
+            Her gün kılınan vakit sayısı (maksimum 5 üzerinden).
+          </Text>
+          <View style={styles.chart}>
+            {stats.map((s) => (
+              <View key={s.dateKey} style={styles.chartRow}>
+                <Text style={styles.chartLabel}>{s.label}</Text>
+                <View style={styles.chartBarBackground}>
+                  <View
+                    style={[
+                      styles.chartBarFill,
+                      { flex: s.prayedCount || 0.1 },
+                    ]}
+                  />
+                  <View style={{ flex: Math.max(maxPrayed - s.prayedCount, 0) }} />
+                </View>
+                <Text style={styles.chartValue}>{s.prayedCount}</Text>
               </View>
-              <Text style={styles.chartValue}>{s.prayedCount}</Text>
-            </View>
-          ))}
-        </View>
-      </Card>
+            ))}
+          </View>
+        </Card>
 
-      <Card style={styles.card}>
-        <Text style={styles.sectionTitle}>Özet</Text>
-        {mostMissedPrayer ? (
-          <Text style={styles.summaryText}>
-            En çok kaza edilen vakit:{' '}
-            <Text style={styles.summaryHighlight}>
-              {mostMissedPrayer.label} ({mostMissedPrayer.count} gün)
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Özet</Text>
+          {mostMissedPrayer ? (
+            <Text style={styles.summaryText}>
+              En çok kaza edilen vakit:{' '}
+              <Text style={styles.summaryHighlight}>
+                {mostMissedPrayer.label} ({mostMissedPrayer.count} gün)
+              </Text>
             </Text>
-          </Text>
-        ) : (
-          <Text style={styles.summaryText}>
-            Kaza kaydı bulunmuyor. Böyle devam inşallah.
-          </Text>
-        )}
+          ) : (
+            <Text style={styles.summaryText}>
+              Kaza kaydı bulunmuyor. Böyle devam inşallah.
+            </Text>
+          )}
 
-        {mostActiveDay ? (
-          <Text style={styles.summaryText}>
-            En aktif gün:{' '}
-            <Text style={styles.summaryHighlight}>
-              {mostActiveDay.label} ({mostActiveDay.prayedCount} vakit,{' '}
-              {mostActiveDay.zikrCount} zikir)
+          {mostActiveDay ? (
+            <Text style={styles.summaryText}>
+              En aktif gün:{' '}
+              <Text style={styles.summaryHighlight}>
+                {mostActiveDay.label} ({mostActiveDay.prayedCount} vakit,{' '}
+                {mostActiveDay.zikrCount} zikir)
+              </Text>
             </Text>
-          </Text>
-        ) : null}
-      </Card>
-    </ScrollView>
+          ) : null}
+        </Card>
+      </ScrollView>
+    </IslamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   content: {
     paddingHorizontal: spacing.lg,

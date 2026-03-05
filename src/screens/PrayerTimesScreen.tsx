@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Card } from '../components/Card';
+import { IslamicBackground } from '../components/IslamicBackground';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, spacing, textStyles } from '../theme/designSystem';
 
@@ -28,9 +29,15 @@ type LocationInfo = {
   country?: string;
 };
 
+type DateInfo = {
+  readable?: string;
+  hijri?: string;
+};
+
 type ActivePrayer = {
   label: string;
   time: string;
+  remainingText?: string;
 };
 
 async function getPrayerTimesFromApi() {
@@ -75,6 +82,13 @@ async function getPrayerTimesFromApi() {
 
   const t = json.data.timings as Record<string, string>;
 
+  const apiDate = json.data.date ?? {};
+  const hijri = apiDate.hijri ?? {};
+  const dateInfo: DateInfo = {
+    readable: apiDate.readable,
+    hijri: hijri.date ?? hijri.readable ?? undefined,
+  };
+
   const times: PrayerTime[] = [
     { id: 'Fajr', label: 'İmsak', time: t.Fajr },
     { id: 'Sunrise', label: 'Güneş', time: t.Sunrise },
@@ -84,7 +98,7 @@ async function getPrayerTimesFromApi() {
     { id: 'Isha', label: 'Yatsı', time: t.Isha },
   ];
 
-  return { times, locationInfo };
+  return { times, locationInfo, dateInfo };
 }
 
 export default function PrayerTimesScreen() {
@@ -93,21 +107,22 @@ export default function PrayerTimesScreen() {
   const [locationInfo, setLocationInfo] = useState<LocationInfo>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [now, setNow] = useState(new Date());
+   const [dateInfo, setDateInfo] = useState<DateInfo | null>(null);
 
   const loadTimes = async () => {
     setState('loading');
     setErrorMessage(null);
     try {
-      const { times: fetchedTimes, locationInfo: info } =
+      const {
+        times: fetchedTimes,
+        locationInfo: info,
+        dateInfo: fetchedDateInfo,
+      } =
         await getPrayerTimesFromApi();
-
-      // Basitçe "Öğle"yi sıradaki olarak işaretleyelim (ileride gerçek hesap eklenebilir)
-      const marked = fetchedTimes.map((t) =>
-        t.id === 'Dhuhr' ? { ...t, isNext: true } : t,
-      );
-
-      setTimes(marked);
+      setTimes(fetchedTimes);
       setLocationInfo(info);
+      setDateInfo(fetchedDateInfo ?? null);
       setState('success');
     } catch (err) {
       if (err instanceof Error && err.message === 'permission-denied') {
@@ -202,63 +217,147 @@ export default function PrayerTimesScreen() {
     }
   };
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      setNow(new Date());
+    }, 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   const showLoading = state === 'loading';
   const showError = state === 'error' || state === 'permission-denied';
 
-  const activePrayer: ActivePrayer | null = useMemo(() => {
-    const next = times.find((t) => t.isNext);
-    if (!next) return null;
-    return { label: next.label, time: next.time };
-  }, [times]);
+  const { activePrayer, timesWithNext } = useMemo(() => {
+    if (!times.length) {
+      return { activePrayer: null as ActivePrayer | null, timesWithNext: [] as PrayerTime[] };
+    }
+
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const enriched = times.map((t) => {
+      const [hourStr, minuteStr] = t.time.split(':');
+      const hour = Number(hourStr);
+      const minute = Number(minuteStr);
+
+      if (Number.isNaN(hour) || Number.isNaN(minute)) {
+        return { ...t, dateObj: null as Date | null };
+      }
+
+      const dateObj = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        hour,
+        minute,
+        0,
+      );
+
+      return { ...t, dateObj };
+    }) as Array<PrayerTime & { dateObj: Date | null }>;
+
+    const upcomingForToday = enriched
+      .filter((t) => t.dateObj && t.dateObj.getTime() >= now.getTime())
+      .sort((a, b) => (a.dateObj!.getTime() - b.dateObj!.getTime()))[0];
+
+    const next = upcomingForToday ?? enriched[0];
+
+    const nextId = next.id;
+
+    const timesWithNext: PrayerTime[] = enriched.map((t) => ({
+      id: t.id,
+      label: t.label,
+      time: t.time,
+      isNext: t.id === nextId,
+    }));
+
+    const remainingText =
+      next.dateObj && next.dateObj.getTime() > now.getTime()
+        ? formatRemaining(next.dateObj, now)
+        : undefined;
+
+    const activePrayer: ActivePrayer = {
+      label: next.label,
+      time: next.time,
+      remainingText,
+    };
+
+    return { activePrayer, timesWithNext };
+  }, [times, now]);
+
+  function formatRemaining(target: Date, current: Date): string {
+    const diffMs = target.getTime() - current.getTime();
+    if (diffMs <= 0) {
+      return 'vakit girdi';
+    }
+    const totalMinutes = Math.round(diffMs / 60_000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours <= 0) {
+      return `${minutes} dk`;
+    }
+    if (minutes === 0) {
+      return `${hours} sa`;
+    }
+    return `${hours} sa ${minutes} dk`;
+  }
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.container}>
-        <ActivePrayerCard
-          activePrayer={activePrayer}
-          locationInfo={locationInfo}
-          loading={showLoading}
-        />
+    <IslamicBackground>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.container}>
+          <ActivePrayerCard
+            activePrayer={activePrayer}
+            locationInfo={locationInfo}
+            loading={showLoading}
+            fetchState={state}
+            dateInfo={dateInfo}
+            onRefresh={loadTimes}
+          />
 
-        <Card style={styles.prayerListCard}>
-          {showError && (
-            <View style={styles.centerBox}>
-              <Text style={styles.errorText}>{errorMessage}</Text>
-            </View>
-          )}
+          <Card style={styles.prayerListCard}>
+            {showError && (
+              <View style={styles.centerBox}>
+                <Text style={styles.errorText}>{errorMessage}</Text>
+                <PrimaryButton
+                  label="Tekrar dene"
+                  onPress={loadTimes}
+                />
+              </View>
+            )}
+
+            {state === 'success' && (
+              <>
+                <Text style={styles.listTitle}>Bugünkü vakitler</Text>
+                <View style={styles.list}>
+                  {timesWithNext.map((item) => (
+                    <PrayerListItem key={item.id} item={item} />
+                  ))}
+                </View>
+              </>
+            )}
+          </Card>
 
           {state === 'success' && (
-            <>
-              <Text style={styles.listTitle}>Bugünkü vakitler</Text>
-              <View style={styles.list}>
-                {times.map((item) => (
-                  <PrayerListItem key={item.id} item={item} />
-                ))}
-              </View>
-            </>
+            <View style={styles.actionsRow}>
+              <PrimaryButton
+                label="Bildirimleri Bugün İçin Planla"
+                onPress={scheduleNotificationsForToday}
+                disabled={!notificationsEnabled}
+              />
+              {!notificationsEnabled && (
+                <Text style={styles.notifyHint}>
+                  Namaz bildirimlerini Ayarlar ekranından açman gerekiyor.
+                </Text>
+              )}
+            </View>
           )}
-        </Card>
-
-        {state === 'success' && (
-          <View style={styles.actionsRow}>
-            <PrimaryButton
-              label="Bildirimleri Bugün İçin Planla"
-              onPress={scheduleNotificationsForToday}
-              disabled={!notificationsEnabled}
-            />
-            {!notificationsEnabled && (
-              <Text style={styles.notifyHint}>
-                Namaz bildirimlerini Ayarlar ekranından açman gerekiyor.
-              </Text>
-            )}
-          </View>
-        )}
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </IslamicBackground>
   );
 }
 
@@ -266,13 +365,45 @@ type ActivePrayerCardProps = {
   activePrayer: ActivePrayer | null;
   locationInfo: LocationInfo;
   loading: boolean;
+  fetchState: FetchState;
+  dateInfo: DateInfo | null;
+  onRefresh: () => void;
 };
 
 function ActivePrayerCard({
   activePrayer,
   locationInfo,
   loading,
+  fetchState,
+  dateInfo,
+  onRefresh,
 }: ActivePrayerCardProps) {
+  const locationText = (() => {
+    if (fetchState === 'loading') {
+      return 'Konum alınıyor...';
+    }
+    if (fetchState === 'permission-denied') {
+      return 'Konum izni kapalı. Ayarlar ekranından açabilirsin.';
+    }
+    if (fetchState === 'error') {
+      return 'Konum alınamadı, son bilinen vakitler gösteriliyor.';
+    }
+    if (locationInfo.city || locationInfo.country) {
+      return `Konum: ${locationInfo.city ?? ''}${
+        locationInfo.country ? `, ${locationInfo.country}` : ''
+      }`;
+    }
+    return 'Konum bilgisi yok';
+  })();
+
+  const dateLine = (() => {
+    if (!dateInfo) return null;
+    if (dateInfo.hijri && dateInfo.readable) {
+      return `${dateInfo.hijri} • ${dateInfo.readable}`;
+    }
+    return dateInfo.readable ?? dateInfo.hijri ?? null;
+  })();
+
   return (
     <LinearGradient
       colors={[colors.primaryDark, colors.primary]}
@@ -281,12 +412,13 @@ function ActivePrayerCard({
       style={styles.activeCard}
     >
       <Text style={styles.activeLocation}>
-        {locationInfo.city
-          ? `Konum: ${locationInfo.city}${
-              locationInfo.country ? `, ${locationInfo.country}` : ''
-            }`
-          : 'Konum alınıyor...'}
+        {locationText}
       </Text>
+      {dateLine && (
+        <Text style={styles.activeDate}>
+          {dateLine}
+        </Text>
+      )}
       <Text style={styles.activeLabel}>Sıradaki vakit</Text>
       {loading || !activePrayer ? (
         <ActivityIndicator size="small" color={colors.primarySoft} />
@@ -294,8 +426,16 @@ function ActivePrayerCard({
         <>
           <Text style={styles.activeTime}>{activePrayer.time}</Text>
           <Text style={styles.activeName}>{activePrayer.label}</Text>
+          {activePrayer.remainingText && (
+            <Text style={styles.activeRemaining}>
+              Kalan: {activePrayer.remainingText}
+            </Text>
+          )}
         </>
       )}
+      <Text style={styles.refreshLink} onPress={onRefresh}>
+        Vakitleri yenile
+      </Text>
     </LinearGradient>
   );
 }
@@ -324,7 +464,7 @@ function PrayerListItem({ item }: PrayerListItemProps) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   content: {
     paddingHorizontal: spacing.lg,
@@ -339,6 +479,11 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
   },
   activeLocation: {
+    ...textStyles.caption,
+    color: colors.primarySoft,
+  },
+  activeDate: {
+    marginTop: spacing.xs,
     ...textStyles.caption,
     color: colors.primarySoft,
   },
@@ -357,6 +502,17 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     ...textStyles.body,
     color: colors.primarySoft,
+  },
+  activeRemaining: {
+    marginTop: spacing.sm,
+    ...textStyles.caption,
+    color: colors.primarySoft,
+  },
+  refreshLink: {
+    marginTop: spacing.md,
+    ...textStyles.caption,
+    color: colors.primarySoft,
+    textDecorationLine: 'underline',
   },
   centerBox: {
     marginTop: spacing.md,

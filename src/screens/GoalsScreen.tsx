@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, textStyles } from '../theme/designSystem';
 import { Card } from '../components/Card';
+import { IslamicBackground } from '../components/IslamicBackground';
 
 type PrayerId = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
 type PrayerStatus = 'none' | 'prayed' | 'qada';
@@ -132,106 +133,108 @@ export default function GoalsScreen() {
   const zikrTarget = 100;
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <Card style={styles.card}>
-        <Text style={styles.title}>Hedeflerim</Text>
-        <Text style={styles.subtitle}>
-          Namaz, zikir ve Kur&apos;an hedeflerini takip et. Bazı hedefler günlük,
-          bazıları ise seri (streak) şeklindedir.
-        </Text>
-      </Card>
-
-      <Card style={styles.card}>
-        <Text style={styles.goalTitle}>30 Gün Sabah Namazı</Text>
-        <Text style={styles.goalSubtitle}>
-          Sabah namazını her gün vaktinde kılmaya yönelik hedef.
-        </Text>
-        <View style={styles.progressRow}>
-          <View style={styles.progressBarBackground}>
-            <View
-              style={[
-                styles.progressBarFill,
-                { width: `${Math.min((sabahStreak / 30) * 100, 100)}%` },
-              ]}
-            />
-          </View>
-          <Text style={styles.progressText}>
-            Seri: {sabahStreak} / 30 gün (en iyi: {sabahBestStreak})
+    <IslamicBackground>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Card style={[styles.card, styles.headerCard]}>
+          <Text style={styles.title}>Hedeflerim</Text>
+          <Text style={styles.subtitle}>
+            Günlük ibadet hedeflerini takip et; sabah namazı, zikir ve Kur&apos;an ile
+            istikrarlı bir rutin oluştur.
           </Text>
-        </View>
-        <Text style={styles.tipText}>
-          Sabah hedefi, Namaz Hatıra Defteri&apos;nde sabah vakti &quot;Kılındı&quot;
-          olarak işaretlendiğinde ilerler.
-        </Text>
-      </Card>
+        </Card>
 
-      <Card style={styles.card}>
-        <Text style={styles.goalTitle}>Günlük 100 Zikir</Text>
-        <Text style={styles.goalSubtitle}>
-          Bugün çektiğin toplam zikir sayısı. Hedef: 100.
-        </Text>
-        <View style={styles.progressRow}>
-          <View style={styles.progressBarBackground}>
-            <View
-              style={[
-                styles.progressBarFillZikr,
-                { width: `${Math.min((zikrToday / zikrTarget) * 100, 100)}%` },
-              ]}
-            />
-          </View>
-          <Text style={styles.progressText}>
-            {zikrToday} / {zikrTarget}
+        <Card style={styles.card}>
+          <Text style={styles.goalTitle}>30 Gün Sabah Namazı</Text>
+          <Text style={styles.goalSubtitle}>
+            Sabah namazını her gün vaktinde kılmaya yönelik hedef.
           </Text>
-        </View>
-        <Text style={styles.tipText}>
-          Zikir hedefi, Zikir Sayacı ekranında &quot;Kaydet&quot; ile
-          oluşturduğun günlük kayıtlarla artar.
-        </Text>
-      </Card>
+          <View style={styles.progressRow}>
+            <View style={styles.progressBarBackground}>
+              <View
+                style={[
+                  styles.progressBarFill,
+                  { width: `${Math.min((sabahStreak / 30) * 100, 100)}%` },
+                ]}
+              />
+            </View>
+            <Text style={styles.progressText}>
+              Seri: {sabahStreak} / 30 gün (en iyi: {sabahBestStreak})
+            </Text>
+          </View>
+          <Text style={styles.tipText}>
+            Sabah hedefi, Namaz Hatıra Defteri&apos;nde sabah vakti &quot;Kılındı&quot;
+            olarak işaretlendiğinde ilerler.
+          </Text>
+        </Card>
 
-      <Card style={styles.card}>
-        <Text style={styles.goalTitle}>Günlük 1 Sayfa Kur&apos;an</Text>
-        <Text style={styles.goalSubtitle}>
-          Her gün en az bir sayfa Kur&apos;an okumayı hedefle.
-        </Text>
-        <View style={styles.row}>
-          <Pressable
-            onPress={toggleQuranToday}
-            style={({ pressed }) => [
-              styles.quranToggle,
-              quranTodayCompleted && styles.quranToggleActive,
-              pressed && styles.quranTogglePressed,
-            ]}
-          >
-            <Text
-              style={[
-                styles.quranToggleText,
-                quranTodayCompleted && styles.quranToggleTextActive,
+        <Card style={styles.card}>
+          <Text style={styles.goalTitle}>Günlük 100 Zikir</Text>
+          <Text style={styles.goalSubtitle}>
+            Bugün çektiğin toplam zikir sayısı. Hedef: 100.
+          </Text>
+          <View style={styles.progressRow}>
+            <View style={styles.progressBarBackground}>
+              <View
+                style={[
+                  styles.progressBarFillZikr,
+                  { width: `${Math.min((zikrToday / zikrTarget) * 100, 100)}%` },
+                ]}
+              />
+            </View>
+            <Text style={styles.progressText}>
+              {zikrToday} / {zikrTarget}
+            </Text>
+          </View>
+          <Text style={styles.tipText}>
+            Zikir hedefi, Zikir Sayacı ekranında &quot;Kaydet&quot; ile
+            oluşturduğun günlük kayıtlarla artar.
+          </Text>
+        </Card>
+
+        <Card style={styles.card}>
+          <Text style={styles.goalTitle}>Günlük 1 Sayfa Kur&apos;an</Text>
+          <Text style={styles.goalSubtitle}>
+            Her gün en az bir sayfa Kur&apos;an okumayı hedefle.
+          </Text>
+          <View style={styles.row}>
+            <Pressable
+              onPress={toggleQuranToday}
+              style={({ pressed }) => [
+                styles.quranToggle,
+                quranTodayCompleted && styles.quranToggleActive,
+                pressed && styles.quranTogglePressed,
               ]}
             >
-              {quranTodayCompleted
-                ? 'Bugün hedef tamamlandı'
-                : 'Bugün hedefi tamamla'}
-            </Text>
-          </Pressable>
-        </View>
-        <Text style={styles.tipText}>
-          Okuduğun sayfa sayısını Kur&apos;an ekranından değil, şimdilik bu
-          ekrandan işaretliyorsun. İleride doğrudan okuma ekranına bağlanabilir.
-        </Text>
-      </Card>
-    </ScrollView>
+              <Text
+                style={[
+                  styles.quranToggleText,
+                  quranTodayCompleted && styles.quranToggleTextActive,
+                ]}
+              >
+                {quranTodayCompleted
+                  ? 'Bugün hedef tamamlandı'
+                  : 'Bugün hedefi tamamla'}
+              </Text>
+            </Pressable>
+          </View>
+          <Text style={styles.tipText}>
+            Okuduğun sayfa sayısını Kur&apos;an ekranından değil, şimdilik bu
+            ekrandan işaretliyorsun. İleride doğrudan okuma ekranına bağlanabilir.
+          </Text>
+        </Card>
+      </ScrollView>
+    </IslamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   content: {
     paddingHorizontal: spacing.lg,
@@ -241,6 +244,10 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: spacing.md,
+  },
+  headerCard: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   title: {
     ...textStyles.heading1,

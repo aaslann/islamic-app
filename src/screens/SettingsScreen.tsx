@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, textStyles } from '../theme/designSystem';
 import { Card } from '../components/Card';
+import { IslamicBackground } from '../components/IslamicBackground';
 
 type ThemeMode = 'dark' | 'system';
 type FontScale = 'small' | 'medium' | 'large';
@@ -67,129 +68,132 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <Card style={styles.card}>
-        <Text style={styles.title}>Ayarlar</Text>
-        <Text style={styles.subtitle}>
-          Tema ve yazı boyutu gibi genel tercihlerini buradan değiştirebilirsin.
-        </Text>
-      </Card>
+    <IslamicBackground>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Card style={styles.card}>
+          <Text style={styles.title}>Ayarlar</Text>
+          <Text style={styles.subtitle}>
+            Tema, yazı boyutu ve namaz bildirimleri gibi tercihlerini buradan
+            yönetebilirsin.
+          </Text>
+        </Card>
 
-      <Card style={styles.card}>
-        <Text style={styles.sectionTitle}>Tema</Text>
-        <Text style={styles.sectionSubtitle}>
-          Şimdilik uygulama koyu tema ile tasarlandı. Daha sonra sistem temasına
-          uyum için geliştirilebilir.
-        </Text>
-        <View style={styles.row}>
-          {[
-            { id: 'dark' as ThemeMode, label: 'Koyu' },
-            { id: 'system' as ThemeMode, label: 'Sistem' },
-          ].map((opt) => (
-            <Pressable
-              key={opt.id}
-              disabled={!isLoaded}
-              onPress={() => update({ theme: opt.id })}
-              style={({ pressed }) => [
-                styles.optionPill,
-                settings.theme === opt.id && styles.optionPillActive,
-                pressed && styles.optionPillPressed,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  settings.theme === opt.id && styles.optionTextActive,
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Tema</Text>
+          <Text style={styles.sectionSubtitle}>
+            Şimdilik uygulama koyu tema ile tasarlandı. Daha sonra sistem temasına
+            uyum için geliştirilebilir.
+          </Text>
+          <View style={styles.row}>
+            {[
+              { id: 'dark' as ThemeMode, label: 'Koyu' },
+              { id: 'system' as ThemeMode, label: 'Sistem' },
+            ].map((opt) => (
+              <Pressable
+                key={opt.id}
+                disabled={!isLoaded}
+                onPress={() => update({ theme: opt.id })}
+                style={({ pressed }) => [
+                  styles.optionPill,
+                  settings.theme === opt.id && styles.optionPillActive,
+                  pressed && styles.optionPillPressed,
                 ]}
               >
-                {opt.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </Card>
+                <Text
+                  style={[
+                    styles.optionText,
+                    settings.theme === opt.id && styles.optionTextActive,
+                  ]}
+                >
+                  {opt.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Card>
 
-      <Card style={styles.card}>
-        <Text style={styles.sectionTitle}>Yazı Boyutu</Text>
-        <Text style={styles.sectionSubtitle}>
-          Kur&apos;an ve dualar ekranında kullanılacak yazı boyutu.
-        </Text>
-        <View style={styles.row}>
-          {[
-            { id: 'small' as FontScale, label: 'Küçük' },
-            { id: 'medium' as FontScale, label: 'Orta' },
-            { id: 'large' as FontScale, label: 'Büyük' },
-          ].map((opt) => (
-            <Pressable
-              key={opt.id}
-              disabled={!isLoaded}
-              onPress={() => update({ fontScale: opt.id })}
-              style={({ pressed }) => [
-                styles.optionPill,
-                settings.fontScale === opt.id && styles.optionPillActive,
-                pressed && styles.optionPillPressed,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  settings.fontScale === opt.id && styles.optionTextActive,
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Yazı Boyutu</Text>
+          <Text style={styles.sectionSubtitle}>
+            Kur&apos;an ve dualar ekranında kullanılacak yazı boyutu.
+          </Text>
+          <View style={styles.row}>
+            {[
+              { id: 'small' as FontScale, label: 'Küçük' },
+              { id: 'medium' as FontScale, label: 'Orta' },
+              { id: 'large' as FontScale, label: 'Büyük' },
+            ].map((opt) => (
+              <Pressable
+                key={opt.id}
+                disabled={!isLoaded}
+                onPress={() => update({ fontScale: opt.id })}
+                style={({ pressed }) => [
+                  styles.optionPill,
+                  settings.fontScale === opt.id && styles.optionPillActive,
+                  pressed && styles.optionPillPressed,
                 ]}
               >
-                {opt.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </Card>
+                <Text
+                  style={[
+                    styles.optionText,
+                    settings.fontScale === opt.id && styles.optionTextActive,
+                  ]}
+                >
+                  {opt.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Card>
 
-      <Card style={styles.card}>
-        <Text style={styles.sectionTitle}>Namaz Bildirimleri</Text>
-        <Text style={styles.sectionSubtitle}>
-          Bugünkü namaz vakitleri için hatırlatma al. Bildirimler ayrıca
-          Namaz Vakitleri ekranından planlanır.
-        </Text>
-        <View style={styles.row}>
-          {[
-            { id: true, label: 'Açık' },
-            { id: false, label: 'Kapalı' },
-          ].map((opt) => (
-            <Pressable
-              key={String(opt.id)}
-              disabled={!isLoaded}
-              onPress={() => update({ enablePrayerNotifications: opt.id })}
-              style={({ pressed }) => [
-                styles.optionPill,
-                settings.enablePrayerNotifications === opt.id &&
-                  styles.optionPillActive,
-                pressed && styles.optionPillPressed,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.optionText,
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Namaz Bildirimleri</Text>
+          <Text style={styles.sectionSubtitle}>
+            Bugünkü namaz vakitleri için hatırlatma al. Bildirimler ayrıca
+            Namaz Vakitleri ekranından planlanır.
+          </Text>
+          <View style={styles.row}>
+            {[
+              { id: true, label: 'Açık' },
+              { id: false, label: 'Kapalı' },
+            ].map((opt) => (
+              <Pressable
+                key={String(opt.id)}
+                disabled={!isLoaded}
+                onPress={() => update({ enablePrayerNotifications: opt.id })}
+                style={({ pressed }) => [
+                  styles.optionPill,
                   settings.enablePrayerNotifications === opt.id &&
-                    styles.optionTextActive,
+                    styles.optionPillActive,
+                  pressed && styles.optionPillPressed,
                 ]}
               >
-                {opt.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </Card>
-    </ScrollView>
+                <Text
+                  style={[
+                    styles.optionText,
+                    settings.enablePrayerNotifications === opt.id &&
+                      styles.optionTextActive,
+                  ]}
+                >
+                  {opt.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Card>
+      </ScrollView>
+    </IslamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   content: {
     paddingHorizontal: spacing.lg,

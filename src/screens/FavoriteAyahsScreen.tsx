@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { colors, spacing, textStyles } from '../theme/designSystem';
 import { Card } from '../components/Card';
+import { IslamicBackground } from '../components/IslamicBackground';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FavoriteAyahs'>;
 
@@ -202,65 +203,67 @@ export default function FavoriteAyahsScreen({ navigation }: Props) {
   };
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <Card style={styles.headerCard}>
-        <Text style={styles.title}>Favori Ayetlerim</Text>
-        <Text style={styles.subtitle}>
-          Yıldızladığın ayetler burada listelenir. Bir ayetin notu varsa kısa
-          bir önizleme olarak gösterilir.
-        </Text>
-      </Card>
+    <IslamicBackground>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Card style={styles.headerCard}>
+          <Text style={styles.title}>Favori Ayetlerim</Text>
+          <Text style={styles.subtitle}>
+            Yıldızladığın ayetler burada listelenir. Bir ayetin notu varsa kısa
+            bir önizleme olarak gösterilir.
+          </Text>
+        </Card>
 
-      {!isLoaded && (
-        <Text style={styles.infoText}>Favoriler yükleniyor...</Text>
-      )}
+        {!isLoaded && (
+          <Text style={styles.infoText}>Favoriler yükleniyor...</Text>
+        )}
 
-      {isLoaded && favorites.length === 0 && (
-        <Text style={styles.infoText}>
-          Henüz favori ayet eklemedin. Bir ayetin yanındaki yıldız simgesine
-          dokunarak favorilere ekleyebilirsin.
-        </Text>
-      )}
+        {isLoaded && favorites.length === 0 && (
+          <Text style={styles.infoText}>
+            Henüz favori ayet eklemedin. Bir ayetin yanındaki yıldız simgesine
+            dokunarak favorilere ekleyebilirsin.
+          </Text>
+        )}
 
-      {favorites.map((fav) => (
-        <Pressable
-          key={`${fav.surahId}-${fav.ayahNumber}`}
-          onPress={() => openSurah(fav)}
-          style={({ pressed }) => [
-            styles.item,
-            pressed && styles.itemPressed,
-          ]}
-        >
-          <View style={styles.itemHeader}>
-            <View style={styles.surahBadge}>
-              <Text style={styles.surahBadgeText}>
-                {TURKISH_SURA_NAMES[fav.surahId] ??
-                  `Sure ${fav.surahId.toString()}`}
-              </Text>
+        {favorites.map((fav) => (
+          <Pressable
+            key={`${fav.surahId}-${fav.ayahNumber}`}
+            onPress={() => openSurah(fav)}
+            style={({ pressed }) => [
+              styles.item,
+              pressed && styles.itemPressed,
+            ]}
+          >
+            <View style={styles.itemHeader}>
+              <View style={styles.surahBadge}>
+                <Text style={styles.surahBadgeText}>
+                  {TURKISH_SURA_NAMES[fav.surahId] ??
+                    `Sure ${fav.surahId.toString()}`}
+                </Text>
+              </View>
+              <Text style={styles.ayahIndex}>Ayet {fav.ayahNumber}</Text>
             </View>
-            <Text style={styles.ayahIndex}>Ayet {fav.ayahNumber}</Text>
-          </View>
-          {fav.note && (
-            <Text style={styles.notePreview}>
-              {fav.note.length > 120
-                ? `${fav.note.slice(0, 117)}...`
-                : fav.note}
-            </Text>
-          )}
-        </Pressable>
-      ))}
-    </ScrollView>
+            {fav.note && (
+              <Text style={styles.notePreview}>
+                {fav.note.length > 120
+                  ? `${fav.note.slice(0, 117)}...`
+                  : fav.note}
+              </Text>
+            )}
+          </Pressable>
+        ))}
+      </ScrollView>
+    </IslamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   content: {
     paddingHorizontal: spacing.lg,

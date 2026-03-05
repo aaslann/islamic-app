@@ -12,6 +12,8 @@ import {
 import * as Location from 'expo-location';
 import { colors, spacing, textStyles } from '../theme/designSystem';
 import { Card } from '../components/Card';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { IslamicBackground } from '../components/IslamicBackground';
 
 type Mosque = {
   id: string;
@@ -236,87 +238,145 @@ export default function MosqueFinderScreen() {
     }
   };
 
+  const handleRetry = () => {
+    // basitçe ekranı yeniden yüklemek için state'i tetiklemek yerine
+    // aynı yükleme fonksiyonunu yeniden çağırmak gerekiyor.
+    // Bunu yapmak için effect içindeki load fonksiyonunu dışarı çıkarmak yerine
+    // burada konumu tekrar isteyelim.
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setError(
+            'Konum izni verilmedi. Yakındaki camileri ve Cuma saatini gösterebilmek için konum iznine ihtiyaç var.',
+          );
+          setLoading(false);
+          return;
+        }
+
+        const loc = await Location.getCurrentPositionAsync({});
+        const lat = loc.coords.latitude;
+        const lon = loc.coords.longitude;
+
+        setCoords({ lat, lon });
+
+        const [mosquesResult, dhuhr] = await Promise.all([
+          fetchNearbyMosques(lat, lon),
+          fetchFridayDhuhr(lat, lon),
+        ]);
+
+        setMosques(mosquesResult);
+        setFridayDhuhr(dhuhr);
+        setLoading(false);
+      } catch (e) {
+        setError(
+          'Veriler yüklenirken bir sorun oluştu. İnternet bağlantını kontrol edip tekrar deneyebilirsin.',
+        );
+        setLoading(false);
+      }
+    })();
+  };
+
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <Card style={styles.card}>
-        <Text style={styles.title}>Cami Bulucu</Text>
-        <Text style={styles.subtitle}>
-          Konumuna en yakın camileri ve bu haftaki Cuma vakit bilgisini gör.
-          Yol tarifi için harita uygulamasını açabilirsin.
-        </Text>
-
-        {coords && (
-          <Text style={styles.coordsText}>
-            Konum: {coords.lat.toFixed(3)}, {coords.lon.toFixed(3)}
-          </Text>
-        )}
-
-        {fridayLabel ? (
-          <View style={styles.fridayBox}>
-            <Text style={styles.fridayLabel}>Cuma Saati</Text>
-            <Text style={styles.fridayValue}>{fridayLabel}</Text>
-            <Text style={styles.fridayHint}>
-              Cuma namazı vakti, öğle (Zuhr) vaktine göre gösterilmektedir.
-            </Text>
-          </View>
-        ) : null}
-      </Card>
-
-      <Card style={styles.card}>
-        <Text style={styles.sectionTitle}>Yakındaki Camiler</Text>
-        {loading && (
-          <View style={styles.centerBox}>
-            <ActivityIndicator size="small" color={colors.primary} />
-            <Text style={styles.infoText}>Konum ve camiler yükleniyor...</Text>
-          </View>
-        )}
-        {error && !loading && (
-          <Text style={styles.errorText}>{error}</Text>
-        )}
-        {!loading && !error && mosques.length === 0 && (
-          <Text style={styles.infoText}>
-            Yakınında kayıtlı cami veya mescit bulunamadı. Yarıçapı artırmak
-            veya daha sonra tekrar denemek isteyebilirsin.
-          </Text>
-        )}
-
-        {!loading &&
-          !error &&
-          mosques.map((m) => (
-            <View key={m.id} style={styles.mosqueCard}>
-              <View style={styles.mosqueHeader}>
-                <Text style={styles.mosqueName}>{m.name}</Text>
-                <Text style={styles.mosqueDistance}>
-                  {m.distanceKm.toFixed(1)} km
+    <IslamicBackground>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.container}>
+          <Card style={[styles.card, styles.headerCard]}>
+            <View style={styles.headerTitleRow}>
+              <Text style={styles.headerEmoji}>🕌</Text>
+              <View style={styles.headerTextBlock}>
+                <Text style={styles.title}>Cami Bulucu</Text>
+                <Text style={styles.subtitle}>
+                  Yakınındaki cami ve mescitlere hızlıca ulaş.
                 </Text>
               </View>
-              {m.address ? (
-                <Text style={styles.mosqueAddress}>{m.address}</Text>
-              ) : null}
-              <Pressable
-                onPress={() => handleOpenInMaps(m)}
-                style={({ pressed }) => [
-                  styles.mapButton,
-                  pressed && styles.mapButtonPressed,
-                ]}
-              >
-                <Text style={styles.mapButtonText}>Haritada Aç</Text>
-              </Pressable>
             </View>
-          ))}
-      </Card>
-    </ScrollView>
+
+            {coords && (
+              <Text style={styles.coordsText}>
+                Konum: {coords.lat.toFixed(3)}, {coords.lon.toFixed(3)}
+              </Text>
+            )}
+
+            {fridayLabel ? (
+              <View style={styles.fridayBox}>
+                <Text style={styles.fridayLabel}>Cuma Saati</Text>
+                <Text style={styles.fridayValue}>{fridayLabel}</Text>
+                <Text style={styles.fridayHint}>
+                  Cuma namazı vakti, öğle (Zuhr) vaktine göre gösterilmektedir.
+                </Text>
+              </View>
+            ) : null}
+          </Card>
+
+          <Card style={styles.card}>
+            <Text style={styles.sectionTitle}>Yakındaki Camiler</Text>
+            {loading && (
+              <View style={styles.centerBox}>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={styles.infoText}>Konum ve camiler yükleniyor...</Text>
+              </View>
+            )}
+            {error && !loading && (
+              <View style={styles.centerBox}>
+                <Text style={styles.errorText}>{error}</Text>
+                <PrimaryButton label="Tekrar dene" onPress={handleRetry} />
+              </View>
+            )}
+            {!loading && !error && mosques.length === 0 && (
+              <Text style={styles.infoText}>
+                Yakınında kayıtlı cami veya mescit bulunamadı. Yarıçapı artırmak
+                veya daha sonra tekrar denemek isteyebilirsin.
+              </Text>
+            )}
+
+            {!loading &&
+              !error &&
+              mosques.map((m) => (
+                <View key={m.id} style={styles.mosqueCard}>
+                  <View style={styles.mosqueHeader}>
+                    <View style={styles.mosqueTitleBlock}>
+                      <Text style={styles.mosqueName}>{m.name}</Text>
+                      {m.address ? (
+                        <Text style={styles.mosqueAddress}>{m.address}</Text>
+                      ) : null}
+                    </View>
+                    <View style={styles.distancePill}>
+                      <Text style={styles.distanceText}>
+                        {m.distanceKm.toFixed(1)} km
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Pressable
+                    onPress={() => handleOpenInMaps(m)}
+                    style={({ pressed }) => [
+                      styles.mapButton,
+                      pressed && styles.mapButtonPressed,
+                    ]}
+                  >
+                    <Text style={styles.mapButtonText}>Haritada Aç</Text>
+                  </Pressable>
+                </View>
+              ))}
+          </Card>
+        </View>
+      </ScrollView>
+    </IslamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   content: {
     paddingHorizontal: spacing.lg,
@@ -324,8 +384,27 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
     gap: spacing.md,
   },
+  container: {
+    flex: 1,
+    gap: spacing.md,
+  },
   card: {
     padding: spacing.md,
+  },
+  headerCard: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  headerEmoji: {
+    fontSize: 32,
+  },
+  headerTextBlock: {
+    flex: 1,
   },
   title: {
     ...textStyles.heading1,
@@ -391,6 +470,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  mosqueTitleBlock: {
+    flex: 1,
+    paddingRight: spacing.sm,
+  },
   mosqueName: {
     ...textStyles.body,
     fontWeight: '600',
@@ -403,6 +486,17 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     fontSize: 12,
     color: colors.textSoft,
+  },
+  distancePill: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 999,
+    backgroundColor: colors.primarySoft,
+  },
+  distanceText: {
+    fontSize: 12,
+    color: colors.primaryDark,
+    fontWeight: '500',
   },
   mapButton: {
     marginTop: spacing.sm,
