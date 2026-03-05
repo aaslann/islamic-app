@@ -1,8 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, ActivityIndicator, Pressable } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Card } from '../components/Card';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { colors, spacing, textStyles } from '../theme/designSystem';
 
 type PrayerTime = {
   id: string;
@@ -16,6 +26,11 @@ type FetchState = 'idle' | 'loading' | 'success' | 'error' | 'permission-denied'
 type LocationInfo = {
   city?: string;
   country?: string;
+};
+
+type ActivePrayer = {
+  label: string;
+  time: string;
 };
 
 async function getPrayerTimesFromApi() {
@@ -190,80 +205,56 @@ export default function PrayerTimesScreen() {
   const showLoading = state === 'loading';
   const showError = state === 'error' || state === 'permission-denied';
 
+  const activePrayer: ActivePrayer | null = useMemo(() => {
+    const next = times.find((t) => t.isNext);
+    if (!next) return null;
+    return { label: next.label, time: next.time };
+  }, [times]);
+
   return (
     <ScrollView
       style={styles.root}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.card}>
-        <Text style={styles.title}>Bugünkü Namaz Vakitleri</Text>
-        {locationInfo.city && (
-          <Text style={styles.locationText}>
-            Konum: {locationInfo.city}
-            {locationInfo.country ? `, ${locationInfo.country}` : ''}
-          </Text>
-        )}
+      <View style={styles.container}>
+        <ActivePrayerCard
+          activePrayer={activePrayer}
+          locationInfo={locationInfo}
+          loading={showLoading}
+        />
 
-        {showLoading && (
-          <View style={styles.centerBox}>
-            <ActivityIndicator size="small" color="#38BDF8" />
-            <Text style={styles.infoText}>Namaz vakitleri yükleniyor...</Text>
-          </View>
-        )}
+        <Card style={styles.prayerListCard}>
+          {showError && (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </View>
+          )}
 
-        {showError && (
-          <View style={styles.centerBox}>
-            <Text style={styles.errorText}>{errorMessage}</Text>
-            <Pressable
-              onPress={loadTimes}
-              style={({ pressed }) => [
-                styles.retryButton,
-                pressed && styles.retryButtonPressed,
-              ]}
-            >
-              <Text style={styles.retryButtonText}>Tekrar Dene</Text>
-            </Pressable>
-          </View>
-        )}
-
-        {state === 'success' && (
-          <View style={styles.list}>
-            {times.map((item) => (
-              <View
-                key={item.id}
-                style={[
-                  styles.row,
-                  item.isNext && styles.rowNext,
-                ]}
-              >
-                <Text style={styles.label}>{item.label}</Text>
-                <View style={styles.rowRight}>
-                  <Text style={styles.time}>{item.time}</Text>
-                  {item.isNext && (
-                    <Text style={styles.badge}>Sıradaki</Text>
-                  )}
-                </View>
+          {state === 'success' && (
+            <>
+              <Text style={styles.listTitle}>Bugünkü vakitler</Text>
+              <View style={styles.list}>
+                {times.map((item) => (
+                  <PrayerListItem key={item.id} item={item} />
+                ))}
               </View>
-            ))}
-          </View>
-        )}
+            </>
+          )}
+        </Card>
 
         {state === 'success' && (
           <View style={styles.actionsRow}>
-            <Pressable
+            <PrimaryButton
+              label="Bildirimleri Bugün İçin Planla"
               onPress={scheduleNotificationsForToday}
-              style={({ pressed }) => [
-                styles.notifyButton,
-                !notificationsEnabled && styles.notifyButtonDisabled,
-                pressed && styles.notifyButtonPressed,
-              ]}
               disabled={!notificationsEnabled}
-            >
-              <Text style={styles.notifyButtonText}>
-                Bildirimleri Bugün İçin Planla
+            />
+            {!notificationsEnabled && (
+              <Text style={styles.notifyHint}>
+                Namaz bildirimlerini Ayarlar ekranından açman gerekiyor.
               </Text>
-            </Pressable>
+            )}
           </View>
         )}
       </View>
@@ -271,123 +262,163 @@ export default function PrayerTimesScreen() {
   );
 }
 
+type ActivePrayerCardProps = {
+  activePrayer: ActivePrayer | null;
+  locationInfo: LocationInfo;
+  loading: boolean;
+};
+
+function ActivePrayerCard({
+  activePrayer,
+  locationInfo,
+  loading,
+}: ActivePrayerCardProps) {
+  return (
+    <LinearGradient
+      colors={[colors.primaryDark, colors.primary]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.activeCard}
+    >
+      <Text style={styles.activeLocation}>
+        {locationInfo.city
+          ? `Konum: ${locationInfo.city}${
+              locationInfo.country ? `, ${locationInfo.country}` : ''
+            }`
+          : 'Konum alınıyor...'}
+      </Text>
+      <Text style={styles.activeLabel}>Sıradaki vakit</Text>
+      {loading || !activePrayer ? (
+        <ActivityIndicator size="small" color={colors.primarySoft} />
+      ) : (
+        <>
+          <Text style={styles.activeTime}>{activePrayer.time}</Text>
+          <Text style={styles.activeName}>{activePrayer.label}</Text>
+        </>
+      )}
+    </LinearGradient>
+  );
+}
+
+type PrayerListItemProps = {
+  item: PrayerTime;
+};
+
+function PrayerListItem({ item }: PrayerListItemProps) {
+  return (
+    <View
+      style={[
+        styles.row,
+        item.isNext && styles.rowActive,
+      ]}
+    >
+      <Text style={styles.label}>{item.label}</Text>
+      <View style={styles.rowRight}>
+        <Text style={styles.time}>{item.time}</Text>
+        {item.isNext && <Text style={styles.badge}>Sıradaki</Text>}
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
   },
-  card: {
-    backgroundColor: '#0B1120',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+  container: {
+    flex: 1,
+    gap: spacing.lg,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#F9FAFB',
+  activeCard: {
+    borderRadius: 24,
+    padding: spacing.xl,
   },
-  subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+  activeLocation: {
+    ...textStyles.caption,
+    color: colors.primarySoft,
   },
-  locationText: {
-    marginTop: 4,
-    fontSize: 12,
-    color: '#9CA3AF',
+  activeLabel: {
+    marginTop: spacing.sm,
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.white,
+  },
+  activeTime: {
+    marginTop: spacing.sm,
+    ...textStyles.hero,
+    color: colors.white,
+  },
+  activeName: {
+    marginTop: spacing.xs,
+    ...textStyles.body,
+    color: colors.primarySoft,
   },
   centerBox: {
-    marginTop: 16,
-    paddingVertical: 16,
+    marginTop: spacing.md,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   infoText: {
-    fontSize: 13,
-    color: '#9CA3AF',
+    ...textStyles.caption,
+    color: colors.textSoft,
   },
   errorText: {
-    fontSize: 13,
-    color: '#FCA5A5',
+    ...textStyles.caption,
+    color: '#DC2626',
     textAlign: 'center',
   },
-  retryButton: {
-    marginTop: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 999,
-    backgroundColor: '#38BDF8',
+  prayerListCard: {
+    padding: spacing.lg,
   },
-  retryButtonPressed: {
-    backgroundColor: '#0EA5E9',
-  },
-  retryButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0B1120',
+  listTitle: {
+    ...textStyles.heading2,
+    fontSize: 16,
   },
   list: {
-    marginTop: 12,
-    borderRadius: 12,
-    backgroundColor: '#020617',
-    overflow: 'hidden',
+    marginTop: spacing.md,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#111827',
+    paddingVertical: spacing.md,
   },
-  rowNext: {
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+  rowActive: {
+    backgroundColor: colors.primarySoft,
+    borderRadius: 12,
+    paddingHorizontal: spacing.sm,
   },
   label: {
-    fontSize: 14,
-    color: '#E5E7EB',
+    ...textStyles.body,
+    fontSize: 16,
   },
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   time: {
-    fontSize: 14,
-    color: '#F9FAFB',
+    ...textStyles.body,
     fontWeight: '500',
   },
   badge: {
-    fontSize: 11,
-    color: '#38BDF8',
+    fontSize: 13,
+    color: colors.primaryDark,
   },
   actionsRow: {
-    marginTop: 16,
+    marginTop: spacing.lg,
+    gap: spacing.sm,
   },
-  notifyButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#38BDF8',
-    alignItems: 'center',
-  },
-  notifyButtonDisabled: {
-    opacity: 0.5,
-  },
-  notifyButtonPressed: {
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-  },
-  notifyButtonText: {
-    fontSize: 13,
-    color: '#38BDF8',
+  notifyHint: {
+    ...textStyles.caption,
+    color: colors.textSoft,
   },
 });
 

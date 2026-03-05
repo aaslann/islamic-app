@@ -1,434 +1,359 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Pressable,
+  useWindowDimensions,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
+import { Card } from '../components/Card';
+import { IslamicBackground } from '../components/IslamicBackground';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { colors, radii, shadows, spacing, textStyles } from '../theme/designSystem';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Hayırlı sabahlar';
+  if (hour < 18) return 'Hayırlı günler';
+  return 'Hayırlı akşamlar';
+}
+
 export default function HomeScreen({ navigation }: Props) {
-  const handleOpenPrayerTimes = () => {
-    navigation.navigate('PrayerTimes');
-  };
-
-  const handleOpenPrayerGuide = () => {
-    navigation.navigate('PrayerGuide');
-  };
-
-  const handleOpenQibla = () => {
-    navigation.navigate('Qibla');
-  };
-
-  const handleOpenQuran = () => {
-    navigation.navigate('QuranSurahList');
-  };
-
-  const handleOpenZikr = () => {
-    navigation.navigate('ZikrCounter');
-  };
-
-  const handleOpenDuas = () => {
-    navigation.navigate('Duas');
-  };
-
-  const handleOpenPrayerLog = () => {
-    navigation.navigate('PrayerLog');
-  };
-
-  const handleOpenSettings = () => {
-    navigation.navigate('Settings');
-  };
-
-  const handleOpenRisaleNur = () => {
-    navigation.navigate('RisaleNur');
-  };
-
-  const handleOpenElmalili = () => {
-    navigation.navigate('ElmaliliTafsir');
-  };
-
-  const handleOpenAnalytics = () => {
-    navigation.navigate('Analytics');
-  };
-
-  const handleOpenGoals = () => {
-    navigation.navigate('Goals');
-  };
-
-  const handleOpenIslamicCalendar = () => {
-    navigation.navigate('IslamicCalendar');
-  };
-
-  const handleOpenMosqueFinder = () => {
-    navigation.navigate('MosqueFinder');
-  };
+  const { width } = useWindowDimensions();
+  const isNarrow = width < 380;
+  const greeting = getGreeting();
 
   return (
-    <View style={styles.root}>
-      <StatusBar style="light" />
-      <View style={styles.header}>
-        <Text style={styles.appTitle}>İslami Asistan</Text>
-        <Text style={styles.appSubtitle}>Günlük ibadetlerin için rehber</Text>
-      </View>
+    <IslamicBackground>
+      <View style={styles.root}>
+        <StatusBar style="light" />
+        <LinearGradient
+          colors={['rgba(15,61,62,0.92)', 'rgba(31,110,90,0.88)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.hero}
+        >
+        <Text style={styles.heroGreeting}>{greeting}</Text>
+        <Text style={styles.heroTitle}>İslami Asistan</Text>
+        <Text style={styles.heroSubtitle}>
+          Günlük ibadetlerin için rehber
+        </Text>
+      </LinearGradient>
 
+      <View style={styles.scrollWrapper}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Hızlı erişim - 4 ana modül */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>İbadet Özeti</Text>
-          <Text style={styles.sectionDescription}>
-            Günlük ibadetlerinde en sık kullanacağın araçlar.
-          </Text>
-
-          <View style={styles.grid}>
-            <FeatureCard
-              title="Namaz Vakitleri"
-              description="Bugünkü vakitler ve sıradaki ezan."
-            >
+          <Text style={styles.sectionTitle}>Hızlı Erişim</Text>
+          <View style={[styles.quickGrid, isNarrow && styles.quickGridNarrow]}>
+            <Card style={[styles.quickCard, isNarrow && styles.quickCardFull]}>
+              <Text style={styles.quickEmoji}>🕌</Text>
+              <Text style={styles.quickLabel}>Namaz Vakitleri</Text>
+              <PrimaryButton
+                label="Vakitleri Gör"
+                onPress={() => navigation.navigate('PrayerTimes')}
+                style={styles.quickButton}
+              />
+            </Card>
+            <Card style={[styles.quickCard, isNarrow && styles.quickCardFull]}>
+              <Text style={styles.quickEmoji}>📖</Text>
+              <Text style={styles.quickLabel}>Kur'an-ı Kerim</Text>
               <Pressable
-                onPress={handleOpenPrayerTimes}
+                onPress={() => navigation.navigate('QuranSurahList')}
                 style={({ pressed }) => [
-                  styles.primaryButton,
-                  pressed && styles.primaryButtonPressed,
+                  styles.quickSecondaryBtn,
+                  pressed && styles.quickSecondaryBtnPressed,
                 ]}
               >
-                <Text style={styles.primaryButtonText}>Vakitleri Gör</Text>
+                <Text style={styles.quickSecondaryBtnText}>Sureleri Aç</Text>
               </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Namaz Kılavuzu"
-              description="Adım adım namaz rehberi."
-            >
+            </Card>
+            <Card style={[styles.quickCard, isNarrow && styles.quickCardFull]}>
+              <Text style={styles.quickEmoji}>📿</Text>
+              <Text style={styles.quickLabel}>Zikir Sayacı</Text>
               <Pressable
-                onPress={handleOpenPrayerGuide}
+                onPress={() => navigation.navigate('ZikrCounter')}
                 style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
+                  styles.quickSecondaryBtn,
+                  pressed && styles.quickSecondaryBtnPressed,
                 ]}
               >
-                <Text style={styles.secondaryButtonText}>Kılavuzu Aç</Text>
+                <Text style={styles.quickSecondaryBtnText}>Sayacı Aç</Text>
               </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Namaz Hatıra Defteri"
-              description="Kıldığın vakitleri gün gün işle."
-            >
+            </Card>
+            <Card style={[styles.quickCard, isNarrow && styles.quickCardFull]}>
+              <Text style={styles.quickEmoji}>🤲</Text>
+              <Text style={styles.quickLabel}>Günlük Dualar</Text>
               <Pressable
-                onPress={handleOpenPrayerLog}
+                onPress={() => navigation.navigate('Duas')}
                 style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
+                  styles.quickSecondaryBtn,
+                  pressed && styles.quickSecondaryBtnPressed,
                 ]}
               >
-                <Text style={styles.secondaryButtonText}>Defteri Aç</Text>
+                <Text style={styles.quickSecondaryBtnText}>Duaları Aç</Text>
               </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Kıble Yönü"
-              description="Pusula ile kıbleyi bul."
-            >
-              <Pressable
-                onPress={handleOpenQibla}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Kıbleyi Bul</Text>
-              </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Kur&apos;an-ı Kerim"
-              description="Mushaf, meal ve tilavet (örnek)."
-            >
-              <Pressable
-                onPress={handleOpenQuran}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Sureleri Aç</Text>
-              </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Risale-i Nur"
-              description="Külliyatın ana eser başlıkları."
-            >
-              <Pressable
-                onPress={handleOpenRisaleNur}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Külliyatı Aç</Text>
-              </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Elmalılı Tefsiri"
-              description="Hak Dini Kur&apos;an Dili cilt yapısı."
-            >
-              <Pressable
-                onPress={handleOpenElmalili}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Tefsiri Aç</Text>
-              </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Manevî Analiz"
-              description="Haftalık ibadet istatistiklerin."
-            >
-              <Pressable
-                onPress={handleOpenAnalytics}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Analizi Aç</Text>
-              </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Hedeflerim"
-              description="Namaz, zikir ve Kur&apos;an hedeflerin."
-            >
-              <Pressable
-                onPress={handleOpenGoals}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Hedefleri Aç</Text>
-              </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="İslami Takvim"
-              description="Hicrî tarih ve özel günler."
-            >
-              <Pressable
-                onPress={handleOpenIslamicCalendar}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Takvimi Aç</Text>
-              </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Cami Bulucu"
-              description="Yakındaki camiler ve Cuma saati."
-            >
-              <Pressable
-                onPress={handleOpenMosqueFinder}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Camileri Gör</Text>
-              </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Zikir Sayacı"
-              description="Hedef belirle, say ve kaydet."
-            >
-              <Pressable
-                onPress={handleOpenZikr}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Sayacı Aç</Text>
-              </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Günlük Dualar"
-              description="Sabah-akşam ve hayat duaları."
-            >
-              <Pressable
-                onPress={handleOpenDuas}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Duaları Aç</Text>
-              </Pressable>
-            </FeatureCard>
-
-            <FeatureCard
-              title="Ayarlar"
-              description="Tema ve yazı boyutu tercihlerin."
-            >
-              <Pressable
-                onPress={handleOpenSettings}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.secondaryButtonPressed,
-                ]}
-              >
-                <Text style={styles.secondaryButtonText}>Ayarları Aç</Text>
-              </Pressable>
-            </FeatureCard>
+            </Card>
           </View>
         </View>
+
+        {/* Namaz */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Namaz</Text>
+          <RowLink
+            emoji="🧭"
+            title="Namaz Kılavuzu"
+            subtitle="Adım adım rehber"
+            onPress={() => navigation.navigate('PrayerGuide')}
+          />
+          <RowLink
+            emoji="📓"
+            title="Namaz Hatıra Defteri"
+            subtitle="Kıldığın vakitleri işaretle"
+            onPress={() => navigation.navigate('PrayerLog')}
+          />
+          <RowLink
+            emoji="🧭"
+            title="Kıble Yönü"
+            subtitle="Pusula ile kıbleyi bul"
+            onPress={() => navigation.navigate('Qibla')}
+          />
+        </View>
+
+        {/* Okuma & Kaynak */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Okuma & Kaynak</Text>
+          <RowLink
+            emoji="📚"
+            title="Risale-i Nur Külliyatı"
+            subtitle="Ana eser başlıkları"
+            onPress={() => navigation.navigate('RisaleNur')}
+          />
+          <RowLink
+            emoji="📚"
+            title="Elmalılı Tefsiri"
+            subtitle="Hak Dini Kur'an Dili"
+            onPress={() => navigation.navigate('ElmaliliTafsir')}
+          />
+        </View>
+
+        {/* Takip & Keşfet */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Takip & Keşfet</Text>
+          <RowLink
+            emoji="📊"
+            title="Manevî Analiz"
+            subtitle="Haftalık istatistikler"
+            onPress={() => navigation.navigate('Analytics')}
+          />
+          <RowLink
+            emoji="🎯"
+            title="Hedeflerim"
+            subtitle="Namaz, zikir, Kur'an hedefleri"
+            onPress={() => navigation.navigate('Goals')}
+          />
+          <RowLink
+            emoji="📅"
+            title="İslami Takvim"
+            subtitle="Hicrî tarih ve özel günler"
+            onPress={() => navigation.navigate('IslamicCalendar')}
+          />
+          <RowLink
+            emoji="📍"
+            title="Cami Bulucu"
+            subtitle="Yakındaki camiler, Cuma saati"
+            onPress={() => navigation.navigate('MosqueFinder')}
+          />
+        </View>
+
+        {/* Diğer */}
+        <View style={styles.section}>
+          <RowLink
+            emoji="⭐"
+            title="Favori Ayetlerim"
+            subtitle="Yıldızladığın ayetler"
+            onPress={() => navigation.navigate('FavoriteAyahs')}
+          />
+          <RowLink
+            emoji="⚙️"
+            title="Ayarlar"
+            subtitle="Tema ve yazı boyutu"
+            onPress={() => navigation.navigate('Settings')}
+          />
+        </View>
+
+        <View style={styles.bottomSpacer} />
       </ScrollView>
-    </View>
+      </View>
+      </View>
+    </IslamicBackground>
   );
 }
 
-type FeatureCardProps = {
+type RowLinkProps = {
+  emoji: string;
   title: string;
-  description: string;
-  children?: React.ReactNode;
+  subtitle: string;
+  onPress: () => void;
 };
 
-function FeatureCard({ title, description, children }: FeatureCardProps) {
+function RowLink({ emoji, title, subtitle, onPress }: RowLinkProps) {
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.cardDescription}>{description}</Text>
-      {children && <View style={styles.cardBody}>{children}</View>}
-    </View>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.rowLink,
+        pressed && styles.rowLinkPressed,
+      ]}
+    >
+      <Text style={styles.rowLinkEmoji}>{emoji}</Text>
+      <View style={styles.rowLinkText}>
+        <Text style={styles.rowLinkTitle}>{title}</Text>
+        <Text style={styles.rowLinkSubtitle}>{subtitle}</Text>
+      </View>
+      <Text style={styles.rowLinkChevron}>›</Text>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#050816',
   },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    backgroundColor: '#050816',
+  scrollWrapper: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
-  appTitle: {
+  hero: {
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  heroGreeting: {
+    ...textStyles.caption,
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: spacing.xs,
+  },
+  heroTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#F9FAFB',
+    color: colors.white,
+    letterSpacing: -0.5,
   },
-  appSubtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    color: '#9CA3AF',
+  heroSubtitle: {
+    marginTop: spacing.xs,
+    ...textStyles.body,
+    color: 'rgba(255,255,255,0.85)',
   },
   scroll: {
     flex: 1,
-    backgroundColor: '#020617',
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#E5E7EB',
-    marginBottom: 4,
+    ...textStyles.heading2,
+    marginBottom: spacing.sm,
+    color: colors.textDark,
   },
-  sectionDescription: {
-    fontSize: 13,
-    color: '#9CA3AF',
-    marginBottom: 12,
-  },
-  grid: {
+  quickGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    rowGap: 12,
-    columnGap: 12,
+    gap: spacing.md,
   },
-  card: {
+  quickGridNarrow: {
+    gap: spacing.sm,
+  },
+  quickCard: {
     width: '48%',
-    backgroundColor: '#0B1120',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    minHeight: 140,
+    padding: spacing.md,
   },
-  cardTitle: {
-    fontSize: 16,
+  quickCardFull: {
+    width: '100%',
+  },
+  quickEmoji: {
+    fontSize: 28,
+    marginBottom: spacing.xs,
+  },
+  quickLabel: {
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
-    marginBottom: 4,
+    marginBottom: spacing.sm,
   },
-  cardDescription: {
-    fontSize: 13,
-    color: '#9CA3AF',
-    marginBottom: 10,
+  quickButton: {
+    alignSelf: 'stretch',
   },
-  cardBody: {
-    marginTop: 4,
-  },
-  primaryButton: {
-    marginTop: 4,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 999,
-    backgroundColor: '#38BDF8',
-    alignSelf: 'flex-start',
-  },
-  primaryButtonPressed: {
-    backgroundColor: '#0EA5E9',
-  },
-  primaryButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0B1120',
-  },
-  secondaryButton: {
-    marginTop: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 18,
+  quickSecondaryBtn: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#38BDF8',
+    borderColor: colors.primary,
     alignSelf: 'flex-start',
   },
-  secondaryButtonPressed: {
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+  quickSecondaryBtnPressed: {
+    backgroundColor: colors.primarySoft,
   },
-  secondaryButtonText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#38BDF8',
+  quickSecondaryBtnText: {
+    ...textStyles.caption,
+    fontWeight: '600',
+    color: colors.primaryDark,
   },
-  placeholderBox: {
-    marginTop: 4,
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#020617',
+  rowLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: radii.lg,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.primarySoft,
+    ...shadows.card,
   },
-  placeholderText: {
-    fontSize: 13,
-    color: '#E5E7EB',
+  rowLinkPressed: {
+    backgroundColor: colors.primarySoft,
+    opacity: 0.95,
+  },
+  rowLinkEmoji: {
+    fontSize: 24,
+    marginRight: spacing.md,
+  },
+  rowLinkText: {
+    flex: 1,
+  },
+  rowLinkTitle: {
+    ...textStyles.body,
+    fontWeight: '600',
+    color: colors.textDark,
+  },
+  rowLinkSubtitle: {
+    ...textStyles.caption,
+    marginTop: 2,
+  },
+  rowLinkChevron: {
+    fontSize: 20,
+    color: colors.textSoft,
+    fontWeight: '300',
+  },
+  bottomSpacer: {
+    height: spacing.xl,
   },
 });
-

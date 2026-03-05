@@ -11,6 +11,10 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'QuranSurahDetail'>;
 
@@ -202,345 +206,357 @@ export default function QuranSurahDetailScreen({ route }: Props) {
   };
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.headerCard}>
-        <Text style={styles.title}>{surahName}</Text>
-        <Text style={styles.subtitle}>
-          Seçtiğin surenin Arapça metni ve Diyanet meali listelenir. Aşağıdaki
-          veriler çevrimiçi Kur&apos;an API&apos;sinden alınır.
-        </Text>
-        <Text style={styles.metaText}>Sure ID: {surahId}</Text>
-      </View>
-
-      {state === 'loading' && (
-        <View style={styles.centerBox}>
-          <ActivityIndicator size="small" color="#38BDF8" />
-          <Text style={styles.infoText}>Ayetler yükleniyor...</Text>
+    <View style={styles.root}>
+      <LinearGradient
+        colors={[colors.primaryDark, colors.primary]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradientHeader}
+      >
+        <View style={styles.headerContent}>
+          <Text style={styles.surahLabel}>Sûre</Text>
+          <Text style={styles.title}>{surahName}</Text>
+          <Text style={styles.metaText}>ID: {surahId}</Text>
         </View>
-      )}
+      </LinearGradient>
 
-      {state === 'error' && (
-        <View style={styles.centerBox}>
-          <Text style={styles.errorText}>{errorMessage}</Text>
-        </View>
-      )}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {state === 'loading' && (
+          <View style={styles.centerBox}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={styles.infoText}>Ayetler yükleniyor...</Text>
+          </View>
+        )}
 
-      {state === 'success' &&
-        ayahs.map((ayah) => {
-          const meta = notes[ayah.numberInSurah];
-          const isFav = !!meta?.isFavorite;
-          const hasNote = !!meta?.note;
-          const isEditing = activeNoteAyah === ayah.numberInSurah;
+        {state === 'error' && (
+          <View style={styles.centerBox}>
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          </View>
+        )}
 
-          return (
-            <View key={ayah.numberInSurah} style={styles.ayahCard}>
-              <View style={styles.ayahHeaderRow}>
-                <Text style={styles.ayahNumberBadge}>
-                  {ayah.numberInSurah}
-                </Text>
-                <View style={styles.ayahHeaderRight}>
-                  {hasNote && (
-                    <View style={styles.noteBadge}>
-                      <Text style={styles.noteBadgeText}>Not</Text>
-                    </View>
-                  )}
-                  <Pressable
-                    onPress={() => toggleFavorite(ayah.numberInSurah)}
-                    style={({ pressed }) => [
-                      styles.favButton,
-                      isFav && styles.favButtonActive,
-                      pressed && styles.favButtonPressed,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.favButtonText,
-                        isFav && styles.favButtonTextActive,
+        {state === 'success' &&
+          ayahs.map((ayah) => {
+            const meta = notes[ayah.numberInSurah];
+            const isFav = !!meta?.isFavorite;
+            const hasNote = !!meta?.note;
+            const isEditing = activeNoteAyah === ayah.numberInSurah;
+
+            return (
+              <Card key={ayah.numberInSurah} style={styles.ayahCard}>
+                <View style={styles.ayahHeaderRow}>
+                  <View style={styles.ayahNumberBadge}>
+                    <Text style={styles.ayahNumberText}>
+                      {ayah.numberInSurah}
+                    </Text>
+                  </View>
+                  <View style={styles.ayahHeaderRight}>
+                    {hasNote && (
+                      <View style={styles.noteBadge}>
+                        <Text style={styles.noteBadgeText}>Not</Text>
+                      </View>
+                    )}
+                    <Pressable
+                      onPress={() => toggleFavorite(ayah.numberInSurah)}
+                      style={({ pressed }) => [
+                        styles.favButton,
+                        isFav && styles.favButtonActive,
+                        pressed && styles.favButtonPressed,
                       ]}
                     >
-                      {isFav ? '★' : '☆'}
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-
-              <Text
-                style={[
-                  styles.ayahArabic,
-                  { fontSize: styles.ayahArabic.fontSize * fontMultiplier },
-                ]}
-              >
-                {ayah.arabic}
-              </Text>
-              <Text
-                style={[
-                  styles.ayahTranslation,
-                  { fontSize: styles.ayahTranslation.fontSize * fontMultiplier },
-                ]}
-              >
-                {ayah.translation}
-              </Text>
-
-              {!isEditing && (
-                <View style={styles.ayahActionsRow}>
-                  <Pressable
-                    onPress={() => openNoteEditor(ayah.numberInSurah)}
-                    style={({ pressed }) => [
-                      styles.noteButton,
-                      pressed && styles.noteButtonPressed,
-                    ]}
-                  >
-                    <Text style={styles.noteButtonText}>
-                      {hasNote ? 'Notu Düzenle' : 'Not Ekle'}
-                    </Text>
-                  </Pressable>
-                </View>
-              )}
-
-              {isEditing && (
-                <View style={styles.noteEditor}>
-                  <Text style={styles.noteLabel}>Ayet notu</Text>
-                  <TextInput
-                    value={noteDraft}
-                    onChangeText={setNoteDraft}
-                    placeholder="Bu ayet sana ne hatırlatıyor? Kısa bir not bırak..."
-                    placeholderTextColor="#6B7280"
-                    style={styles.noteInput}
-                    multiline
-                  />
-                  <View style={styles.noteEditorActions}>
-                    <Pressable
-                      onPress={cancelNote}
-                      style={styles.noteCancelButton}
-                    >
-                      <Text style={styles.noteCancelText}>Vazgeç</Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={saveNote}
-                      style={styles.noteSaveButton}
-                    >
-                      <Text style={styles.noteSaveText}>Kaydet</Text>
+                      <Text
+                        style={[
+                          styles.favButtonText,
+                          isFav && styles.favButtonTextActive,
+                        ]}
+                      >
+                        {isFav ? '★' : '☆'}
+                      </Text>
                     </Pressable>
                   </View>
                 </View>
-              )}
-            </View>
-          );
-        })}
-    </ScrollView>
+
+                <Text
+                  style={[
+                    styles.ayahArabic,
+                    { fontSize: 22 * fontMultiplier },
+                  ]}
+                >
+                  {ayah.arabic}
+                </Text>
+                <Text
+                  style={[
+                    styles.ayahTranslation,
+                    { fontSize: 14 * fontMultiplier },
+                  ]}
+                >
+                  {ayah.translation}
+                </Text>
+
+                {!isEditing && (
+                  <View style={styles.ayahActionsRow}>
+                    <Pressable
+                      onPress={() => openNoteEditor(ayah.numberInSurah)}
+                      style={({ pressed }) => [
+                        styles.noteButton,
+                        pressed && styles.noteButtonPressed,
+                      ]}
+                    >
+                      <Text style={styles.noteButtonText}>
+                        {hasNote ? 'Notu Düzenle' : 'Not Ekle'}
+                      </Text>
+                    </Pressable>
+                  </View>
+                )}
+
+                {isEditing && (
+                  <View style={styles.noteEditor}>
+                    <Text style={styles.noteLabel}>Ayet notu</Text>
+                    <TextInput
+                      value={noteDraft}
+                      onChangeText={setNoteDraft}
+                      placeholder="Bu ayet sana ne hatırlatıyor? Kısa bir not bırak..."
+                      placeholderTextColor={colors.textMuted}
+                      style={styles.noteInput}
+                      multiline
+                    />
+                    <View style={styles.noteEditorActions}>
+                      <Pressable
+                        onPress={cancelNote}
+                        style={styles.noteCancelButton}
+                      >
+                        <Text style={styles.noteCancelText}>Vazgeç</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={saveNote}
+                        style={styles.noteSaveButton}
+                      >
+                        <Text style={styles.noteSaveText}>Kaydet</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                )}
+              </Card>
+            );
+          })}
+      </ScrollView>
+
+      <BlurView intensity={40} tint="dark" style={styles.bottomBar}>
+        <Text style={styles.bottomBarText}>
+          Uzun basarak metni kopyalayabilir, not ekleyebilirsin.
+        </Text>
+      </BlurView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
-  content: {
-    padding: 16,
-    paddingBottom: 24,
+  gradientHeader: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
-  headerCard: {
-    backgroundColor: '#0B1120',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
-    marginBottom: 12,
+  headerContent: {
+    paddingTop: spacing.sm,
+  },
+  surahLabel: {
+    ...textStyles.caption,
+    color: 'rgba(248,250,252,0.8)',
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
+    color: colors.white,
+    marginTop: spacing.xs,
   },
-  subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+  metaText: {
+    marginTop: spacing.xs,
+    ...textStyles.caption,
+    color: 'rgba(248,250,252,0.7)',
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl * 2,
   },
   centerBox: {
-    marginTop: 12,
-    paddingVertical: 16,
+    marginTop: spacing.md,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
   infoText: {
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.sm,
+    ...textStyles.caption,
+    color: colors.textMuted,
   },
   errorText: {
-    fontSize: 13,
+    ...textStyles.caption,
     color: '#FCA5A5',
     textAlign: 'center',
   },
-  metaText: {
-    marginTop: 6,
-    fontSize: 11,
-    color: '#6B7280',
-  },
   ayahCard: {
-    marginTop: 4,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#020617',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    marginTop: spacing.sm,
   },
   ayahHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: spacing.xs,
   },
   ayahNumberBadge: {
-    minWidth: 28,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    minWidth: 32,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
-    fontSize: 12,
-    color: '#E5E7EB',
-    textAlign: 'center',
+    backgroundColor: colors.accentGold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ayahNumberText: {
+    ...textStyles.caption,
+    fontWeight: '700',
+    color: colors.surface,
   },
   ayahHeaderRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
   favButton: {
     width: 28,
     height: 28,
     borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
+    borderColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
+    marginLeft: spacing.sm,
   },
   favButtonActive: {
-    borderColor: '#FACC15',
-    backgroundColor: 'rgba(250, 204, 21, 0.1)',
+    borderColor: colors.accentGold,
+    backgroundColor: 'rgba(250, 204, 21, 0.08)',
   },
   favButtonPressed: {
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+    backgroundColor: colors.surface,
   },
   favButtonText: {
     fontSize: 16,
-    color: '#9CA3AF',
+    color: colors.textMuted,
   },
   favButtonTextActive: {
-    color: '#FACC15',
+    color: colors.accentGold,
   },
   noteBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    backgroundColor: colors.primarySoft,
   },
   noteBadgeText: {
-    fontSize: 11,
-    color: '#38BDF8',
+    ...textStyles.caption,
+    color: colors.primary,
   },
   ayahArabic: {
-    fontSize: 22,
-    color: '#F9FAFB',
+    ...textStyles.arabic,
+    color: colors.text,
     textAlign: 'right',
-  },
-  ayahNumber: {
-    marginTop: 6,
-    fontSize: 12,
-    color: '#9CA3AF',
-    textAlign: 'right',
+    marginTop: spacing.sm,
   },
   ayahTranslation: {
-    marginTop: 10,
-    fontSize: 14,
-    color: '#E5E7EB',
+    marginTop: spacing.sm,
+    ...textStyles.body,
+    color: colors.textMuted,
   },
   ayahActionsRow: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
   noteButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
+    borderColor: colors.primarySoft,
   },
   noteButtonPressed: {
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+    backgroundColor: colors.surface,
   },
   noteButtonText: {
-    fontSize: 12,
-    color: '#E5E7EB',
+    ...textStyles.caption,
+    color: colors.text,
   },
   noteEditor: {
-    marginTop: 10,
-    paddingTop: 8,
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#1F2937',
+    borderTopColor: colors.borderSubtle,
   },
   noteLabel: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    marginBottom: 4,
+    ...textStyles.caption,
+    color: colors.textMuted,
+    marginBottom: spacing.xs,
   },
   noteInput: {
     minHeight: 60,
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    color: '#F9FAFB',
-    backgroundColor: '#020617',
+    borderColor: colors.primarySoft,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    color: colors.text,
+    backgroundColor: colors.surface,
     textAlignVertical: 'top',
   },
   noteEditorActions: {
-    marginTop: 6,
+    marginTop: spacing.xs,
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 8,
   },
   noteCancelButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
+    borderColor: colors.primarySoft,
+    marginRight: spacing.sm,
   },
   noteCancelText: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...textStyles.caption,
+    color: colors.textMuted,
   },
   noteSaveButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
-    backgroundColor: '#38BDF8',
+    backgroundColor: colors.primary,
   },
   noteSaveText: {
-    fontSize: 12,
+    ...textStyles.caption,
     fontWeight: '600',
-    color: '#0B1120',
+    color: colors.white,
   },
-  ayahCardMuted: {
-    marginTop: 10,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: '#020617',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+  bottomBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
-  placeholderText: {
-    fontSize: 12,
-    color: '#9CA3AF',
+  bottomBarText: {
+    ...textStyles.caption,
+    color: colors.primarySoft,
+    textAlign: 'center',
   },
 });
 

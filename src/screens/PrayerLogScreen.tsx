@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 const STORAGE_KEY = 'prayer-log-v1';
 
@@ -110,7 +112,7 @@ export default function PrayerLogScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.title}>Namaz Hatıra Defteri</Text>
         <Text style={styles.subtitle}>
           Hangi gün hangi vakitleri kıldığını veya kaza ettiğini basitçe
@@ -185,7 +187,7 @@ export default function PrayerLogScreen() {
             Kayıtlar yükleniyor, lütfen bekle...
           </Text>
         )}
-      </View>
+      </Card>
     </ScrollView>
   );
 }
@@ -193,31 +195,25 @@ export default function PrayerLogScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   card: {
-    backgroundColor: '#0B1120',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    padding: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   dateRow: {
-    marginTop: 16,
+    marginTop: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -227,90 +223,85 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
+    borderColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dateButtonPressed: {
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+    backgroundColor: '#E5F2ED',
   },
   dateButtonText: {
     fontSize: 16,
-    color: '#E5E7EB',
+    color: colors.textSoft,
   },
   dateCenter: {
     flex: 1,
     alignItems: 'center',
   },
   dateText: {
-    fontSize: 15,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
   },
   dateKeyText: {
-    marginTop: 2,
+    marginTop: spacing.xs,
     fontSize: 11,
-    color: '#6B7280',
+    color: colors.textSoft,
   },
   summaryRow: {
-    marginTop: 12,
+    marginTop: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   summaryText: {
-    fontSize: 13,
-    color: '#9CA3AF',
+    ...textStyles.caption,
   },
   list: {
-    marginTop: 16,
+    marginTop: spacing.lg,
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    borderColor: colors.primarySoft,
     overflow: 'hidden',
   },
   row: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#020617',
+    backgroundColor: colors.card,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#111827',
+    borderBottomColor: colors.primarySoft,
   },
   rowPressed: {
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+    backgroundColor: '#F1F5F3',
   },
   rowPrayed: {
-    backgroundColor: 'rgba(34, 197, 94, 0.12)',
+    backgroundColor: 'rgba(34, 197, 94, 0.08)',
   },
   rowQada: {
-    backgroundColor: 'rgba(234, 179, 8, 0.12)',
+    backgroundColor: 'rgba(234, 179, 8, 0.08)',
   },
   rowLabel: {
-    fontSize: 14,
-    color: '#F9FAFB',
+    ...textStyles.body,
   },
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   statusPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
+    borderColor: colors.primarySoft,
   },
   statusText: {
-    fontSize: 12,
-    color: '#E5E7EB',
+    ...textStyles.caption,
   },
   infoText: {
-    marginTop: 10,
-    fontSize: 12,
-    color: '#9CA3AF',
+    marginTop: spacing.sm,
+    ...textStyles.caption,
   },
 });
 

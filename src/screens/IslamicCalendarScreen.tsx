@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import religiousDays from '../data/religiousDays.json';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 type SpecialDay = {
   id: string;
@@ -167,13 +169,13 @@ export default function IslamicCalendarScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.title}>İslami Takvim</Text>
         <Text style={styles.subtitle}>
-          Bugünün hem miladî hem de hicrî tarihini ve yaklaşan özel günleri
-          gör. Özel gün verileri her yıl Diyanet&apos;in yayımladığı dini
-          günler sayfasından otomatik alınmaya çalışılır; erişilemediğinde
-          uygulama içi JSON yedek verisi kullanılır.
+          Bugünün hem miladî hem de hicrî tarihini ve yaklaşan özel günleri gör.
+          Özel gün verileri her yıl Diyanet&apos;in yayımladığı dini günler
+          sayfasından otomatik alınmaya çalışılır; erişilemediğinde uygulama içi
+          JSON yedek verisi kullanılır.
         </Text>
         <View style={styles.todayBox}>
           <Text style={styles.todayLabel}>Bugün</Text>
@@ -187,10 +189,10 @@ export default function IslamicCalendarScreen() {
           </Text>
           <Text style={styles.todayHijri}>Hicri: {hijriString}</Text>
         </View>
-      </View>
+      </Card>
 
       {nextRamadan && ramadanCountdown != null && (
-        <View style={styles.card}>
+        <Card style={styles.card}>
           <Text style={styles.sectionTitle}>Ramazan Geri Sayım</Text>
           <Text style={styles.countdownText}>
             Ramazan başlangıcına{' '}
@@ -201,15 +203,15 @@ export default function IslamicCalendarScreen() {
             Ramazan yaklaşırken oruca, Kur’an tilavetine ve sadakaya niyet
             tazelemek için güzel bir fırsat.
           </Text>
-        </View>
+        </Card>
       )}
 
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Özel Günler</Text>
         {events.length === 0 ? (
           <Text style={styles.tipText}>
-            Bu yıl için özel gün verisi yüklenemedi. İnternet bağlantını
-            kontrol edebilir veya daha sonra tekrar deneyebilirsin.
+            Bu yıl için özel gün verisi yüklenemedi. İnternet bağlantını kontrol
+            edebilir veya daha sonra tekrar deneyebilirsin.
           </Text>
         ) : (
           events.map((e) => {
@@ -244,7 +246,7 @@ export default function IslamicCalendarScreen() {
             );
           })
         )}
-      </View>
+      </Card>
     </ScrollView>
   );
 }
@@ -252,104 +254,92 @@ export default function IslamicCalendarScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 24,
-    gap: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.xl,
+    gap: spacing.md,
   },
   card: {
-    backgroundColor: '#0B1120',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    padding: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   todayBox: {
-    marginTop: 10,
-    padding: 12,
+    marginTop: spacing.sm,
+    padding: spacing.md,
     borderRadius: 12,
-    backgroundColor: '#020617',
+    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    borderColor: colors.primarySoft,
   },
   todayLabel: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: colors.textSoft,
   },
   todayValue: {
-    marginTop: 4,
-    fontSize: 14,
+    marginTop: spacing.xs,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
   },
   todayHijri: {
-    marginTop: 2,
+    marginTop: spacing.xs,
     fontSize: 12,
-    color: '#E5E7EB',
+    color: colors.textSoft,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#F9FAFB',
+    ...textStyles.heading2,
   },
   countdownText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#E5E7EB',
+    marginTop: spacing.sm,
+    ...textStyles.body,
   },
   countdownNumber: {
-    color: '#38BDF8',
+    color: colors.primary,
     fontWeight: '700',
   },
   tipText: {
-    marginTop: 6,
-    fontSize: 12,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   eventCard: {
-    marginTop: 10,
-    padding: 12,
+    marginTop: spacing.sm,
+    padding: spacing.md,
     borderRadius: 12,
-    backgroundColor: '#020617',
+    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    borderColor: colors.primarySoft,
   },
   eventHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   eventTitle: {
-    fontSize: 14,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
   },
   eventDate: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: colors.textSoft,
   },
   eventDescription: {
-    marginTop: 2,
+    marginTop: spacing.xs,
     fontSize: 12,
-    color: '#E5E7EB',
+    color: colors.textSoft,
   },
   eventBadge: {
-    marginTop: 4,
+    marginTop: spacing.xs,
     fontSize: 11,
-    color: '#38BDF8',
+    color: colors.primary,
   },
 });
 

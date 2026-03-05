@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FavoriteAyahs'>;
 
@@ -205,13 +207,13 @@ export default function FavoriteAyahsScreen({ navigation }: Props) {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.headerCard}>
+      <Card style={styles.headerCard}>
         <Text style={styles.title}>Favori Ayetlerim</Text>
         <Text style={styles.subtitle}>
           Yıldızladığın ayetler burada listelenir. Bir ayetin notu varsa kısa
           bir önizleme olarak gösterilir.
         </Text>
-      </View>
+      </Card>
 
       {!isLoaded && (
         <Text style={styles.infoText}>Favoriler yükleniyor...</Text>
@@ -258,70 +260,62 @@ export default function FavoriteAyahsScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 24,
-    gap: 8,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.xl,
+    gap: spacing.sm,
   },
   headerCard: {
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#0B1120',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    padding: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   infoText: {
-    marginTop: 12,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.md,
+    ...textStyles.caption,
   },
   item: {
-    marginTop: 8,
-    padding: 14,
+    marginTop: spacing.sm,
+    padding: spacing.md,
     borderRadius: 14,
-    backgroundColor: '#020617',
+    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    borderColor: colors.primarySoft,
   },
   itemPressed: {
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+    backgroundColor: '#F1F5F3',
   },
   itemHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   surahBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    backgroundColor: colors.primarySoft,
   },
   surahBadgeText: {
     fontSize: 12,
-    color: '#38BDF8',
+    color: colors.primaryDark,
   },
   ayahIndex: {
     fontSize: 12,
-    color: '#E5E7EB',
+    color: colors.textSoft,
   },
   notePreview: {
-    marginTop: 4,
-    fontSize: 13,
-    color: '#E5E7EB',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
 });
 

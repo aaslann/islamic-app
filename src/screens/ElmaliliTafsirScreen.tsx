@@ -1,5 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 type Volume = {
   id: string;
@@ -33,20 +35,20 @@ export default function ElmaliliTafsirScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.title}>Elmalılı Hamdi Yazır Tefsiri</Text>
         <Text style={styles.subtitle}>
           &quot;Hak Dini Kur&apos;an Dili&quot; isimli tefsir eserinin cilt bazlı
           yapısı. Bu ekranda şimdilik örnek cilt başlıkları gösteriliyor; tam
           tefsir metni için yasal veri kaynağı ile entegrasyon yapılmalıdır.
         </Text>
-      </View>
+      </Card>
 
       {VOLUMES.map((volume) => (
-        <View key={volume.id} style={styles.volumeCard}>
+        <Card key={volume.id} style={styles.volumeCard}>
           <Text style={styles.volumeTitle}>{volume.title}</Text>
           <Text style={styles.volumeDescription}>{volume.description}</Text>
-        </View>
+        </Card>
       ))}
     </ScrollView>
   );
@@ -55,46 +57,34 @@ export default function ElmaliliTafsirScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   card: {
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#0B1120',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    padding: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   volumeCard: {
-    marginTop: 8,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: '#020617',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    marginTop: spacing.sm,
+    padding: spacing.md,
   },
   volumeTitle: {
-    fontSize: 15,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   volumeDescription: {
-    fontSize: 13,
-    color: '#E5E7EB',
+    ...textStyles.caption,
   },
 });
 

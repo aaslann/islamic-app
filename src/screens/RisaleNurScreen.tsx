@@ -1,5 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 type Work = {
   id: string;
@@ -40,20 +42,20 @@ export default function RisaleNurScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.title}>Risale-i Nur Külliyatı</Text>
         <Text style={styles.subtitle}>
           Bediüzzaman Said Nursî&apos;nin iman ve Kur&apos;an hakikatlerini izah eden eserlerinden
           ana bölümler. Bu ekranda şimdilik sadece yapı iskeleti yer alıyor; tam metinler için
           telif durumuna uygun ayrı bir veri kaynağı entegre edilmelidir.
         </Text>
-      </View>
+      </Card>
 
       {WORKS.map((work) => (
-        <View key={work.id} style={styles.workCard}>
+        <Card key={work.id} style={styles.workCard}>
           <Text style={styles.workTitle}>{work.title}</Text>
           <Text style={styles.workDescription}>{work.description}</Text>
-        </View>
+        </Card>
       ))}
     </ScrollView>
   );
@@ -62,47 +64,35 @@ export default function RisaleNurScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   card: {
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#0B1120',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
-    marginBottom: 12,
+    padding: spacing.md,
+    marginBottom: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   workCard: {
-    marginTop: 8,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: '#020617',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    marginTop: spacing.sm,
+    padding: spacing.md,
   },
   workTitle: {
-    fontSize: 15,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   workDescription: {
-    fontSize: 13,
-    color: '#E5E7EB',
+    ...textStyles.caption,
   },
 });
 

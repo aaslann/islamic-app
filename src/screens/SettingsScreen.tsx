@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 type ThemeMode = 'dark' | 'system';
 type FontScale = 'small' | 'medium' | 'large';
@@ -70,14 +72,14 @@ export default function SettingsScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.title}>Ayarlar</Text>
         <Text style={styles.subtitle}>
           Tema ve yazı boyutu gibi genel tercihlerini buradan değiştirebilirsin.
         </Text>
-      </View>
+      </Card>
 
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Tema</Text>
         <Text style={styles.sectionSubtitle}>
           Şimdilik uygulama koyu tema ile tasarlandı. Daha sonra sistem temasına
@@ -109,9 +111,9 @@ export default function SettingsScreen() {
             </Pressable>
           ))}
         </View>
-      </View>
+      </Card>
 
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Yazı Boyutu</Text>
         <Text style={styles.sectionSubtitle}>
           Kur&apos;an ve dualar ekranında kullanılacak yazı boyutu.
@@ -143,9 +145,9 @@ export default function SettingsScreen() {
             </Pressable>
           ))}
         </View>
-      </View>
+      </Card>
 
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Namaz Bildirimleri</Text>
         <Text style={styles.sectionSubtitle}>
           Bugünkü namaz vakitleri için hatırlatma al. Bildirimler ayrıca
@@ -179,7 +181,7 @@ export default function SettingsScreen() {
             </Pressable>
           ))}
         </View>
-      </View>
+      </Card>
     </ScrollView>
   );
 }
@@ -187,66 +189,58 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 24,
-    gap: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.xl,
+    gap: spacing.md,
   },
   card: {
-    backgroundColor: '#0B1120',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    padding: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#F9FAFB',
+    ...textStyles.heading2,
   },
   sectionSubtitle: {
-    marginTop: 4,
+    marginTop: spacing.xs,
     fontSize: 12,
-    color: '#9CA3AF',
+    color: colors.textSoft,
   },
   row: {
-    marginTop: 10,
+    marginTop: spacing.sm,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   optionPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
+    borderColor: colors.primarySoft,
   },
   optionPillActive: {
-    borderColor: '#38BDF8',
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySoft,
   },
   optionPillPressed: {
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+    backgroundColor: '#E5F2ED',
   },
   optionText: {
     fontSize: 13,
-    color: '#E5E7EB',
+    color: colors.textSoft,
   },
   optionTextActive: {
-    color: '#38BDF8',
+    color: colors.primaryDark,
     fontWeight: '600',
   },
 });

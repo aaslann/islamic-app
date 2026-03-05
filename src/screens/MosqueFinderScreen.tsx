@@ -10,6 +10,8 @@ import {
   View,
 } from 'react-native';
 import * as Location from 'expo-location';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 type Mosque = {
   id: string;
@@ -240,7 +242,7 @@ export default function MosqueFinderScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.title}>Cami Bulucu</Text>
         <Text style={styles.subtitle}>
           Konumuna en yakın camileri ve bu haftaki Cuma vakit bilgisini gör.
@@ -262,13 +264,13 @@ export default function MosqueFinderScreen() {
             </Text>
           </View>
         ) : null}
-      </View>
+      </Card>
 
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Yakındaki Camiler</Text>
         {loading && (
           <View style={styles.centerBox}>
-            <ActivityIndicator size="small" color="#38BDF8" />
+            <ActivityIndicator size="small" color={colors.primary} />
             <Text style={styles.infoText}>Konum ve camiler yükleniyor...</Text>
           </View>
         )}
@@ -306,7 +308,7 @@ export default function MosqueFinderScreen() {
               </Pressable>
             </View>
           ))}
-      </View>
+      </Card>
     </ScrollView>
   );
 }
@@ -314,85 +316,75 @@ export default function MosqueFinderScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 24,
-    gap: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.xl,
+    gap: spacing.md,
   },
   card: {
-    backgroundColor: '#0B1120',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    padding: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   coordsText: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     fontSize: 12,
-    color: '#9CA3AF',
+    color: colors.textSoft,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#F9FAFB',
+    ...textStyles.heading2,
   },
   centerBox: {
-    marginTop: 10,
+    marginTop: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   infoText: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...textStyles.caption,
   },
   errorText: {
-    marginTop: 10,
+    marginTop: spacing.sm,
     fontSize: 12,
     color: '#FCA5A5',
   },
   fridayBox: {
-    marginTop: 10,
-    padding: 12,
+    marginTop: spacing.sm,
+    padding: spacing.md,
     borderRadius: 12,
-    backgroundColor: '#020617',
+    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    borderColor: colors.primarySoft,
   },
   fridayLabel: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: colors.textSoft,
   },
   fridayValue: {
-    marginTop: 4,
-    fontSize: 14,
+    marginTop: spacing.xs,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
   },
   fridayHint: {
-    marginTop: 4,
+    marginTop: spacing.xs,
     fontSize: 11,
-    color: '#9CA3AF',
+    color: colors.textSoft,
   },
   mosqueCard: {
-    marginTop: 10,
-    padding: 12,
+    marginTop: spacing.sm,
+    padding: spacing.md,
     borderRadius: 12,
-    backgroundColor: '#020617',
+    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    borderColor: colors.primarySoft,
   },
   mosqueHeader: {
     flexDirection: 'row',
@@ -400,35 +392,34 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   mosqueName: {
-    fontSize: 14,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
   },
   mosqueDistance: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: colors.textSoft,
   },
   mosqueAddress: {
-    marginTop: 4,
+    marginTop: spacing.xs,
     fontSize: 12,
-    color: '#E5E7EB',
+    color: colors.textSoft,
   },
   mapButton: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#38BDF8',
+    borderColor: colors.primary,
   },
   mapButtonPressed: {
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    backgroundColor: colors.primarySoft,
   },
   mapButtonText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#38BDF8',
+    color: colors.primaryDark,
   },
 });
 

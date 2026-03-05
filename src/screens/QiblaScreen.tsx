@@ -2,8 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import { Magnetometer } from 'expo-sensors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, spacing, textStyles } from '../theme/designSystem';
 
-type QiblaState = 'loading' | 'success' | 'permission-denied' | 'sensor-unavailable' | 'error';
+type QiblaState =
+  | 'loading'
+  | 'success'
+  | 'permission-denied'
+  | 'sensor-unavailable'
+  | 'error';
 
 const KAABA_LAT = 21.4225;
 const KAABA_LON = 39.8262;
@@ -31,7 +38,9 @@ function computeQiblaBearing(lat: number, lon: number) {
   return (bearing + 360) % 360;
 }
 
-function computeHeadingFromMagnetometer(data: { x: number; y: number; z: number } | null) {
+function computeHeadingFromMagnetometer(
+  data: { x: number; y: number; z: number } | null,
+) {
   if (!data) return null;
   let heading = Math.atan2(data.y, data.x);
   heading = toDeg(heading);
@@ -98,139 +107,139 @@ export default function QiblaScreen() {
   const pointerRotationDeg = difference ?? 0;
 
   return (
-    <View style={styles.root}>
-      <View style={styles.card}>
+    <LinearGradient
+      colors={[colors.primaryDark, colors.primary]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.root}
+    >
+      <View style={styles.header}>
         <Text style={styles.title}>Kıble Yönü</Text>
         <Text style={styles.subtitle}>
           Telefonunu düz tut, mümkünse pusulayı kalibre et (∞ hareketi yap).
         </Text>
-
-        {state === 'loading' && (
-          <Text style={styles.infoText}>Kıble yönü hesaplanıyor...</Text>
-        )}
-
-        {(state === 'error' || state === 'permission-denied') && (
-          <Text style={styles.errorText}>{errorMessage}</Text>
-        )}
-
-        {state === 'success' && qiblaBearing != null && (
-          <>
-            <View style={styles.compassContainer}>
-              <View style={styles.compassCircle}>
-                <View style={styles.northMark}>
-                  <Text style={styles.northText}>N</Text>
-                </View>
-                <View
-                  style={[
-                    styles.qiblaPointer,
-                    {
-                      transform: [
-                        { rotate: `${pointerRotationDeg}deg` },
-                      ],
-                    },
-                  ]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.details}>
-              {heading != null && (
-                <Text style={styles.detailText}>
-                  Cihaz yönü: {heading.toFixed(0)}°
-                </Text>
-              )}
-              <Text style={styles.detailText}>
-                Kıble açısı: {qiblaBearing.toFixed(0)}°
-              </Text>
-              {difference != null && (
-                <Text style={styles.detailText}>
-                  Fark: {difference.toFixed(0)}° (oku Ka&apos;be istikametine
-                  çevir)
-                </Text>
-              )}
-            </View>
-          </>
-        )}
       </View>
-    </View>
+
+      {state === 'loading' && (
+        <Text style={styles.infoText}>Kıble yönü hesaplanıyor...</Text>
+      )}
+
+      {(state === 'error' || state === 'permission-denied') && (
+        <Text style={styles.errorText}>{errorMessage}</Text>
+      )}
+
+      {state === 'success' && qiblaBearing != null && (
+        <>
+          <View style={styles.compassContainer}>
+            <View style={styles.compassCircle}>
+              <View style={styles.northMark}>
+                <Text style={styles.northText}>N</Text>
+              </View>
+              <View
+                style={[
+                  styles.qiblaPointer,
+                  {
+                    transform: [{ rotate: `${pointerRotationDeg}deg` }],
+                  },
+                ]}
+              />
+            </View>
+          </View>
+
+          <View style={styles.details}>
+            {heading != null && (
+              <Text style={styles.detailText}>
+                Cihaz yönü: {heading.toFixed(0)}°
+              </Text>
+            )}
+            <Text style={styles.detailText}>
+              Kıble açısı: {qiblaBearing.toFixed(0)}°
+            </Text>
+            {difference != null && (
+              <Text style={styles.detailText}>
+                Fark: {difference.toFixed(0)}° (oku Ka&apos;be istikametine çevir)
+              </Text>
+            )}
+          </View>
+        </>
+      )}
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    padding: spacing.lg,
   },
-  card: {
-    width: '100%',
-    backgroundColor: '#0B1120',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+  header: {
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
+    color: colors.white,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.sm,
+    ...textStyles.body,
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
   },
   infoText: {
-    marginTop: 16,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.lg,
+    ...textStyles.caption,
+    color: colors.primarySoft,
   },
   errorText: {
-    marginTop: 16,
-    fontSize: 13,
+    marginTop: spacing.lg,
+    ...textStyles.caption,
     color: '#FCA5A5',
+    textAlign: 'center',
   },
   compassContainer: {
-    marginTop: 24,
+    marginTop: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
   },
   compassCircle: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
     borderWidth: 2,
-    borderColor: '#1F2937',
+    borderColor: 'rgba(248,250,252,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#020617',
+    backgroundColor: 'rgba(15,23,42,0.4)',
   },
   northMark: {
     position: 'absolute',
-    top: 8,
+    top: spacing.sm,
   },
   northText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#F97316',
+    color: colors.accentGold,
   },
   qiblaPointer: {
     position: 'absolute',
     width: 4,
-    height: 80,
+    height: 100,
     borderRadius: 2,
-    backgroundColor: '#22C55E',
-    bottom: 110,
+    backgroundColor: colors.accentGold,
+    bottom: 130,
   },
   details: {
-    marginTop: 16,
+    marginTop: spacing.lg,
+    alignItems: 'center',
   },
   detailText: {
-    fontSize: 13,
-    color: '#E5E7EB',
-    marginTop: 2,
+    ...textStyles.caption,
+    color: colors.primarySoft,
+    marginTop: spacing.xs,
   },
 });
+
 

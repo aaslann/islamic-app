@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 type Dua = {
   id: string;
@@ -110,13 +112,13 @@ export default function DuasScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.headerCard}>
+      <Card style={styles.headerCard}>
         <Text style={styles.title}>Günlük Dualar</Text>
         <Text style={styles.subtitle}>
           Sabah-akşam ve günlük hayatta sık okunan bazı temel dualar. Kategori
           butonlarıyla filtreleyebilirsin.
         </Text>
-      </View>
+      </Card>
 
       <View style={styles.tabsRow}>
         {[
@@ -147,7 +149,7 @@ export default function DuasScreen() {
       </View>
 
       {filteredDuas.map((dua) => (
-        <View key={dua.id} style={styles.duaCard}>
+        <Card key={dua.id} style={styles.duaCard}>
           <View style={styles.duaHeader}>
             <View style={styles.categoryPill}>
               <Text style={styles.categoryText}>
@@ -163,7 +165,7 @@ export default function DuasScreen() {
           <Text
             style={[
               styles.duaArabic,
-              { fontSize: styles.duaArabic.fontSize * fontMultiplier },
+              { fontSize: 18 * fontMultiplier },
             ]}
           >
             {dua.arabic}
@@ -172,14 +174,13 @@ export default function DuasScreen() {
             style={[
               styles.duaTranslation,
               {
-                fontSize:
-                  styles.duaTranslation.fontSize * fontMultiplier,
+                fontSize: 13 * fontMultiplier,
               },
             ]}
           >
             {dua.translation}
           </Text>
-        </View>
+        </Card>
       ))}
     </ScrollView>
   );
@@ -188,96 +189,81 @@ export default function DuasScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   headerCard: {
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#0B1120',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    marginBottom: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   tabsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 8,
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
   tabPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
+    borderColor: colors.primarySoft,
   },
   tabPillActive: {
-    borderColor: '#38BDF8',
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySoft,
   },
   tabPillPressed: {
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+    backgroundColor: '#E5F2ED',
   },
   tabText: {
-    fontSize: 12,
-    color: '#E5E7EB',
+    ...textStyles.caption,
+    color: colors.textSoft,
   },
   tabTextActive: {
-    color: '#38BDF8',
+    color: colors.primaryDark,
     fontWeight: '600',
   },
   duaCard: {
-    marginTop: 10,
-    padding: 14,
-    borderRadius: 16,
-    backgroundColor: '#020617',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    marginTop: spacing.md,
   },
   duaHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    gap: 8,
+    marginBottom: spacing.sm,
+    gap: spacing.sm,
   },
   categoryPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    backgroundColor: colors.primarySoft,
   },
   categoryText: {
     fontSize: 11,
-    color: '#38BDF8',
+    color: colors.primary,
   },
   duaTitle: {
-    fontSize: 14,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
   },
   duaArabic: {
-    fontSize: 18,
-    color: '#F9FAFB',
-    marginTop: 4,
+    ...textStyles.arabic,
+    marginTop: spacing.xs,
   },
   duaTranslation: {
-    marginTop: 8,
-    fontSize: 13,
-    color: '#E5E7EB',
+    marginTop: spacing.sm,
+    ...textStyles.caption,
   },
 });
 

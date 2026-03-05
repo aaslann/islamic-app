@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'QuranSurahList'>;
 
@@ -190,11 +192,11 @@ export default function QuranSurahListScreen({ navigation }: Props) {
 
   return (
     <View style={styles.root}>
-      <View style={styles.headerCard}>
+      <Card style={styles.headerCard}>
         <Text style={styles.title}>Kur&apos;an-ı Kerim</Text>
         <Text style={styles.subtitle}>
-          Tam mushaf ve meal entegrasyonu için temel iskelet. Aşağıda gerçek
-          sure listesinden alınan veriler gösteriliyor.
+          Tam mushaf ve meal deneyimi. Aşağıda gerçek sure listesinden alınan
+          veriler gösteriliyor.
         </Text>
         <Pressable
           onPress={() => navigation.navigate('FavoriteAyahs')}
@@ -203,13 +205,13 @@ export default function QuranSurahListScreen({ navigation }: Props) {
             pressed && styles.favLinkButtonPressed,
           ]}
         >
-          <Text style={styles.favLinkText}>Favori ayetlerimi gör</Text>
+          <Text style={styles.favLinkText}>⭐ Favori ayetlerimi gör</Text>
         </Pressable>
-      </View>
+      </Card>
 
       {state === 'loading' && (
         <View style={styles.centerBox}>
-          <ActivityIndicator size="small" color="#38BDF8" />
+          <ActivityIndicator size="small" color={colors.primary} />
           <Text style={styles.infoText}>Sure listesi yükleniyor...</Text>
         </View>
       )}
@@ -249,9 +251,7 @@ export default function QuranSurahListScreen({ navigation }: Props) {
                 </View>
                 <View>
                   <Text style={styles.itemName}>{item.name}</Text>
-                  <Text style={styles.itemMeta}>
-                    {item.ayahCount} ayet
-                  </Text>
+                  <Text style={styles.itemMeta}>{item.ayahCount} ayet</Text>
                 </View>
               </View>
               <Text style={styles.itemArabic}>{item.arabic}</Text>
@@ -266,125 +266,120 @@ export default function QuranSurahListScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   headerCard: {
-    margin: 16,
-    marginBottom: 8,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#0B1120',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
+    color: colors.text,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.body,
+    color: colors.textMuted,
   },
   favLinkButton: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#38BDF8',
+    borderColor: colors.primary,
   },
   favLinkButtonPressed: {
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    backgroundColor: colors.primarySoft,
   },
   favLinkText: {
-    fontSize: 12,
-    color: '#38BDF8',
+    ...textStyles.caption,
+    color: colors.primary,
   },
   centerBox: {
-    paddingHorizontal: 16,
-    paddingVertical: 24,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
   infoText: {
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.sm,
+    ...textStyles.caption,
+    color: colors.textMuted,
   },
   errorText: {
-    fontSize: 13,
+    ...textStyles.caption,
     color: '#FCA5A5',
     textAlign: 'center',
   },
   retryButton: {
-    marginTop: 4,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
     borderRadius: 999,
-    backgroundColor: '#38BDF8',
+    backgroundColor: colors.primary,
   },
   retryButtonPressed: {
-    backgroundColor: '#0EA5E9',
+    backgroundColor: colors.primaryDark,
   },
   retryButtonText: {
-    fontSize: 14,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#0B1120',
+    color: colors.white,
   },
   listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   separator: {
-    height: 8,
+    height: spacing.sm,
   },
   item: {
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: '#020617',
+    padding: spacing.md,
+    borderRadius: 16,
+    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    borderColor: colors.primarySoft,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   itemPressed: {
-    backgroundColor: 'rgba(55,65,81,0.7)',
+    backgroundColor: '#020617',
   },
   itemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
   },
   indexCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#0EA5E9',
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: spacing.sm,
   },
   indexText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#0B1120',
+    color: colors.white,
   },
   itemName: {
-    fontSize: 15,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
+    color: colors.text,
   },
   itemMeta: {
     marginTop: 2,
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...textStyles.caption,
+    color: colors.textMuted,
   },
   itemArabic: {
-    fontSize: 18,
-    color: '#E5E7EB',
+    ...textStyles.arabic,
+    color: colors.accentGold,
   },
 });
 

@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
 
 type PrayerId = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
 type PrayerStatus = 'none' | 'prayed' | 'qada';
@@ -172,14 +174,14 @@ export default function AnalyticsScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.title}>Manevî Analiz</Text>
         <Text style={styles.subtitle}>
           Son 7 gün için namaz ve zikir alışkanlıklarına dair basit bir özet.
         </Text>
-      </View>
+      </Card>
 
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Haftalık Namaz Grafiği</Text>
         <Text style={styles.sectionSubtitle}>
           Her gün kılınan vakit sayısı (maksimum 5 üzerinden).
@@ -201,9 +203,9 @@ export default function AnalyticsScreen() {
             </View>
           ))}
         </View>
-      </View>
+      </Card>
 
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Özet</Text>
         {mostMissedPrayer ? (
           <Text style={styles.summaryText}>
@@ -227,7 +229,7 @@ export default function AnalyticsScreen() {
             </Text>
           </Text>
         ) : null}
-      </View>
+      </Card>
     </ScrollView>
   );
 }
@@ -235,79 +237,70 @@ export default function AnalyticsScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 24,
-    gap: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.xl,
+    gap: spacing.md,
   },
   card: {
-    backgroundColor: '#0B1120',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    padding: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#F9FAFB',
+    ...textStyles.heading2,
   },
   sectionSubtitle: {
-    marginTop: 4,
+    marginTop: spacing.xs,
     fontSize: 12,
-    color: '#9CA3AF',
+    color: colors.textSoft,
   },
   chart: {
-    marginTop: 10,
-    gap: 6,
+    marginTop: spacing.sm,
+    gap: spacing.xs,
   },
   chartRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.xs,
   },
   chartLabel: {
     width: 40,
     fontSize: 12,
-    color: '#9CA3AF',
+    color: colors.textSoft,
   },
   chartBarBackground: {
     flex: 1,
     flexDirection: 'row',
     borderRadius: 999,
     overflow: 'hidden',
-    backgroundColor: '#020617',
+    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
+    borderColor: colors.primarySoft,
   },
   chartBarFill: {
-    backgroundColor: '#38BDF8',
+    backgroundColor: colors.primary,
   },
   chartValue: {
     width: 24,
     fontSize: 12,
-    color: '#E5E7EB',
+    color: colors.textSoft,
     textAlign: 'right',
   },
   summaryText: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#E5E7EB',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
   },
   summaryHighlight: {
-    color: '#38BDF8',
+    color: colors.primary,
     fontWeight: '600',
   },
 });

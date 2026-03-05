@@ -8,6 +8,9 @@ import {
   View,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { colors, spacing, textStyles } from '../theme/designSystem';
+import { Card } from '../components/Card';
+import { PrimaryButton } from '../components/PrimaryButton';
 
 const STORAGE_KEY = 'zikr-counter-presets-v2';
 
@@ -263,11 +266,11 @@ export default function ZikrCounterScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Text style={styles.title}>Zikir Sayacı</Text>
         <Text style={styles.subtitle}>
-          Hedef belirleyip sayım yapabileceğin basit bir zikir sayacı. Seçtiğin
-          zikir ve son sayımın cihazda saklanır.
+          Hedef belirleyip sayım yapabileceğin zikir sayacı. Seçtiğin zikir ve
+          son sayımın cihazda saklanır.
         </Text>
 
         <View style={styles.phraseBox}>
@@ -301,7 +304,7 @@ export default function ZikrCounterScreen() {
               value={newPhrase}
               onChangeText={setNewPhrase}
               placeholder="Yeni zikir ekle..."
-              placeholderTextColor="#6B7280"
+              placeholderTextColor={colors.textSoft}
               style={styles.phraseInput}
               editable={isLoaded}
             />
@@ -322,7 +325,7 @@ export default function ZikrCounterScreen() {
               value={renamePhrase}
               onChangeText={setRenamePhrase}
               placeholder="Seçili zikri yeniden adlandır..."
-              placeholderTextColor="#6B7280"
+              placeholderTextColor={colors.textSoft}
               style={styles.phraseInput}
               editable={isLoaded}
             />
@@ -384,15 +387,13 @@ export default function ZikrCounterScreen() {
           ))}
         </View>
 
-        <Pressable
-          onPress={handleIncrement}
-          style={({ pressed }) => [
-            styles.mainButton,
-            pressed && styles.mainButtonPressed,
-          ]}
-        >
-          <Text style={styles.mainButtonText}>+1 Zikir</Text>
-        </Pressable>
+        <View style={styles.mainButtonWrapper}>
+          <PrimaryButton
+            label="+1 Zikir"
+            onPress={handleIncrement}
+            style={styles.mainButton}
+          />
+        </View>
 
         <View style={styles.actionsRow}>
           <Pressable onPress={handleSaveSession} style={styles.saveButton}>
@@ -433,7 +434,7 @@ export default function ZikrCounterScreen() {
             );
           })}
         </View>
-      </View>
+      </Card>
     </ScrollView>
   );
 }
@@ -441,120 +442,116 @@ export default function ZikrCounterScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.xl,
+    alignItems: 'stretch',
   },
   card: {
-    backgroundColor: '#0B1120',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
     alignItems: 'center',
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.heading1,
+    textAlign: 'center',
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#9CA3AF',
+    marginTop: spacing.sm,
+    ...textStyles.caption,
     textAlign: 'center',
   },
   phraseBox: {
-    marginTop: 14,
+    marginTop: spacing.lg,
     width: '100%',
   },
   phraseLabel: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    marginBottom: 4,
+    ...textStyles.caption,
+    marginBottom: spacing.xs,
   },
   phraseInput: {
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    color: '#F9FAFB',
-    backgroundColor: '#020617',
+    borderColor: colors.primarySoft,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    color: colors.textDark,
+    backgroundColor: colors.card,
+    flex: 1,
+    minWidth: 0,
   },
   presetRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 8,
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
   presetPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
+    borderColor: colors.primarySoft,
   },
   presetPillActive: {
-    borderColor: '#38BDF8',
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySoft,
   },
   presetPillPressed: {
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+    backgroundColor: '#E5F2ED',
   },
   presetPillText: {
-    fontSize: 12,
-    color: '#E5E7EB',
+    ...textStyles.caption,
+    color: colors.textSoft,
   },
   presetPillTextActive: {
-    color: '#38BDF8',
-    fontWeight: '600',
+    color: colors.primaryDark,
+    fontWeight: '500',
   },
   addRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   addButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: 999,
-    backgroundColor: '#38BDF8',
+    backgroundColor: colors.primary,
   },
   addButtonPressed: {
-    backgroundColor: '#0EA5E9',
+    backgroundColor: colors.primaryDark,
   },
   addButtonText: {
-    fontSize: 13,
+    ...textStyles.caption,
     fontWeight: '600',
-    color: '#0B1120',
+    color: colors.white,
   },
   editRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 6,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   editButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#38BDF8',
+    borderColor: colors.primary,
   },
   editButtonPressed: {
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    backgroundColor: colors.primarySoft,
   },
   editButtonText: {
-    fontSize: 12,
-    color: '#38BDF8',
+    ...textStyles.caption,
+    color: colors.primaryDark,
   },
   deleteButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#F97316',
@@ -567,169 +564,157 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(239, 68, 68, 0.15)',
   },
   deleteButtonText: {
-    fontSize: 12,
+    ...textStyles.caption,
     color: '#F97316',
   },
   progressCircle: {
-    marginTop: 20,
+    marginTop: spacing.xl,
     width: 180,
     height: 180,
     borderRadius: 90,
     borderWidth: 4,
-    borderColor: '#1F2937',
+    borderColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#020617',
+    backgroundColor: colors.card,
   },
   progressInner: {
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: '#020617',
+    backgroundColor: colors.card,
     borderWidth: 2,
-    borderColor: '#38BDF8',
+    borderColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   countText: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: '#F9FAFB',
+    ...textStyles.hero,
+    fontSize: 32,
   },
   targetText: {
-    fontSize: 14,
-    color: '#9CA3AF',
+    ...textStyles.caption,
+    marginTop: spacing.xs,
   },
   percentText: {
-    marginTop: 4,
-    fontSize: 13,
-    color: '#38BDF8',
+    marginTop: spacing.xs,
+    ...textStyles.caption,
+    color: colors.primary,
   },
   targetRow: {
-    marginTop: 18,
+    marginTop: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
     justifyContent: 'center',
   },
   targetLabel: {
-    fontSize: 13,
-    color: '#9CA3AF',
+    ...textStyles.caption,
   },
   targetPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
+    borderColor: colors.primarySoft,
   },
   targetPillActive: {
-    borderColor: '#38BDF8',
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySoft,
   },
   targetPillPressed: {
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+    backgroundColor: '#E5F2ED',
   },
   targetPillText: {
-    fontSize: 12,
-    color: '#E5E7EB',
+    ...textStyles.caption,
   },
   targetPillTextActive: {
-    color: '#38BDF8',
+    color: colors.primaryDark,
+  },
+  mainButtonWrapper: {
+    marginTop: spacing.lg,
+    width: '100%',
   },
   mainButton: {
-    marginTop: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 999,
-    backgroundColor: '#38BDF8',
-  },
-  mainButtonPressed: {
-    backgroundColor: '#0EA5E9',
-  },
-  mainButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0B1120',
+    width: '100%',
   },
   actionsRow: {
-    marginTop: 10,
+    marginTop: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   saveButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#22C55E',
   },
   saveButtonText: {
-    fontSize: 13,
+    ...textStyles.caption,
     color: '#22C55E',
   },
   resetButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#4B5563',
+    borderColor: colors.primarySoft,
   },
   resetButtonText: {
-    fontSize: 13,
-    color: '#9CA3AF',
+    ...textStyles.caption,
+    color: colors.textSoft,
   },
   historyBox: {
-    marginTop: 16,
+    marginTop: spacing.lg,
     width: '100%',
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1F2937',
-    padding: 12,
-    backgroundColor: '#020617',
+    borderColor: colors.primarySoft,
+    padding: spacing.md,
+    backgroundColor: colors.card,
   },
   historyTitle: {
-    fontSize: 13,
+    ...textStyles.caption,
     fontWeight: '600',
-    color: '#E5E7EB',
+    color: colors.textDark,
   },
   historyGroup: {
-    marginTop: 8,
-    paddingTop: 6,
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#1F2937',
+    borderTopColor: colors.primarySoft,
   },
   historyGroupHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 2,
+    marginBottom: spacing.xs,
   },
   historyPhrase: {
-    fontSize: 13,
+    ...textStyles.caption,
     fontWeight: '500',
-    color: '#E5E7EB',
+    color: colors.textDark,
   },
   historySummary: {
     fontSize: 11,
-    color: '#9CA3AF',
+    color: colors.textSoft,
   },
   historyItem: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   historyCount: {
-    fontSize: 14,
+    ...textStyles.body,
     fontWeight: '600',
-    color: '#F9FAFB',
   },
   historyTime: {
     fontSize: 11,
-    color: '#6B7280',
+    color: colors.textSoft,
   },
 });
 
