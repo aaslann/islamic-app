@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { colors } from '../theme/designSystem';
 import HomeScreen from '../screens/HomeScreen';
 import PrayerTimesScreen from '../screens/PrayerTimesScreen';
 import PrayerGuideScreen from '../screens/PrayerGuideScreen';
@@ -47,10 +48,11 @@ export default function RootNavigator() {
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{
-          headerStyle: { backgroundColor: '#020617' },
-          headerTintColor: '#F9FAFB',
+          headerStyle: { backgroundColor: colors.primaryDark },
+          headerTintColor: colors.white,
           headerTitleStyle: { fontWeight: '600' },
-          contentStyle: { backgroundColor: '#020617' },
+          headerShadowVisible: false,
+          contentStyle: { backgroundColor: colors.backgroundDark },
         }}
       >
         <Stack.Screen

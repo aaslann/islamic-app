@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import religiousDays from '../data/religiousDays.json';
 import { colors, spacing, textStyles } from '../theme/designSystem';
 import { Card } from '../components/Card';
+import { IslamicBackground } from '../components/IslamicBackground';
 
 type SpecialDay = {
   id: string;
@@ -164,97 +165,123 @@ export default function IslamicCalendarScreen() {
   }, [nextRamadan, today]);
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <Card style={styles.card}>
-        <Text style={styles.title}>İslami Takvim</Text>
-        <Text style={styles.subtitle}>
-          Bugünün hem miladî hem de hicrî tarihini ve yaklaşan özel günleri gör.
-          Özel gün verileri her yıl Diyanet&apos;in yayımladığı dini günler
-          sayfasından otomatik alınmaya çalışılır; erişilemediğinde uygulama içi
-          JSON yedek verisi kullanılır.
-        </Text>
-        <View style={styles.todayBox}>
-          <Text style={styles.todayLabel}>Bugün</Text>
-          <Text style={styles.todayValue}>
-            {today.toLocaleDateString('tr-TR', {
-              weekday: 'long',
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-            })}
+    <IslamicBackground>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Card style={[styles.card, styles.headerCard]}>
+          <Text style={styles.title}>İslami Takvim</Text>
+          <Text style={styles.subtitle}>
+            Bugünün hem miladî hem de hicrî tarihini ve yaklaşan mübarek günleri
+            tek bakışta gör.
           </Text>
-          <Text style={styles.todayHijri}>Hicri: {hijriString}</Text>
-        </View>
-      </Card>
-
-      {nextRamadan && ramadanCountdown != null && (
-        <Card style={styles.card}>
-          <Text style={styles.sectionTitle}>Ramazan Geri Sayım</Text>
-          <Text style={styles.countdownText}>
-            Ramazan başlangıcına{' '}
-            <Text style={styles.countdownNumber}>{ramadanCountdown}</Text> gün
-            kaldı.
-          </Text>
-          <Text style={styles.tipText}>
-            Ramazan yaklaşırken oruca, Kur’an tilavetine ve sadakaya niyet
-            tazelemek için güzel bir fırsat.
-          </Text>
+          <View style={styles.todayBox}>
+            <Text style={styles.todayLabel}>Bugün</Text>
+            <Text style={styles.todayValue}>
+              {today.toLocaleDateString('tr-TR', {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </Text>
+            <Text style={styles.todayHijri}>Hicri: {hijriString}</Text>
+          </View>
         </Card>
-      )}
 
-      <Card style={styles.card}>
-        <Text style={styles.sectionTitle}>Özel Günler</Text>
-        {events.length === 0 ? (
-          <Text style={styles.tipText}>
-            Bu yıl için özel gün verisi yüklenemedi. İnternet bağlantını kontrol
-            edebilir veya daha sonra tekrar deneyebilirsin.
-          </Text>
-        ) : (
-          events.map((e) => {
-            const isToday = e.date === todayKey;
-            const diffMs = e.dateObj.getTime() - today.getTime();
-            const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-            let badgeText = '';
-            if (isToday) badgeText = 'Bugün';
-            else if (diffDays > 0) badgeText = `${diffDays} gün kaldı`;
-            else if (diffDays < 0)
-              badgeText = `${Math.abs(diffDays)} gün önceydi`;
-
-            return (
-              <View key={e.id} style={styles.eventCard}>
-                <View style={styles.eventHeader}>
-                  <Text style={styles.eventTitle}>{e.title}</Text>
-                  <Text style={styles.eventDate}>
-                    {e.dateObj.toLocaleDateString('tr-TR', {
-                      day: '2-digit',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </Text>
-                </View>
-                {e.description ? (
-                  <Text style={styles.eventDescription}>{e.description}</Text>
-                ) : null}
-                {badgeText ? (
-                  <Text style={styles.eventBadge}>{badgeText}</Text>
-                ) : null}
-              </View>
-            );
-          })
+        {nextRamadan && ramadanCountdown != null && (
+          <Card style={[styles.card, styles.ramadanCard]}>
+            <Text style={styles.sectionTitle}>Ramazan Geri Sayım</Text>
+            <Text style={styles.countdownText}>
+              Ramazan başlangıcına{' '}
+              <Text style={styles.countdownNumber}>{ramadanCountdown}</Text> gün
+              kaldı.
+            </Text>
+            <View style={styles.ramadanProgressTrack}>
+              <View
+                style={[
+                  styles.ramadanProgressFill,
+                  {
+                    width: `${Math.min(
+                      100,
+                      Math.max(0, 100 - ramadanCountdown),
+                    )}%`,
+                  },
+                ]}
+              />
+            </View>
+            <Text style={styles.tipText}>
+              Ramazan yaklaşırken oruca, Kur’an tilavetine ve sadakaya niyet
+              tazelemek için güzel bir fırsat.
+            </Text>
+          </Card>
         )}
-      </Card>
-    </ScrollView>
+
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Özel Günler</Text>
+          {events.length === 0 ? (
+            <Text style={styles.tipText}>
+              Bu yıl için özel gün verisi yüklenemedi. İnternet bağlantını kontrol
+              edebilir veya daha sonra tekrar deneyebilirsin.
+            </Text>
+          ) : (
+            events.map((e) => {
+              const isToday = e.date === todayKey;
+              const diffMs = e.dateObj.getTime() - today.getTime();
+              const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+              let badgeText = '';
+              if (isToday) badgeText = 'Bugün';
+              else if (diffDays > 0) badgeText = `${diffDays} gün kaldı`;
+              else if (diffDays < 0)
+                badgeText = `${Math.abs(diffDays)} gün önceydi`;
+
+              return (
+                <View key={e.id} style={styles.eventCard}>
+                  <View style={styles.eventHeader}>
+                    <View style={styles.eventTitleBlock}>
+                      <Text style={styles.eventTitle}>{e.title}</Text>
+                      <Text style={styles.eventType}>
+                        {e.type === 'kandil'
+                          ? 'Kandil'
+                          : e.type === 'ramazan'
+                          ? 'Ramazan'
+                          : e.type === 'uc_aylar'
+                          ? 'Üç Aylar'
+                          : e.type === 'asure'
+                          ? 'Aşure'
+                          : 'Özel Gün'}
+                      </Text>
+                    </View>
+                    <Text style={styles.eventDate}>
+                      {e.dateObj.toLocaleDateString('tr-TR', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </Text>
+                  </View>
+                  {e.description ? (
+                    <Text style={styles.eventDescription}>{e.description}</Text>
+                  ) : null}
+                  {badgeText ? (
+                    <Text style={styles.eventBadge}>{badgeText}</Text>
+                  ) : null}
+                </View>
+              );
+            })
+          )}
+        </Card>
+      </ScrollView>
+    </IslamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   content: {
     paddingHorizontal: spacing.lg,
@@ -264,6 +291,10 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: spacing.md,
+  },
+  headerCard: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   title: {
     ...textStyles.heading1,
@@ -297,6 +328,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...textStyles.heading2,
   },
+  ramadanCard: {
+    borderRadius: 20,
+  },
   countdownText: {
     marginTop: spacing.sm,
     ...textStyles.body,
@@ -304,6 +338,17 @@ const styles = StyleSheet.create({
   countdownNumber: {
     color: colors.primary,
     fontWeight: '700',
+  },
+  ramadanProgressTrack: {
+    marginTop: spacing.sm,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: colors.primarySoft,
+    overflow: 'hidden',
+  },
+  ramadanProgressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
   },
   tipText: {
     marginTop: spacing.xs,
@@ -323,9 +368,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.xs,
   },
+  eventTitleBlock: {
+    flex: 1,
+    paddingRight: spacing.sm,
+  },
   eventTitle: {
     ...textStyles.body,
     fontWeight: '600',
+  },
+  eventType: {
+    marginTop: 2,
+    fontSize: 11,
+    color: colors.textSoft,
   },
   eventDate: {
     fontSize: 12,
