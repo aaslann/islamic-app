@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors, spacing, textStyles } from '../../../theme/designSystem';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { spacing } from '../../../core/theme/tokens';
 import { Card } from '../../../shared/components/Card';
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
 
@@ -49,6 +50,10 @@ type DailyStats = {
 };
 
 export default function AnalyticsScreen() {
+  const { theme } = useTheme();
+  const c = theme.colors;
+  const t = theme.text;
+
   const [prayerLog, setPrayerLog] = useState<PrayerLogState>({});
   const [zikrState, setZikrState] = useState<ZikrState | null>(null);
 
@@ -177,56 +182,61 @@ export default function AnalyticsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Card style={styles.card}>
-          <Text style={styles.title}>Manevî Analiz</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[t.heading1, { color: c.text }]}>Manevî Analiz</Text>
+          <Text style={[t.caption, { marginTop: spacing.xs, color: c.textSecondary }]}>
             Son 7 gün için namaz ve zikir alışkanlıklarına dair özet. Hangi günler
             daha güçlü, hangi vakitler zayıf görmek için buraya göz atabilirsin.
           </Text>
         </Card>
 
         <Card style={styles.card}>
-          <Text style={styles.sectionTitle}>Haftalık Namaz Grafiği</Text>
-          <Text style={styles.sectionSubtitle}>
+          <Text style={[t.heading2, { color: c.text }]}>Haftalık Namaz Grafiği</Text>
+          <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
             Her gün kılınan vakit sayısı (maksimum 5 üzerinden).
           </Text>
           <View style={styles.chart}>
             {stats.map((s) => (
               <View key={s.dateKey} style={styles.chartRow}>
-                <Text style={styles.chartLabel}>{s.label}</Text>
-                <View style={styles.chartBarBackground}>
+                <Text style={{ width: 40, fontSize: 12, color: c.textSecondary }}>{s.label}</Text>
+                <View
+                  style={[
+                    styles.chartBarBackground,
+                    { backgroundColor: c.surface, borderColor: c.primarySoft },
+                  ]}
+                >
                   <View
                     style={[
                       styles.chartBarFill,
-                      { flex: s.prayedCount || 0.1 },
+                      { flex: s.prayedCount || 0.1, backgroundColor: c.primary },
                     ]}
                   />
                   <View style={{ flex: Math.max(maxPrayed - s.prayedCount, 0) }} />
                 </View>
-                <Text style={styles.chartValue}>{s.prayedCount}</Text>
+                <Text style={{ width: 24, fontSize: 12, color: c.textSecondary, textAlign: 'right' }}>{s.prayedCount}</Text>
               </View>
             ))}
           </View>
         </Card>
 
         <Card style={styles.card}>
-          <Text style={styles.sectionTitle}>Özet</Text>
+          <Text style={[t.heading2, { color: c.text }]}>Özet</Text>
           {mostMissedPrayer ? (
-            <Text style={styles.summaryText}>
+            <Text style={[t.caption, { marginTop: spacing.xs, color: c.textSecondary }]}>
               En çok kaza edilen vakit:{' '}
-              <Text style={styles.summaryHighlight}>
+              <Text style={{ color: c.primary, fontWeight: '600' }}>
                 {mostMissedPrayer.label} ({mostMissedPrayer.count} gün)
               </Text>
             </Text>
           ) : (
-            <Text style={styles.summaryText}>
+            <Text style={[t.caption, { marginTop: spacing.xs, color: c.textSecondary }]}>
               Kaza kaydı bulunmuyor. Böyle devam inşallah.
             </Text>
           )}
 
           {mostActiveDay ? (
-            <Text style={styles.summaryText}>
+            <Text style={[t.caption, { marginTop: spacing.xs, color: c.textSecondary }]}>
               En aktif gün:{' '}
-              <Text style={styles.summaryHighlight}>
+              <Text style={{ color: c.primary, fontWeight: '600' }}>
                 {mostActiveDay.label} ({mostActiveDay.prayedCount} vakit,{' '}
                 {mostActiveDay.zikrCount} zikir)
               </Text>
@@ -252,21 +262,6 @@ const styles = StyleSheet.create({
   card: {
     padding: spacing.md,
   },
-  title: {
-    ...textStyles.heading1,
-  },
-  subtitle: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
-  },
-  sectionTitle: {
-    ...textStyles.heading2,
-  },
-  sectionSubtitle: {
-    marginTop: spacing.xs,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
   chart: {
     marginTop: spacing.sm,
     gap: spacing.xs,
@@ -276,36 +271,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xs,
   },
-  chartLabel: {
-    width: 40,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
   chartBarBackground: {
     flex: 1,
     flexDirection: 'row',
     borderRadius: 999,
     overflow: 'hidden',
-    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
   },
   chartBarFill: {
-    backgroundColor: colors.primary,
-  },
-  chartValue: {
-    width: 24,
-    fontSize: 12,
-    color: colors.textSoft,
-    textAlign: 'right',
-  },
-  summaryText: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
-  },
-  summaryHighlight: {
-    color: colors.primary,
-    fontWeight: '600',
+    // backgroundColor set inline via theme
   },
 });
-

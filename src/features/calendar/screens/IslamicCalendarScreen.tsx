@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import religiousDays from '../../../data/religiousDays.json';
-import { colors, spacing, textStyles } from '../../../theme/designSystem';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { spacing } from '../../../core/theme/tokens';
 import { Card } from '../../../shared/components/Card';
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
 
@@ -103,6 +104,10 @@ async function fetchRemoteReligiousDays(
 }
 
 export default function IslamicCalendarScreen() {
+  const { theme } = useTheme();
+  const c = theme.colors;
+  const t = theme.text;
+
   const today = new Date();
   const todayKey = today.toISOString().slice(0, 10);
   const currentYear = String(today.getFullYear());
@@ -172,14 +177,19 @@ export default function IslamicCalendarScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Card style={[styles.card, styles.headerCard]}>
-          <Text style={styles.title}>İslami Takvim</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[t.heading1, { color: c.text }]}>İslami Takvim</Text>
+          <Text style={[t.caption, { marginTop: spacing.xs, color: c.textSecondary }]}>
             Bugünün hem miladî hem de hicrî tarihini ve yaklaşan mübarek günleri
             tek bakışta gör.
           </Text>
-          <View style={styles.todayBox}>
-            <Text style={styles.todayLabel}>Bugün</Text>
-            <Text style={styles.todayValue}>
+          <View
+            style={[
+              styles.todayBox,
+              { backgroundColor: c.surface, borderColor: c.primarySoft },
+            ]}
+          >
+            <Text style={{ fontSize: 12, color: c.textSecondary }}>Bugün</Text>
+            <Text style={[t.body, { marginTop: spacing.xs, fontWeight: '600', color: c.text }]}>
               {today.toLocaleDateString('tr-TR', {
                 weekday: 'long',
                 day: '2-digit',
@@ -187,23 +197,26 @@ export default function IslamicCalendarScreen() {
                 year: 'numeric',
               })}
             </Text>
-            <Text style={styles.todayHijri}>Hicri: {hijriString}</Text>
+            <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
+              Hicri: {hijriString}
+            </Text>
           </View>
         </Card>
 
         {nextRamadan && ramadanCountdown != null && (
           <Card style={[styles.card, styles.ramadanCard]}>
-            <Text style={styles.sectionTitle}>Ramazan Geri Sayım</Text>
-            <Text style={styles.countdownText}>
+            <Text style={[t.heading2, { color: c.text }]}>Ramazan Geri Sayım</Text>
+            <Text style={[t.body, { marginTop: spacing.sm, color: c.text }]}>
               Ramazan başlangıcına{' '}
-              <Text style={styles.countdownNumber}>{ramadanCountdown}</Text> gün
+              <Text style={{ color: c.primary, fontWeight: '700' }}>{ramadanCountdown}</Text> gün
               kaldı.
             </Text>
-            <View style={styles.ramadanProgressTrack}>
+            <View style={[styles.ramadanProgressTrack, { backgroundColor: c.primarySoft }]}>
               <View
                 style={[
                   styles.ramadanProgressFill,
                   {
+                    backgroundColor: c.primary,
                     width: `${Math.min(
                       100,
                       Math.max(0, 100 - ramadanCountdown),
@@ -212,17 +225,17 @@ export default function IslamicCalendarScreen() {
                 ]}
               />
             </View>
-            <Text style={styles.tipText}>
-              Ramazan yaklaşırken oruca, Kur’an tilavetine ve sadakaya niyet
+            <Text style={[t.caption, { marginTop: spacing.xs, color: c.textSecondary }]}>
+              Ramazan yaklaşırken oruca, Kur'an tilavetine ve sadakaya niyet
               tazelemek için güzel bir fırsat.
             </Text>
           </Card>
         )}
 
         <Card style={styles.card}>
-          <Text style={styles.sectionTitle}>Özel Günler</Text>
+          <Text style={[t.heading2, { color: c.text }]}>Özel Günler</Text>
           {events.length === 0 ? (
-            <Text style={styles.tipText}>
+            <Text style={[t.caption, { color: c.textSecondary }]}>
               Bu yıl için özel gün verisi yüklenemedi. İnternet bağlantını kontrol
               edebilir veya daha sonra tekrar deneyebilirsin.
             </Text>
@@ -238,11 +251,17 @@ export default function IslamicCalendarScreen() {
                 badgeText = `${Math.abs(diffDays)} gün önceydi`;
 
               return (
-                <View key={e.id} style={styles.eventCard}>
+                <View
+                  key={e.id}
+                  style={[
+                    styles.eventCard,
+                    { backgroundColor: c.surface, borderColor: c.primarySoft },
+                  ]}
+                >
                   <View style={styles.eventHeader}>
                     <View style={styles.eventTitleBlock}>
-                      <Text style={styles.eventTitle}>{e.title}</Text>
-                      <Text style={styles.eventType}>
+                      <Text style={[t.body, { fontWeight: '600', color: c.text }]}>{e.title}</Text>
+                      <Text style={{ marginTop: 2, fontSize: 11, color: c.textSecondary }}>
                         {e.type === 'kandil'
                           ? 'Kandil'
                           : e.type === 'ramazan'
@@ -254,7 +273,7 @@ export default function IslamicCalendarScreen() {
                           : 'Özel Gün'}
                       </Text>
                     </View>
-                    <Text style={styles.eventDate}>
+                    <Text style={{ fontSize: 12, color: c.textSecondary }}>
                       {e.dateObj.toLocaleDateString('tr-TR', {
                         day: '2-digit',
                         month: 'long',
@@ -263,10 +282,10 @@ export default function IslamicCalendarScreen() {
                     </Text>
                   </View>
                   {e.description ? (
-                    <Text style={styles.eventDescription}>{e.description}</Text>
+                    <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>{e.description}</Text>
                   ) : null}
                   {badgeText ? (
-                    <Text style={styles.eventBadge}>{badgeText}</Text>
+                    <Text style={{ marginTop: spacing.xs, fontSize: 11, color: c.primary }}>{badgeText}</Text>
                   ) : null}
                 </View>
               );
@@ -296,71 +315,29 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
     paddingBottom: spacing.lg,
   },
-  title: {
-    ...textStyles.heading1,
-  },
-  subtitle: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
-  },
   todayBox: {
     marginTop: spacing.sm,
     padding: spacing.md,
     borderRadius: 12,
-    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  todayLabel: {
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  todayValue: {
-    marginTop: spacing.xs,
-    ...textStyles.body,
-    fontWeight: '600',
-  },
-  todayHijri: {
-    marginTop: spacing.xs,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  sectionTitle: {
-    ...textStyles.heading2,
   },
   ramadanCard: {
     borderRadius: 20,
-  },
-  countdownText: {
-    marginTop: spacing.sm,
-    ...textStyles.body,
-  },
-  countdownNumber: {
-    color: colors.primary,
-    fontWeight: '700',
   },
   ramadanProgressTrack: {
     marginTop: spacing.sm,
     height: 8,
     borderRadius: 999,
-    backgroundColor: colors.primarySoft,
     overflow: 'hidden',
   },
   ramadanProgressFill: {
     height: '100%',
-    backgroundColor: colors.primary,
-  },
-  tipText: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
   },
   eventCard: {
     marginTop: spacing.sm,
     padding: spacing.md,
     borderRadius: 12,
-    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
   },
   eventHeader: {
     flexDirection: 'row',
@@ -372,28 +349,4 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: spacing.sm,
   },
-  eventTitle: {
-    ...textStyles.body,
-    fontWeight: '600',
-  },
-  eventType: {
-    marginTop: 2,
-    fontSize: 11,
-    color: colors.textSoft,
-  },
-  eventDate: {
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  eventDescription: {
-    marginTop: spacing.xs,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  eventBadge: {
-    marginTop: spacing.xs,
-    fontSize: 11,
-    color: colors.primary,
-  },
 });
-

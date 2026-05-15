@@ -16,4 +16,6 @@ export type RootStackParamList = {
   Goals: undefined;
   IslamicCalendar: undefined;
   MosqueFinder: undefined;
+  RamadanTracker: undefined;
+  PrayerProgress: undefined;
 };

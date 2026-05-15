@@ -98,10 +98,12 @@ export default function HomeScreen({ navigation }: Props) {
 
             {/* Takip & Keşfet */}
             <Section title="Takip & Keşfet" theme={theme}>
-              <RowLink emoji="📊" title="Manevî Analiz"  subtitle="Haftalık istatistikler"         onPress={() => navigation.navigate('Analytics')}       theme={theme} />
-              <RowLink emoji="🎯" title="Hedeflerim"     subtitle="Namaz, zikir, Kur'an hedefleri" onPress={() => navigation.navigate('Goals')}           theme={theme} />
-              <RowLink emoji="📅" title="İslami Takvim"  subtitle="Hicrî tarih ve özel günler"     onPress={() => navigation.navigate('IslamicCalendar')} theme={theme} />
-              <RowLink emoji="📍" title="Cami Bulucu"    subtitle="Yakındaki camiler, Cuma saati"  onPress={() => navigation.navigate('MosqueFinder')}    theme={theme} />
+              <RowLink emoji="🌙" title="Ramazan Takibi"    subtitle="Oruç, teravih, Kur'an sayfası"   onPress={() => navigation.navigate('RamadanTracker')} theme={theme} />
+              <RowLink emoji="🔥" title="Namaz İlerlemesi"  subtitle="Seri, haftalık grafik, heatmap"   onPress={() => navigation.navigate('PrayerProgress')} theme={theme} />
+              <RowLink emoji="📊" title="Manevî Analiz"     subtitle="Haftalık istatistikler"           onPress={() => navigation.navigate('Analytics')}      theme={theme} />
+              <RowLink emoji="🎯" title="Hedeflerim"        subtitle="Namaz, zikir, Kur'an hedefleri"  onPress={() => navigation.navigate('Goals')}          theme={theme} />
+              <RowLink emoji="📅" title="İslami Takvim"     subtitle="Hicrî tarih ve özel günler"      onPress={() => navigation.navigate('IslamicCalendar')} theme={theme} />
+              <RowLink emoji="📍" title="Cami Bulucu"       subtitle="Yakındaki camiler, Cuma saati"   onPress={() => navigation.navigate('MosqueFinder')}   theme={theme} />
             </Section>
 
             {/* Diğer */}

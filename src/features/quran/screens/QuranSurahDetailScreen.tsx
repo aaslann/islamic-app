@@ -1,562 +1,336 @@
-import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import { colors, spacing, textStyles } from '../../../theme/designSystem';
-import { Card } from '../../../shared/components/Card';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'QuranSurahDetail'>;
-
-type Ayah = {
-  numberInSurah: number;
-  arabic: string;
-  translation: string;
-};
-
-type AyahNote = {
-  note?: string;
-  isFavorite?: boolean;
-};
-
-type SurahNotes = {
-  [ayahNumber: number]: AyahNote;
-};
-
-type NotesState = {
-  [surahKey: string]: SurahNotes;
-};
+type Ayah = { numberInSurah: number; arabic: string; translation: string };
+type AyahNote = { note?: string; isFavorite?: boolean };
+type SurahNotes = Record<number, AyahNote>;
+type NotesState = Record<string, SurahNotes>;
 
 const STORAGE_KEY = 'quran-notes-v1';
-const SETTINGS_KEY = 'app-settings-v1';
 
 export default function QuranSurahDetailScreen({ route }: Props) {
   const { surahId, surahName } = route.params;
+  const { theme } = useTheme();
+  const c = theme.colors;
+  const t = theme.text;
 
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
-  const [state, setState] = useState<'loading' | 'success' | 'error'>(
-    'loading',
-  );
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loadState, setLoadState] = useState<'loading' | 'success' | 'error'>('loading');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [notes, setNotes] = useState<SurahNotes>({});
   const [allNotes, setAllNotes] = useState<NotesState>({});
   const [activeNoteAyah, setActiveNoteAyah] = useState<number | null>(null);
   const [noteDraft, setNoteDraft] = useState('');
-  const [fontScale, setFontScale] = useState<'small' | 'medium' | 'large'>(
-    'medium',
-  );
+  const [fontScale, setFontScale] = useState<'small' | 'medium' | 'large'>('medium');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [playingAyah, setPlayingAyah] = useState<number | null>(null);
 
   const surahKey = String(surahId);
 
   useEffect(() => {
-    const loadAyahs = async () => {
+    const load = async () => {
       try {
-        setState('loading');
-        setErrorMessage(null);
-
-        // AlQuran API üzerinden Arapça ve Türkçe meali birlikte çek.
+        setLoadState('loading'); setErrorMsg(null);
         const [arabicRes, turkishRes] = await Promise.all([
           fetch(`https://api.alquran.cloud/v1/surah/${surahId}`),
           fetch(`https://api.alquran.cloud/v1/surah/${surahId}/tr.diyanet`),
         ]);
-
-        if (!arabicRes.ok || !turkishRes.ok) {
-          throw new Error('api-error');
-        }
-
-        const arabicJson = await arabicRes.json();
-        const turkishJson = await turkishRes.json();
-
-        if (
-          !arabicJson?.data?.ayahs ||
-          !turkishJson?.data?.ayahs ||
-          !Array.isArray(arabicJson.data.ayahs) ||
-          !Array.isArray(turkishJson.data.ayahs)
-        ) {
-          throw new Error('invalid-response');
-        }
-
-        const combined: Ayah[] = arabicJson.data.ayahs.map(
-          (a: any, index: number) => {
-            const t = turkishJson.data.ayahs[index];
-            return {
-              numberInSurah: a.numberInSurah,
-              arabic: a.text,
-              translation: t?.text ?? '',
-            };
-          },
-        );
-
-        setAyahs(combined);
-        setState('success');
+        if (!arabicRes.ok || !turkishRes.ok) throw new Error('api-error');
+        const [aJ, tJ] = await Promise.all([arabicRes.json(), turkishRes.json()]);
+        if (!Array.isArray(aJ?.data?.ayahs) || !Array.isArray(tJ?.data?.ayahs)) throw new Error('invalid-response');
+        setAyahs(aJ.data.ayahs.map((a: any, i: number) => ({
+          numberInSurah: a.numberInSurah,
+          arabic: a.text,
+          translation: tJ.data.ayahs[i]?.text ?? '',
+        })));
+        setLoadState('success');
       } catch {
-        setState('error');
-        setErrorMessage(
-          'Ayetler yüklenirken bir hata oluştu. Lütfen internet bağlantını kontrol edip tekrar dene.',
-        );
+        setLoadState('error');
+        setErrorMsg('Ayetler yüklenirken hata oluştu. İnternet bağlantını kontrol et.');
       }
     };
-
-    loadAyahs();
+    load();
   }, [surahId]);
 
   useEffect(() => {
-    const loadNotes = async () => {
-      try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw) as NotesState;
-          setAllNotes(parsed);
-          setNotes(parsed[surahKey] ?? {});
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    loadNotes();
+    AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
+      if (raw) { const p = JSON.parse(raw) as NotesState; setAllNotes(p); setNotes(p[surahKey] ?? {}); }
+    });
+    AsyncStorage.getItem('app-settings-v2').then((raw) => {
+      if (raw) { const p = JSON.parse(raw); if (['small','medium','large'].includes(p.fontScale)) setFontScale(p.fontScale); }
+    });
   }, [surahKey]);
 
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const raw = await AsyncStorage.getItem(SETTINGS_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw) as { fontScale?: string };
-          if (
-            parsed.fontScale === 'small' ||
-            parsed.fontScale === 'medium' ||
-            parsed.fontScale === 'large'
-          ) {
-            setFontScale(parsed.fontScale);
-          }
-        }
-      } catch {
-        // ignore
-      }
-    };
+  const fontMult = fontScale === 'small' ? 0.9 : fontScale === 'large' ? 1.15 : 1;
 
-    loadSettings();
-  }, []);
-
-  const fontMultiplier =
-    fontScale === 'small' ? 0.9 : fontScale === 'large' ? 1.15 : 1;
-
-  const persistNotes = async (nextAll: NotesState) => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextAll));
-    } catch {
-      // ignore
-    }
+  const persist = async (nextAll: NotesState) => {
+    try { await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextAll)); } catch {}
   };
 
-  const toggleFavorite = (ayahNumber: number) => {
-    const current = notes[ayahNumber] ?? {};
-    const updated: SurahNotes = {
-      ...notes,
-      [ayahNumber]: { ...current, isFavorite: !current.isFavorite },
-    };
-    const nextAll: NotesState = {
-      ...allNotes,
-      [surahKey]: updated,
-    };
-    setNotes(updated);
-    setAllNotes(nextAll);
-    persistNotes(nextAll);
-  };
-
-  const openNoteEditor = (ayahNumber: number) => {
-    const existing = notes[ayahNumber]?.note ?? '';
-    setActiveNoteAyah(ayahNumber);
-    setNoteDraft(existing);
+  const toggleFavorite = (num: number) => {
+    const cur = notes[num] ?? {};
+    const updated = { ...notes, [num]: { ...cur, isFavorite: !cur.isFavorite } };
+    const nextAll = { ...allNotes, [surahKey]: updated };
+    setNotes(updated); setAllNotes(nextAll); persist(nextAll);
   };
 
   const saveNote = () => {
     if (activeNoteAyah == null) return;
     const trimmed = noteDraft.trim();
-    const current = notes[activeNoteAyah] ?? {};
-    const updated: SurahNotes = {
-      ...notes,
-      [activeNoteAyah]: { ...current, note: trimmed || undefined },
-    };
-    const nextAll: NotesState = {
-      ...allNotes,
-      [surahKey]: updated,
-    };
-    setNotes(updated);
-    setAllNotes(nextAll);
-    persistNotes(nextAll);
-    setActiveNoteAyah(null);
-    setNoteDraft('');
+    const updated = { ...notes, [activeNoteAyah]: { ...notes[activeNoteAyah], note: trimmed || undefined } };
+    const nextAll = { ...allNotes, [surahKey]: updated };
+    setNotes(updated); setAllNotes(nextAll); persist(nextAll);
+    setActiveNoteAyah(null); setNoteDraft('');
   };
 
-  const cancelNote = () => {
-    setActiveNoteAyah(null);
-    setNoteDraft('');
-  };
+  const filteredAyahs = useMemo(() => {
+    if (!searchQuery.trim()) return ayahs;
+    const q = searchQuery.toLowerCase();
+    return ayahs.filter((a) => a.translation.toLowerCase().includes(q) || String(a.numberInSurah).includes(q));
+  }, [ayahs, searchQuery]);
+
+  const favoriteCount = Object.values(notes).filter((n) => n.isFavorite).length;
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: c.background }]}>
+      {/* Header */}
       <LinearGradient
-        colors={[colors.primaryDark, colors.primary]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.gradientHeader}
+        colors={[c.heroGradientStart, c.heroGradientEnd] as [string, string]}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={styles.header}
       >
-        <View style={styles.headerContent}>
-          <Text style={styles.surahLabel}>Sûre</Text>
-          <Text style={styles.title}>{surahName}</Text>
-          <Text style={styles.metaText}>ID: {surahId}</Text>
+        <View style={styles.headerTop}>
+          <View style={{ flex: 1 }}>
+            <Text style={[{ fontSize: 11, color: palette.gold400, fontWeight: '700', letterSpacing: 1.5, marginBottom: 4 }]}>SÛRE</Text>
+            <Text style={[{ fontSize: 24, fontWeight: '800', color: '#fff', letterSpacing: -0.5 }]}>{surahName}</Text>
+            <Text style={[t.caption, { color: 'rgba(255,255,255,.5)', marginTop: 2 }]}>
+              Sure No: {surahId} · {ayahs.length > 0 ? `${ayahs.length} ayet` : '...'}
+            </Text>
+          </View>
+          <View style={styles.headerActions}>
+            <Pressable onPress={() => setShowSearch((p) => !p)}
+              style={[styles.headerBtn, showSearch && { backgroundColor: `${palette.gold500}25`, borderColor: `${palette.gold500}50` }]}>
+              <Text style={{ fontSize: 16 }}>🔍</Text>
+            </Pressable>
+            {favoriteCount > 0 && (
+              <View style={styles.favCountBadge}>
+                <Text style={{ fontSize: 9, fontWeight: '800', color: palette.gold500 }}>★{favoriteCount}</Text>
+              </View>
+            )}
+          </View>
         </View>
+
+        {/* Bismillah */}
+        {surahId !== 1 && surahId !== 9 && (
+          <View style={[styles.bismillah, { borderColor: `${palette.gold500}25` }]}>
+            <Text style={{ fontFamily: 'serif', fontSize: 18, color: palette.gold400, textAlign: 'center' }}>
+              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+            </Text>
+          </View>
+        )}
+
+        {/* Search bar */}
+        {showSearch && (
+          <View style={[styles.searchBar, { backgroundColor: 'rgba(255,255,255,.1)', borderColor: 'rgba(255,255,255,.15)' }]}>
+            <Text style={{ fontSize: 14, marginRight: spacing.sm }}>🔍</Text>
+            <TextInput
+              value={searchQuery} onChangeText={setSearchQuery}
+              placeholder="Ayette ara..." placeholderTextColor="rgba(255,255,255,.4)"
+              style={[t.caption, { flex: 1, color: '#fff' }]}
+              autoFocus
+            />
+            {searchQuery.length > 0 && (
+              <Pressable onPress={() => setSearchQuery('')}>
+                <Text style={{ fontSize: 14, color: 'rgba(255,255,255,.5)' }}>✕</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
       </LinearGradient>
 
+      {/* Ayah list */}
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: playingAyah ? 140 : 80 }]}
         showsVerticalScrollIndicator={false}
       >
-        {state === 'loading' && (
-          <View style={styles.centerBox}>
-            <ActivityIndicator size="small" color={colors.primary} />
-            <Text style={styles.infoText}>Ayetler yükleniyor...</Text>
+        {loadState === 'loading' && (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={palette.gold500} />
+            <Text style={[t.caption, { color: c.textSecondary, marginTop: spacing.md }]}>Ayetler yükleniyor...</Text>
           </View>
         )}
-
-        {state === 'error' && (
-          <View style={styles.centerBox}>
-            <Text style={styles.errorText}>{errorMessage}</Text>
+        {loadState === 'error' && (
+          <View style={styles.center}>
+            <Text style={{ fontSize: 40, marginBottom: spacing.md }}>⚠️</Text>
+            <Text style={[t.body, { color: '#FCA5A5', textAlign: 'center' }]}>{errorMsg}</Text>
           </View>
         )}
+        {loadState === 'success' && filteredAyahs.map((ayah) => {
+          const meta = notes[ayah.numberInSurah];
+          const isFav = !!meta?.isFavorite;
+          const hasNote = !!meta?.note;
+          const isEditing = activeNoteAyah === ayah.numberInSurah;
+          const isPlaying = playingAyah === ayah.numberInSurah;
 
-        {state === 'success' &&
-          ayahs.map((ayah) => {
-            const meta = notes[ayah.numberInSurah];
-            const isFav = !!meta?.isFavorite;
-            const hasNote = !!meta?.note;
-            const isEditing = activeNoteAyah === ayah.numberInSurah;
+          return (
+            <View key={ayah.numberInSurah} style={[
+              styles.ayahCard,
+              { backgroundColor: c.surface, borderColor: isFav ? `${palette.gold500}40` : c.border },
+              isPlaying && { borderColor: `${palette.green400}50`, backgroundColor: c.surfaceElevated },
+            ]}>
+              {/* Ayah header */}
+              <View style={styles.ayahHeader}>
+                <View style={[styles.ayahNumBadge, { backgroundColor: `${palette.gold500}18`, borderColor: `${palette.gold500}35` }]}>
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: palette.gold500 }}>{ayah.numberInSurah}</Text>
+                </View>
+                <View style={styles.ayahActions}>
+                  {hasNote && (
+                    <View style={[styles.noteBadge, { backgroundColor: `${palette.green500}15`, borderColor: `${palette.green500}30` }]}>
+                      <Text style={{ fontSize: 10, color: palette.green300, fontWeight: '700' }}>📝 Not</Text>
+                    </View>
+                  )}
+                  <Pressable onPress={() => setPlayingAyah(isPlaying ? null : ayah.numberInSurah)}
+                    style={[styles.actionBtn, { borderColor: isPlaying ? `${palette.green400}50` : c.border }, isPlaying && { backgroundColor: `${palette.green500}15` }]}>
+                    <Text style={{ fontSize: 12 }}>{isPlaying ? '⏸' : '▶'}</Text>
+                  </Pressable>
+                  <Pressable onPress={() => toggleFavorite(ayah.numberInSurah)}
+                    style={[styles.actionBtn, { borderColor: isFav ? `${palette.gold500}50` : c.border }, isFav && { backgroundColor: `${palette.gold500}12` }]}>
+                    <Text style={{ fontSize: 14, color: isFav ? palette.gold500 : c.textSecondary }}>{isFav ? '★' : '☆'}</Text>
+                  </Pressable>
+                </View>
+              </View>
 
-            return (
-              <Card key={ayah.numberInSurah} style={styles.ayahCard}>
-                <View style={styles.ayahHeaderRow}>
-                  <View style={styles.ayahNumberBadge}>
-                    <Text style={styles.ayahNumberText}>
-                      {ayah.numberInSurah}
-                    </Text>
-                  </View>
-                  <View style={styles.ayahHeaderRight}>
-                    {hasNote && (
-                      <View style={styles.noteBadge}>
-                        <Text style={styles.noteBadgeText}>Not</Text>
-                      </View>
-                    )}
-                    <Pressable
-                      onPress={() => toggleFavorite(ayah.numberInSurah)}
-                      style={({ pressed }) => [
-                        styles.favButton,
-                        isFav && styles.favButtonActive,
-                        pressed && styles.favButtonPressed,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.favButtonText,
-                          isFav && styles.favButtonTextActive,
-                        ]}
-                      >
-                        {isFav ? '★' : '☆'}
-                      </Text>
+              {/* Arabic text */}
+              <Text style={[{
+                fontSize: 22 * fontMult, lineHeight: 44 * fontMult, textAlign: 'right',
+                color: theme.dark ? palette.gold300 : palette.green800,
+                fontFamily: 'serif', marginVertical: spacing.sm,
+              }]}>
+                {ayah.arabic}
+              </Text>
+
+              <View style={[styles.divider, { backgroundColor: c.border }]} />
+
+              {/* Translation */}
+              <Text style={[t.body, { fontSize: 14 * fontMult, color: c.textSecondary, lineHeight: 22, marginTop: spacing.xs }]}>
+                {ayah.translation}
+              </Text>
+
+              {/* Existing note display */}
+              {hasNote && !isEditing && (
+                <View style={[styles.noteDisplay, { backgroundColor: `${palette.green500}08`, borderColor: `${palette.green500}20` }]}>
+                  <Text style={{ fontSize: 10, color: palette.green400, fontWeight: '700', marginBottom: 4 }}>📝 NOTUN</Text>
+                  <Text style={[t.caption, { color: c.textSecondary }]}>{meta.note}</Text>
+                </View>
+              )}
+
+              {/* Note editor */}
+              {isEditing ? (
+                <View style={[styles.noteEditor, { borderTopColor: c.border }]}>
+                  <TextInput
+                    value={noteDraft} onChangeText={setNoteDraft}
+                    placeholder="Bu ayet sana ne hatırlatıyor?" placeholderTextColor={c.textSecondary}
+                    style={[styles.noteInput, { color: c.text, backgroundColor: c.background, borderColor: c.border }]}
+                    multiline autoFocus
+                  />
+                  <View style={styles.noteEditorBtns}>
+                    <Pressable onPress={() => { setActiveNoteAyah(null); setNoteDraft(''); }}
+                      style={[styles.noteBtn, { borderColor: c.border }]}>
+                      <Text style={[t.caption, { color: c.textSecondary }]}>Vazgeç</Text>
+                    </Pressable>
+                    <Pressable onPress={saveNote} style={[styles.noteBtn, { backgroundColor: c.primary, borderColor: 'transparent' }]}>
+                      <Text style={[t.captionBold, { color: '#fff' }]}>Kaydet</Text>
                     </Pressable>
                   </View>
                 </View>
-
-                <Text
-                  style={[
-                    styles.ayahArabic,
-                    { fontSize: 22 * fontMultiplier },
-                  ]}
+              ) : (
+                <Pressable
+                  onPress={() => { setActiveNoteAyah(ayah.numberInSurah); setNoteDraft(meta?.note ?? ''); }}
+                  style={({ pressed }) => [styles.addNoteBtn, { borderColor: c.border }, pressed && { backgroundColor: c.primarySoft }]}
                 >
-                  {ayah.arabic}
-                </Text>
-                <Text
-                  style={[
-                    styles.ayahTranslation,
-                    { fontSize: 14 * fontMultiplier },
-                  ]}
-                >
-                  {ayah.translation}
-                </Text>
+                  <Text style={[t.caption, { color: c.textSecondary }]}>{hasNote ? '✏️ Notu düzenle' : '+ Not ekle'}</Text>
+                </Pressable>
+              )}
+            </View>
+          );
+        })}
 
-                {!isEditing && (
-                  <View style={styles.ayahActionsRow}>
-                    <Pressable
-                      onPress={() => openNoteEditor(ayah.numberInSurah)}
-                      style={({ pressed }) => [
-                        styles.noteButton,
-                        pressed && styles.noteButtonPressed,
-                      ]}
-                    >
-                      <Text style={styles.noteButtonText}>
-                        {hasNote ? 'Notu Düzenle' : 'Not Ekle'}
-                      </Text>
-                    </Pressable>
-                  </View>
-                )}
-
-                {isEditing && (
-                  <View style={styles.noteEditor}>
-                    <Text style={styles.noteLabel}>Ayet notu</Text>
-                    <TextInput
-                      value={noteDraft}
-                      onChangeText={setNoteDraft}
-                      placeholder="Bu ayet sana ne hatırlatıyor? Kısa bir not bırak..."
-                      placeholderTextColor={colors.textMuted}
-                      style={styles.noteInput}
-                      multiline
-                    />
-                    <View style={styles.noteEditorActions}>
-                      <Pressable
-                        onPress={cancelNote}
-                        style={styles.noteCancelButton}
-                      >
-                        <Text style={styles.noteCancelText}>Vazgeç</Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={saveNote}
-                        style={styles.noteSaveButton}
-                      >
-                        <Text style={styles.noteSaveText}>Kaydet</Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                )}
-              </Card>
-            );
-          })}
+        {loadState === 'success' && searchQuery && filteredAyahs.length === 0 && (
+          <View style={styles.center}>
+            <Text style={{ fontSize: 40 }}>🔍</Text>
+            <Text style={[t.body, { color: c.textSecondary, marginTop: spacing.sm }]}>"{searchQuery}" için sonuç bulunamadı</Text>
+          </View>
+        )}
       </ScrollView>
 
-      <BlurView intensity={40} tint="dark" style={styles.bottomBar}>
-        <Text style={styles.bottomBarText}>
-          Uzun basarak metni kopyalayabilir, not ekleyebilirsin.
-        </Text>
-      </BlurView>
+      {/* Audio player bar */}
+      {playingAyah && (
+        <BlurView intensity={theme.dark ? 60 : 80} tint={theme.dark ? 'dark' : 'light'} style={styles.playerBar}>
+          <LinearGradient
+            colors={theme.dark ? ['rgba(15,61,46,.95)', 'rgba(8,26,18,.98)'] : ['rgba(255,255,255,.98)', 'rgba(240,255,250,.98)']}
+            style={styles.playerInner}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 10, color: palette.gold500, fontWeight: '700', marginBottom: 2 }}>🎧 OYNATILIYOR — Ayet {playingAyah}</Text>
+              <Text style={[t.caption, { color: c.textSecondary }]}>{surahName}</Text>
+              <View style={[styles.playerProgress, { backgroundColor: c.border }]}>
+                <LinearGradient colors={[palette.green500, palette.gold500]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.playerProgressFill, { width: '35%' }]} />
+              </View>
+            </View>
+            <View style={styles.playerControls}>
+              <Pressable style={styles.playerBtn}><Text style={{ fontSize: 20 }}>⏮</Text></Pressable>
+              <Pressable onPress={() => setPlayingAyah(null)} style={[styles.playerBtn, styles.playerPlayBtn, { backgroundColor: c.primary }]}>
+                <Text style={{ fontSize: 18 }}>⏸</Text>
+              </Pressable>
+              <Pressable style={styles.playerBtn}><Text style={{ fontSize: 20 }}>⏭</Text></Pressable>
+            </View>
+          </LinearGradient>
+        </BlurView>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  gradientHeader: {
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
-    paddingHorizontal: spacing.lg,
-  },
-  headerContent: {
-    paddingTop: spacing.sm,
-  },
-  surahLabel: {
-    ...textStyles.caption,
-    color: 'rgba(248,250,252,0.8)',
-  },
-  title: {
-    ...textStyles.heading1,
-    color: colors.white,
-    marginTop: spacing.xs,
-  },
-  metaText: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
-    color: 'rgba(248,250,252,0.7)',
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xl * 2,
-  },
-  centerBox: {
-    marginTop: spacing.md,
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  infoText: {
-    marginTop: spacing.sm,
-    ...textStyles.caption,
-    color: colors.textMuted,
-  },
-  errorText: {
-    ...textStyles.caption,
-    color: '#FCA5A5',
-    textAlign: 'center',
-  },
-  ayahCard: {
-    marginTop: spacing.sm,
-  },
-  ayahHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xs,
-  },
-  ayahNumberBadge: {
-    minWidth: 32,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    backgroundColor: colors.accentGold,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ayahNumberText: {
-    ...textStyles.caption,
-    fontWeight: '700',
-    color: colors.surface,
-  },
-  ayahHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  favButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: spacing.sm,
-  },
-  favButtonActive: {
-    borderColor: colors.accentGold,
-    backgroundColor: 'rgba(250, 204, 21, 0.08)',
-  },
-  favButtonPressed: {
-    backgroundColor: colors.surface,
-  },
-  favButtonText: {
-    fontSize: 16,
-    color: colors.textMuted,
-  },
-  favButtonTextActive: {
-    color: colors.accentGold,
-  },
-  noteBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    backgroundColor: colors.primarySoft,
-  },
-  noteBadgeText: {
-    ...textStyles.caption,
-    color: colors.primary,
-  },
-  ayahArabic: {
-    ...textStyles.arabic,
-    color: colors.text,
-    textAlign: 'right',
-    marginTop: spacing.sm,
-  },
-  ayahTranslation: {
-    marginTop: spacing.sm,
-    ...textStyles.body,
-    color: colors.textMuted,
-  },
-  ayahActionsRow: {
-    marginTop: spacing.sm,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  noteButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  noteButtonPressed: {
-    backgroundColor: colors.surface,
-  },
-  noteButtonText: {
-    ...textStyles.caption,
-    color: colors.text,
-  },
-  noteEditor: {
-    marginTop: spacing.sm,
-    paddingTop: spacing.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.borderSubtle,
-  },
-  noteLabel: {
-    ...textStyles.caption,
-    color: colors.textMuted,
-    marginBottom: spacing.xs,
-  },
-  noteInput: {
-    minHeight: 60,
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.text,
-    backgroundColor: colors.surface,
-    textAlignVertical: 'top',
-  },
-  noteEditorActions: {
-    marginTop: spacing.xs,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  noteCancelButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-    marginRight: spacing.sm,
-  },
-  noteCancelText: {
-    ...textStyles.caption,
-    color: colors.textMuted,
-  },
-  noteSaveButton: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    backgroundColor: colors.primary,
-  },
-  noteSaveText: {
-    ...textStyles.caption,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  bottomBar: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  bottomBarText: {
-    ...textStyles.caption,
-    color: colors.primarySoft,
-    textAlign: 'center',
-  },
+  root:               { flex: 1 },
+  header:             { paddingTop: spacing.lg, paddingHorizontal: spacing.lg, paddingBottom: spacing.md },
+  headerTop:          { flexDirection: 'row', alignItems: 'flex-start', marginBottom: spacing.sm },
+  headerActions:      { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 4 },
+  headerBtn:          { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,.2)', alignItems: 'center', justifyContent: 'center' },
+  favCountBadge:      { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 99, backgroundColor: `${palette.gold500}20`, borderWidth: 1, borderColor: `${palette.gold500}40` },
+  bismillah:          { borderRadius: radii.lg, borderWidth: 1, padding: spacing.md, marginBottom: spacing.xs },
+  searchBar:          { flexDirection: 'row', alignItems: 'center', borderRadius: radii.lg, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, marginTop: spacing.sm },
+  scroll:             { flex: 1 },
+  content:            { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  center:             { alignItems: 'center', justifyContent: 'center', paddingVertical: spacing.xxl },
+  ayahCard:           { borderRadius: radii.xl, borderWidth: 1, padding: spacing.md, marginBottom: spacing.md, ...shadows.card },
+  ayahHeader:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs },
+  ayahNumBadge:       { width: 32, height: 32, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  ayahActions:        { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
+  actionBtn:          { width: 30, height: 30, borderRadius: 15, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  noteBadge:          { paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radii.full, borderWidth: 1 },
+  divider:            { height: StyleSheet.hairlineWidth, marginVertical: spacing.sm },
+  noteDisplay:        { borderRadius: radii.md, borderWidth: 1, padding: spacing.sm, marginTop: spacing.sm },
+  noteEditor:         { marginTop: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: spacing.sm },
+  noteInput:          { borderRadius: radii.md, borderWidth: 1, padding: spacing.sm, minHeight: 72, textAlignVertical: 'top', fontSize: 14 },
+  noteEditorBtns:     { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.sm, marginTop: spacing.sm },
+  noteBtn:            { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radii.full, borderWidth: 1 },
+  addNoteBtn:         { marginTop: spacing.sm, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, borderRadius: radii.md, borderWidth: StyleSheet.hairlineWidth, alignSelf: 'flex-start' },
+  playerBar:          { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  playerInner:        { flexDirection: 'row', alignItems: 'center', padding: spacing.lg, gap: spacing.lg },
+  playerProgress:     { height: 3, borderRadius: 99, marginTop: spacing.sm, overflow: 'hidden' },
+  playerProgressFill: { height: '100%', borderRadius: 99 },
+  playerControls:     { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  playerBtn:          { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  playerPlayBtn:      { width: 44, height: 44, borderRadius: 22 },
 });
-

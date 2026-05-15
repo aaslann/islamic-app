@@ -16,6 +16,8 @@ export const Routes = {
   Goals:             'Goals',
   IslamicCalendar:   'IslamicCalendar',
   MosqueFinder:      'MosqueFinder',
+  RamadanTracker:    'RamadanTracker',
+  PrayerProgress:    'PrayerProgress',
 } as const;
 
 export type RouteName = (typeof Routes)[keyof typeof Routes];

@@ -1,720 +1,271 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors, spacing, textStyles } from '../../../theme/designSystem';
-import { Card } from '../../../shared/components/Card';
-import { PrimaryButton } from '../../../shared/components/PrimaryButton';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 
 const STORAGE_KEY = 'zikr-counter-presets-v2';
 
-type ZikrHistoryEntry = {
-  id: string;
-  timestamp: string;
-  count: number;
-};
+type ZikrHistoryEntry = { id: string; timestamp: string; count: number };
+type ZikrPresetState = { count: number; target: number; history: ZikrHistoryEntry[] };
+type ZikrState = { activePhrase: string; presets: string[]; data: Record<string, ZikrPresetState> };
 
-type ZikrPresetState = {
-  count: number;
-  target: number;
-  history: ZikrHistoryEntry[];
-};
-
-type ZikrState = {
-  activePhrase: string;
-  presets: string[];
-  data: Record<string, ZikrPresetState>;
-};
-
-const DEFAULT_PRESETS = ['Subhânallâh', 'Elhamdülillâh', 'Allahu Ekber'];
+const DEFAULT_PRESETS = [
+  { label: 'Sübhanallah', arabic: 'سُبْحَانَ اللَّهِ' },
+  { label: 'Elhamdülillah', arabic: 'اَلْحَمْدُ لِلَّهِ' },
+  { label: 'Allahu Ekber', arabic: 'اَللَّهُ أَكْبَرُ' },
+];
+const DEFAULT_LABELS = DEFAULT_PRESETS.map((p) => p.label);
 
 export default function ZikrCounterScreen() {
-  const [activePhrase, setActivePhrase] = useState<string>(DEFAULT_PRESETS[0]);
-  const [presets, setPresets] = useState<string[]>(DEFAULT_PRESETS);
-  const [presetData, setPresetData] = useState<Record<string, ZikrPresetState>>(
-    {},
-  );
+  const { theme } = useTheme();
+  const c = theme.colors;
+  const t = theme.text;
+
+  const [activePhrase, setActivePhrase] = useState(DEFAULT_LABELS[0]);
+  const [presets, setPresets] = useState(DEFAULT_LABELS);
+  const [presetData, setPresetData] = useState<Record<string, ZikrPresetState>>({});
   const [newPhrase, setNewPhrase] = useState('');
-  const [renamePhrase, setRenamePhrase] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const loadState = async () => {
-      try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw) as ZikrState;
-          setActivePhrase(parsed.activePhrase);
-          setPresets(
-            parsed.presets && parsed.presets.length
-              ? parsed.presets
-              : DEFAULT_PRESETS,
-          );
-          const normalizedData: Record<string, ZikrPresetState> = {};
-          Object.entries(parsed.data ?? {}).forEach(([key, value]) => {
-            normalizedData[key] = {
-              count: value.count ?? 0,
-              target: value.target ?? 33,
-              history: value.history ?? [],
-            };
-          });
-          setPresetData(normalizedData);
-        } else {
-          const initialData: Record<string, ZikrPresetState> = {};
-          DEFAULT_PRESETS.forEach((p) => {
-            initialData[p] = { count: 0, target: 33, history: [] };
-          });
-          setPresetData(initialData);
-        }
-      } catch {
-        // ignore
-      } finally {
-        setIsLoaded(true);
+    AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
+      if (raw) {
+        const parsed = JSON.parse(raw) as ZikrState;
+        setActivePhrase(parsed.activePhrase);
+        setPresets(parsed.presets?.length ? parsed.presets : DEFAULT_LABELS);
+        const normalized: Record<string, ZikrPresetState> = {};
+        Object.entries(parsed.data ?? {}).forEach(([k, v]) => {
+          normalized[k] = { count: v.count ?? 0, target: v.target ?? 33, history: v.history ?? [] };
+        });
+        setPresetData(normalized);
+      } else {
+        const init: Record<string, ZikrPresetState> = {};
+        DEFAULT_LABELS.forEach((p) => { init[p] = { count: 0, target: 33, history: [] }; });
+        setPresetData(init);
       }
-    };
-
-    loadState();
+    }).finally(() => setIsLoaded(true));
   }, []);
 
-  useEffect(() => {
-    setRenamePhrase(activePhrase);
-    setShowDeleteConfirm(false);
-  }, [activePhrase]);
+  const getState = (): ZikrState => ({ activePhrase, presets, data: presetData });
+  const persist = (next: ZikrState) => AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
 
-  const getCurrentState = (): ZikrState => ({
-    activePhrase,
-    presets,
-    data: presetData,
-  });
+  const current = presetData[activePhrase] ?? { count: 0, target: 33, history: [] };
+  const { count, target } = current;
+  const progress = Math.min(target > 0 ? count / target : 0, 1);
 
-  const persistState = async (next: ZikrState) => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // ignore
-    }
-  };
-
-  const current =
-    presetData[activePhrase] ?? { count: 0, target: 33, history: [] };
-  const count = current.count;
-  const target = current.target;
-  const history = current.history ?? [];
-
-  const handleSaveSession = () => {
-    if (count <= 0) return;
-    const entry: ZikrHistoryEntry = {
-      id: `${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      count,
-    };
-    const nextHistory = [entry, ...history];
-    const nextData = {
-      ...presetData,
-      [activePhrase]: { count: 0, target, history: nextHistory },
-    };
-    setPresetData(nextData);
-    persistState({ ...getCurrentState(), data: nextData });
+  const updateData = (patch: Partial<ZikrPresetState>) => {
+    const next = { ...presetData, [activePhrase]: { ...current, ...patch } };
+    setPresetData(next);
+    persist({ ...getState(), data: next });
   };
 
   const handleIncrement = () => {
     const nextCount = count + 1;
-    const nextData = {
-      ...presetData,
-      [activePhrase]: { ...current, count: nextCount },
-    };
-    setPresetData(nextData);
-    persistState({ ...getCurrentState(), data: nextData });
-  };
-
-  const handleReset = () => {
-    const nextData = {
-      ...presetData,
-      [activePhrase]: { ...current, count: 0 },
-    };
-    setPresetData(nextData);
-    persistState({ ...getCurrentState(), data: nextData });
-  };
-
-  const handleSetTarget = (value: number) => {
-    const nextData = {
-      ...presetData,
-      [activePhrase]: { count: 0, target: value, history },
-    };
-    setPresetData(nextData);
-    persistState({ ...getCurrentState(), data: nextData });
-  };
-
-  const handleSelectPreset = (phrase: string) => {
-    setActivePhrase(phrase);
-    if (!presetData[phrase]) {
-      const nextData = {
-        ...presetData,
-        [phrase]: { count: 0, target: 33, history: [] },
-      };
-      setPresetData(nextData);
-      persistState({
-        activePhrase: phrase,
-        presets,
-        data: nextData,
-      });
-    } else {
-      persistState({ ...getCurrentState(), activePhrase: phrase });
+    updateData({ count: nextCount });
+    if (nextCount >= target && target > 0) {
+      const entry: ZikrHistoryEntry = { id: `${Date.now()}`, timestamp: new Date().toISOString(), count: nextCount };
+      updateData({ count: 0, history: [entry, ...current.history] });
     }
+  };
+
+  const handleReset = () => updateData({ count: 0 });
+  const handleSave = () => {
+    if (count <= 0) return;
+    const entry: ZikrHistoryEntry = { id: `${Date.now()}`, timestamp: new Date().toISOString(), count };
+    updateData({ count: 0, history: [entry, ...current.history] });
   };
 
   const handleAddPreset = () => {
     const trimmed = newPhrase.trim();
     if (!trimmed) return;
-    if (presets.includes(trimmed)) {
-      setActivePhrase(trimmed);
-      setNewPhrase('');
-      return;
-    }
+    if (presets.includes(trimmed)) { setActivePhrase(trimmed); setNewPhrase(''); return; }
     const nextPresets = [...presets, trimmed];
-    const nextData = {
-      ...presetData,
-      [trimmed]: { count: 0, target: 33, history: [] },
-    };
-    setPresets(nextPresets);
-    setPresetData(nextData);
-    setActivePhrase(trimmed);
-    setNewPhrase('');
-    persistState({
-      activePhrase: trimmed,
-      presets: nextPresets,
-      data: nextData,
-    });
+    const nextData = { ...presetData, [trimmed]: { count: 0, target: 33, history: [] } };
+    setPresets(nextPresets); setPresetData(nextData); setActivePhrase(trimmed); setNewPhrase('');
+    persist({ activePhrase: trimmed, presets: nextPresets, data: nextData });
   };
 
-  const handleRenameActive = () => {
-    const trimmed = renamePhrase.trim();
-    if (!trimmed || trimmed === activePhrase) return;
-
-    // Eğer zaten böyle bir zikir varsa sadece ona geç
-    if (presets.includes(trimmed)) {
-      setActivePhrase(trimmed);
-      return;
+  const selectPhrase = (phrase: string) => {
+    setActivePhrase(phrase);
+    if (!presetData[phrase]) {
+      const next = { ...presetData, [phrase]: { count: 0, target: 33, history: [] } };
+      setPresetData(next);
+      persist({ ...getState(), activePhrase: phrase, data: next });
+    } else {
+      persist({ ...getState(), activePhrase: phrase });
     }
-
-    const nextPresets = presets.map((p) =>
-      p === activePhrase ? trimmed : p,
-    );
-
-    const { [activePhrase]: activeData, ...rest } = presetData;
-    const nextData: Record<string, ZikrPresetState> = {
-      ...rest,
-      [trimmed]:
-        activeData ??
-        ({
-          count: 0,
-          target: 33,
-          history: [],
-        } as ZikrPresetState),
-    };
-
-    setPresets(nextPresets);
-    setPresetData(nextData);
-    setActivePhrase(trimmed);
-    persistState({
-      activePhrase: trimmed,
-      presets: nextPresets,
-      data: nextData,
-    });
   };
 
-  const handleDeleteActive = () => {
-    if (presets.length <= 1) {
-      return;
-    }
-
-    if (!showDeleteConfirm) {
-      setShowDeleteConfirm(true);
-      return;
-    }
-
-    const nextPresets = presets.filter((p) => p !== activePhrase);
-    const { [activePhrase]: _removed, ...rest } = presetData;
-    const nextData = rest;
-    const nextActive = nextPresets[0] ?? DEFAULT_PRESETS[0];
-
-    setPresets(nextPresets);
-    setPresetData(nextData);
-    setActivePhrase(nextActive);
-    setShowDeleteConfirm(false);
-
-    persistState({
-      activePhrase: nextActive,
-      presets: nextPresets,
-      data: nextData,
-    });
-  };
-
-  const progress = Math.min(target > 0 ? count / target : 0, 1);
-  const progressPercent = Math.round(progress * 100);
+  const activeArabic = DEFAULT_PRESETS.find((p) => p.label === activePhrase)?.arabic ?? '';
+  const circumference = 2 * Math.PI * 60; // r=60
+  const strokeDashoffset = circumference * (1 - progress);
+  const totalZikr = current.history.reduce((s, h) => s + h.count, 0) + count;
 
   return (
-    <ScrollView
+    <LinearGradient
+      colors={['#0A1F15', '#081A12', '#0D1F18']}
       style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
     >
-      <Card style={styles.card}>
-        <Text style={styles.title}>Zikir Sayacı</Text>
-        <Text style={styles.subtitle}>
-          Hedef belirleyip sayım yapabileceğin zikir sayacı. Seçtiğin zikir ve
-          son sayımın cihazda saklanır.
-        </Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-        <View style={styles.phraseBox}>
-          <Text style={styles.phraseLabel}>Zikir seçenekleri</Text>
-          <View style={styles.presetRow}>
-            {presets.map((p) => (
-              <Pressable
-                key={p}
-                disabled={!isLoaded}
-                onPress={() => handleSelectPreset(p)}
-                style={({ pressed }) => [
-                  styles.presetPill,
-                  activePhrase === p && styles.presetPillActive,
-                  pressed && styles.presetPillPressed,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.presetPillText,
-                    activePhrase === p && styles.presetPillTextActive,
-                  ]}
-                >
-                  {p}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <View style={styles.addRow}>
-            <TextInput
-              value={newPhrase}
-              onChangeText={setNewPhrase}
-              placeholder="Yeni zikir ekle..."
-              placeholderTextColor={colors.textSoft}
-              style={styles.phraseInput}
-              editable={isLoaded}
-            />
-            <Pressable
-              onPress={handleAddPreset}
-              disabled={!isLoaded}
-              style={({ pressed }) => [
-                styles.addButton,
-                pressed && styles.addButtonPressed,
-              ]}
-            >
-              <Text style={styles.addButtonText}>Ekle</Text>
-            </Pressable>
-          </View>
-
-          <View style={styles.editRow}>
-            <TextInput
-              value={renamePhrase}
-              onChangeText={setRenamePhrase}
-              placeholder="Seçili zikri yeniden adlandır..."
-              placeholderTextColor={colors.textSoft}
-              style={styles.phraseInput}
-              editable={isLoaded}
-            />
-            <Pressable
-              onPress={handleRenameActive}
-              disabled={!isLoaded}
-              style={({ pressed }) => [
-                styles.editButton,
-                pressed && styles.editButtonPressed,
-              ]}
-            >
-              <Text style={styles.editButtonText}>Kaydet</Text>
-            </Pressable>
-            <Pressable
-              onPress={handleDeleteActive}
-              disabled={!isLoaded || presets.length <= 1}
-              style={({ pressed }) => [
-                styles.deleteButton,
-                showDeleteConfirm && styles.deleteButtonConfirm,
-                pressed && styles.deleteButtonPressed,
-              ]}
-            >
-              <Text style={styles.deleteButtonText}>
-                {showDeleteConfirm ? 'Eminim, sil' : 'Sil'}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-
-        <View style={styles.progressCircle}>
-          <View style={styles.progressInner}>
-            <Text style={styles.countText}>{count}</Text>
-            <Text style={styles.targetText}>/ {target}</Text>
-            <Text style={styles.percentText}>{progressPercent}%</Text>
-          </View>
-        </View>
-
-        <View style={styles.targetRow}>
-          <Text style={styles.targetLabel}>Hızlı hedefler:</Text>
-          {[33, 100, 1000].map((value) => (
-            <Pressable
-              key={value}
-              onPress={() => handleSetTarget(value)}
-              style={({ pressed }) => [
-                styles.targetPill,
-                target === value && styles.targetPillActive,
-                pressed && styles.targetPillPressed,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.targetPillText,
-                  target === value && styles.targetPillTextActive,
-                ]}
-              >
-                {value}
-              </Text>
+        {/* Phrase selector */}
+        <View style={styles.phraseRow}>
+          {presets.map((p) => (
+            <Pressable key={p} onPress={() => selectPhrase(p)} disabled={!isLoaded}
+              style={({ pressed }) => [styles.phrasePill, activePhrase === p && styles.phrasePillActive, pressed && { opacity: 0.7 }]}>
+              <Text style={[{ fontSize: 12, fontWeight: '600', color: activePhrase === p ? palette.gold400 : 'rgba(255,255,255,.4)' }]}>{p}</Text>
             </Pressable>
           ))}
         </View>
 
-        <View style={styles.mainButtonWrapper}>
-          <PrimaryButton
-            label="+1 Zikir"
-            onPress={handleIncrement}
-            style={styles.mainButton}
-          />
+        {/* Arabic text */}
+        {activeArabic ? (
+          <Text style={styles.arabicText}>{activeArabic}</Text>
+        ) : (
+          <Text style={[{ fontSize: 18, color: 'rgba(255,255,255,.7)', textAlign: 'center', marginVertical: spacing.md }]}>{activePhrase}</Text>
+        )}
+
+        {/* Circular counter */}
+        <View style={styles.counterWrap}>
+          <View style={styles.ringOuter}>
+            <View style={styles.ringInner}>
+              <Text style={styles.countNum}>{count}</Text>
+              <Text style={styles.countTarget}>/ {target}</Text>
+              <Text style={styles.countPercent}>{Math.round(progress * 100)}%</Text>
+            </View>
+          </View>
+          {/* Progress arc simulation with a border */}
+          <View style={[StyleSheet.absoluteFill, styles.progressArc, { borderColor: `${palette.gold500}30` }]} />
+          {progress > 0 && (
+            <View style={[StyleSheet.absoluteFill, styles.progressArc, {
+              borderColor: palette.gold500,
+              borderTopColor: progress >= 0.25 ? palette.gold500 : 'transparent',
+              borderRightColor: progress >= 0.5 ? palette.gold500 : 'transparent',
+              borderBottomColor: progress >= 0.75 ? palette.gold500 : 'transparent',
+              borderLeftColor: progress >= 1 ? palette.gold500 : 'transparent',
+              transform: [{ rotate: '-90deg' }],
+            }]} />
+          )}
         </View>
 
-        <View style={styles.actionsRow}>
-          <Pressable onPress={handleSaveSession} style={styles.saveButton}>
-            <Text style={styles.saveButtonText}>Kaydet</Text>
+        {/* Big tap button */}
+        <Pressable onPress={handleIncrement} disabled={!isLoaded}
+          style={({ pressed }) => [styles.tapBtn, pressed && { transform: [{ scale: 0.94 }], opacity: 0.9 }]}>
+          <LinearGradient colors={[palette.green600, palette.green800]} style={styles.tapBtnGrad}>
+            <Text style={{ fontSize: 36 }}>📿</Text>
+            <Text style={[{ fontSize: 14, fontWeight: '700', color: '#fff', marginTop: 4 }]}>Zikret</Text>
+          </LinearGradient>
+        </Pressable>
+
+        {/* Target selector */}
+        <View style={styles.targetRow}>
+          <Text style={[{ fontSize: 12, color: 'rgba(255,255,255,.4)', marginRight: spacing.sm }]}>Hedef:</Text>
+          {[33, 99, 100, 1000].map((v) => (
+            <Pressable key={v} onPress={() => updateData({ target: v, count: 0 })}
+              style={[styles.targetPill, target === v && { backgroundColor: `${palette.gold500}20`, borderColor: `${palette.gold500}50` }]}>
+              <Text style={[{ fontSize: 11, fontWeight: '600', color: target === v ? palette.gold400 : 'rgba(255,255,255,.4)' }]}>{v}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Actions */}
+        <View style={styles.actionRow}>
+          <Pressable onPress={handleSave} style={[styles.actionBtn, { borderColor: palette.green400 }]}>
+            <Text style={[{ fontSize: 12, fontWeight: '700', color: palette.green300 }]}>💾 Kaydet</Text>
           </Pressable>
-          <Pressable onPress={handleReset} style={styles.resetButton}>
-            <Text style={styles.resetButtonText}>Sıfırla</Text>
+          <Pressable onPress={handleReset} style={[styles.actionBtn, { borderColor: 'rgba(255,255,255,.15)' }]}>
+            <Text style={[{ fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,.4)' }]}>↺ Sıfırla</Text>
           </Pressable>
         </View>
 
-        <View style={styles.historyBox}>
-          <Text style={styles.historyTitle}>Kayıtlı zikirler</Text>
-          {presets.map((phrase) => {
-            const data =
-              presetData[phrase] ?? { count: 0, target: 33, history: [] };
-            const totalForPhrase = (data.history ?? []).reduce(
-              (sum, h) => sum + h.count,
-              0,
-            );
+        {/* Stats */}
+        <View style={styles.statsCard}>
+          <Text style={[{ fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,.4)', marginBottom: spacing.md, letterSpacing: 1 }]}>TOPLAM İSTATİSTİK</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNum}>{totalZikr}</Text>
+              <Text style={styles.statLabel}>Toplam Zikir</Text>
+            </View>
+            <View style={[styles.statDivider]} />
+            <View style={styles.statItem}>
+              <Text style={styles.statNum}>{current.history.length}</Text>
+              <Text style={styles.statLabel}>Oturum</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statNum}>{presets.length}</Text>
+              <Text style={styles.statLabel}>Zikir</Text>
+            </View>
+          </View>
+        </View>
 
-            return (
-              <View key={phrase} style={styles.historyGroup}>
-                <View style={styles.historyGroupHeader}>
-                  <Text style={styles.historyPhrase}>{phrase}</Text>
-                  <Text style={styles.historySummary}>
-                    Toplam: {totalForPhrase} zikir
-                  </Text>
-                </View>
-                {(data.history ?? []).slice(0, 3).map((entry) => (
-                  <View key={entry.id} style={styles.historyItem}>
-                    <Text style={styles.historyCount}>{entry.count}</Text>
-                    <Text style={styles.historyTime}>
-                      {new Date(entry.timestamp).toLocaleString()}
-                    </Text>
-                  </View>
-                ))}
+        {/* History */}
+        {current.history.length > 0 && (
+          <View style={styles.historyCard}>
+            <Text style={[{ fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,.4)', marginBottom: spacing.sm, letterSpacing: 1 }]}>SON OTURUMLAR</Text>
+            {current.history.slice(0, 5).map((h) => (
+              <View key={h.id} style={styles.historyRow}>
+                <Text style={[{ fontSize: 13, fontWeight: '700', color: palette.gold400 }]}>{h.count}</Text>
+                <Text style={[{ fontSize: 11, color: 'rgba(255,255,255,.35)' }]}>{new Date(h.timestamp).toLocaleString('tr-TR')}</Text>
               </View>
-            );
-          })}
+            ))}
+          </View>
+        )}
+
+        {/* Add new zikir */}
+        <View style={styles.addCard}>
+          <Text style={[{ fontSize: 12, color: 'rgba(255,255,255,.4)', marginBottom: spacing.sm }]}>Yeni zikir ekle</Text>
+          <View style={styles.addRow}>
+            <TextInput
+              value={newPhrase} onChangeText={setNewPhrase}
+              placeholder="Zikir adı..." placeholderTextColor="rgba(255,255,255,.25)"
+              style={[styles.addInput]}
+              editable={isLoaded}
+            />
+            <Pressable onPress={handleAddPreset} style={styles.addBtn}>
+              <Text style={[{ fontSize: 12, fontWeight: '700', color: '#fff' }]}>Ekle</Text>
+            </Pressable>
+          </View>
         </View>
-      </Card>
-    </ScrollView>
+
+        <View style={{ height: spacing.xxl }} />
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
-    paddingBottom: spacing.xl,
-    alignItems: 'stretch',
-  },
-  card: {
-    alignItems: 'center',
-  },
-  title: {
-    ...textStyles.heading1,
-    textAlign: 'center',
-  },
-  subtitle: {
-    marginTop: spacing.sm,
-    ...textStyles.caption,
-    textAlign: 'center',
-  },
-  phraseBox: {
-    marginTop: spacing.lg,
-    width: '100%',
-  },
-  phraseLabel: {
-    ...textStyles.caption,
-    marginBottom: spacing.xs,
-  },
-  phraseInput: {
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.textDark,
-    backgroundColor: colors.card,
-    flex: 1,
-    minWidth: 0,
-  },
-  presetRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  presetPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  presetPillActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primarySoft,
-  },
-  presetPillPressed: {
-    backgroundColor: '#E5F2ED',
-  },
-  presetPillText: {
-    ...textStyles.caption,
-    color: colors.textSoft,
-  },
-  presetPillTextActive: {
-    color: colors.primaryDark,
-    fontWeight: '500',
-  },
-  addRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  addButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 999,
-    backgroundColor: colors.primary,
-  },
-  addButtonPressed: {
-    backgroundColor: colors.primaryDark,
-  },
-  addButtonText: {
-    ...textStyles.caption,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  editRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  editButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primary,
-  },
-  editButtonPressed: {
-    backgroundColor: colors.primarySoft,
-  },
-  editButtonText: {
-    ...textStyles.caption,
-    color: colors.primaryDark,
-  },
-  deleteButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#F97316',
-  },
-  deleteButtonPressed: {
-    backgroundColor: 'rgba(248, 113, 113, 0.15)',
-  },
-  deleteButtonConfirm: {
-    borderColor: '#EF4444',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-  },
-  deleteButtonText: {
-    ...textStyles.caption,
-    color: '#F97316',
-  },
-  progressCircle: {
-    marginTop: spacing.xl,
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    borderWidth: 4,
-    borderColor: colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.card,
-  },
-  progressInner: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: colors.card,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  countText: {
-    ...textStyles.hero,
-    fontSize: 32,
-  },
-  targetText: {
-    ...textStyles.caption,
-    marginTop: spacing.xs,
-  },
-  percentText: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
-    color: colors.primary,
-  },
-  targetRow: {
-    marginTop: spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    justifyContent: 'center',
-  },
-  targetLabel: {
-    ...textStyles.caption,
-  },
-  targetPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  targetPillActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primarySoft,
-  },
-  targetPillPressed: {
-    backgroundColor: '#E5F2ED',
-  },
-  targetPillText: {
-    ...textStyles.caption,
-  },
-  targetPillTextActive: {
-    color: colors.primaryDark,
-  },
-  mainButtonWrapper: {
-    marginTop: spacing.lg,
-    width: '100%',
-  },
-  mainButton: {
-    width: '100%',
-  },
-  actionsRow: {
-    marginTop: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  saveButton: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#22C55E',
-  },
-  saveButtonText: {
-    ...textStyles.caption,
-    color: '#22C55E',
-  },
-  resetButton: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  resetButtonText: {
-    ...textStyles.caption,
-    color: colors.textSoft,
-  },
-  historyBox: {
-    marginTop: spacing.lg,
-    width: '100%',
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-    padding: spacing.md,
-    backgroundColor: colors.card,
-  },
-  historyTitle: {
-    ...textStyles.caption,
-    fontWeight: '600',
-    color: colors.textDark,
-  },
-  historyGroup: {
-    marginTop: spacing.sm,
-    paddingTop: spacing.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.primarySoft,
-  },
-  historyGroupHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xs,
-  },
-  historyPhrase: {
-    ...textStyles.caption,
-    fontWeight: '500',
-    color: colors.textDark,
-  },
-  historySummary: {
-    fontSize: 11,
-    color: colors.textSoft,
-  },
-  historyItem: {
-    marginTop: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  historyCount: {
-    ...textStyles.body,
-    fontWeight: '600',
-  },
-  historyTime: {
-    fontSize: 11,
-    color: colors.textSoft,
-  },
+  root:          { flex: 1 },
+  content:       { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, alignItems: 'center' },
+  phraseRow:     { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'center', marginBottom: spacing.md },
+  phrasePill:    { paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: radii.full, borderWidth: 1, borderColor: 'rgba(255,255,255,.1)' },
+  phrasePillActive: { borderColor: `${palette.gold500}50`, backgroundColor: `${palette.gold500}12` },
+  arabicText:    { fontFamily: 'serif', fontSize: 28, color: palette.gold400, textAlign: 'center', direction: 'rtl' as any, marginBottom: spacing.lg, lineHeight: 48 },
+  counterWrap:   { width: 180, height: 180, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.xl, position: 'relative' },
+  ringOuter:     { width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,.04)', borderWidth: 3, borderColor: 'rgba(255,255,255,.08)', alignItems: 'center', justifyContent: 'center' },
+  ringInner:     { alignItems: 'center' },
+  countNum:      { fontSize: 52, fontWeight: '800', color: '#fff', letterSpacing: -2, lineHeight: 56 },
+  countTarget:   { fontSize: 14, color: 'rgba(255,255,255,.35)', marginTop: 2 },
+  countPercent:  { fontSize: 12, color: palette.gold400, fontWeight: '700', marginTop: 4 },
+  progressArc:   { borderRadius: 90, borderWidth: 3, margin: 5 },
+  tapBtn:        { marginBottom: spacing.lg },
+  tapBtnGrad:    { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: `${palette.gold500}40` },
+  targetRow:     { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg },
+  targetPill:    { paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: radii.full, borderWidth: 1, borderColor: 'rgba(255,255,255,.1)' },
+  actionRow:     { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.xl },
+  actionBtn:     { paddingHorizontal: spacing.xl, paddingVertical: spacing.sm, borderRadius: radii.full, borderWidth: 1 },
+  statsCard:     { width: '100%', backgroundColor: 'rgba(255,255,255,.04)', borderRadius: radii.xl, padding: spacing.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,.08)', marginBottom: spacing.md },
+  statsRow:      { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
+  statItem:      { alignItems: 'center' },
+  statNum:       { fontSize: 26, fontWeight: '800', color: palette.gold400 },
+  statLabel:     { fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 4 },
+  statDivider:   { width: 1, height: 40, backgroundColor: 'rgba(255,255,255,.08)' },
+  historyCard:   { width: '100%', backgroundColor: 'rgba(255,255,255,.04)', borderRadius: radii.xl, padding: spacing.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,.08)', marginBottom: spacing.md },
+  historyRow:    { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.sm, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(255,255,255,.06)' },
+  addCard:       { width: '100%', backgroundColor: 'rgba(255,255,255,.04)', borderRadius: radii.xl, padding: spacing.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,.08)' },
+  addRow:        { flexDirection: 'row', gap: spacing.sm },
+  addInput:      { flex: 1, backgroundColor: 'rgba(255,255,255,.06)', borderRadius: radii.full, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, color: '#fff', borderWidth: 1, borderColor: 'rgba(255,255,255,.1)' },
+  addBtn:        { backgroundColor: palette.green600, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radii.full },
 });
-

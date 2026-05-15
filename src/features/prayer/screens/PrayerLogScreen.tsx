@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors, spacing, textStyles } from '../../../theme/designSystem';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { spacing } from '../../../core/theme/tokens';
 import { Card } from '../../../shared/components/Card';
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
 
@@ -35,6 +36,10 @@ function formatDateHuman(date: Date) {
 }
 
 export default function PrayerLogScreen() {
+  const { theme } = useTheme();
+  const c = theme.colors;
+  const t = theme.text;
+
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [log, setLog] = useState<LogState>({});
   const [isLoaded, setIsLoaded] = useState(false);
@@ -115,8 +120,8 @@ export default function PrayerLogScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Card style={[styles.card, styles.headerCard]}>
-          <Text style={styles.title}>Namaz Hatıra Defteri</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[t.heading1, { color: c.text }]}>Namaz Hatıra Defteri</Text>
+          <Text style={[t.caption, { marginTop: spacing.xs, color: c.textSecondary }]}>
             Hangi gün hangi vakitleri kıldığını veya kaza ettiğini işaretle;
             düzenini zaman içinde takip et.
           </Text>
@@ -126,51 +131,53 @@ export default function PrayerLogScreen() {
               onPress={() => handleChangeDay(-1)}
               style={({ pressed }) => [
                 styles.dateButton,
-                pressed && styles.dateButtonPressed,
+                { borderColor: c.primarySoft },
+                pressed && { backgroundColor: '#E5F2ED' },
               ]}
             >
-              <Text style={styles.dateButtonText}>{'‹'}</Text>
+              <Text style={{ fontSize: 16, color: c.textSecondary }}>{'‹'}</Text>
             </Pressable>
             <View style={styles.dateCenter}>
-              <Text style={styles.dateText}>{formatDateHuman(selectedDate)}</Text>
-              <Text style={styles.dateKeyText}>{dateKey}</Text>
+              <Text style={[t.body, { fontWeight: '600', color: c.text }]}>{formatDateHuman(selectedDate)}</Text>
+              <Text style={{ marginTop: spacing.xs, fontSize: 11, color: c.textSecondary }}>{dateKey}</Text>
             </View>
             <Pressable
               onPress={() => handleChangeDay(1)}
               style={({ pressed }) => [
                 styles.dateButton,
-                pressed && styles.dateButtonPressed,
+                { borderColor: c.primarySoft },
+                pressed && { backgroundColor: '#E5F2ED' },
               ]}
             >
-              <Text style={styles.dateButtonText}>{'›'}</Text>
+              <Text style={{ fontSize: 16, color: c.textSecondary }}>{'›'}</Text>
             </Pressable>
           </View>
 
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryText}>
+            <Text style={[t.caption, { color: c.textSecondary }]}>
               Kılınan: {prayedCount} / {PRAYERS.length}
             </Text>
-            <Text style={styles.summaryText}>Kaza: {qadaCount}</Text>
+            <Text style={[t.caption, { color: c.textSecondary }]}>Kaza: {qadaCount}</Text>
           </View>
 
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.legendDotPrayed]} />
-              <Text style={styles.legendText}>Kılındı</Text>
+              <View style={[styles.legendDot, { backgroundColor: 'rgba(34, 197, 94, 0.9)', borderColor: c.primarySoft }]} />
+              <Text style={[t.caption, { color: c.textSecondary }]}>Kılındı</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.legendDotQada]} />
-              <Text style={styles.legendText}>Kaza</Text>
+              <View style={[styles.legendDot, { backgroundColor: 'rgba(234, 179, 8, 0.9)', borderColor: c.primarySoft }]} />
+              <Text style={[t.caption, { color: c.textSecondary }]}>Kaza</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.legendDotNone]} />
-              <Text style={styles.legendText}>Belirtilmedi</Text>
+              <View style={[styles.legendDot, { backgroundColor: 'transparent', borderColor: c.primarySoft }]} />
+              <Text style={[t.caption, { color: c.textSecondary }]}>Belirtilmedi</Text>
             </View>
           </View>
         </Card>
 
         <Card style={styles.card}>
-          <View style={styles.list}>
+          <View style={[styles.list, { borderColor: c.primarySoft }]}>
             {PRAYERS.map((p) => {
               const status = dayLog[p.id];
               return (
@@ -179,20 +186,21 @@ export default function PrayerLogScreen() {
                   onPress={() => handleToggleStatus(p.id)}
                   style={({ pressed }) => [
                     styles.row,
-                    status === 'prayed' && styles.rowPrayed,
-                    status === 'qada' && styles.rowQada,
-                    pressed && styles.rowPressed,
+                    { backgroundColor: c.surface, borderBottomColor: c.primarySoft },
+                    status === 'prayed' && { backgroundColor: 'rgba(34, 197, 94, 0.08)' },
+                    status === 'qada' && { backgroundColor: 'rgba(234, 179, 8, 0.08)' },
+                    pressed && { backgroundColor: '#F1F5F3' },
                   ]}
                 >
                   <View style={styles.rowLeft}>
-                    <Text style={styles.rowLabel}>{p.label}</Text>
-                    <Text style={styles.rowHint}>
+                    <Text style={[t.body, { color: c.text }]}>{p.label}</Text>
+                    <Text style={[t.caption, { marginTop: 2, color: c.textSecondary }]}>
                       Sırayla: Kılındı → Kaza → Boş
                     </Text>
                   </View>
                   <View style={styles.rowRight}>
-                    <View style={styles.statusPill}>
-                      <Text style={styles.statusText}>
+                    <View style={[styles.statusPill, { borderColor: c.primarySoft }]}>
+                      <Text style={[t.caption, { color: c.textSecondary }]}>
                         {status === 'none'
                           ? 'Belirtilmedi'
                           : status === 'prayed'
@@ -207,7 +215,7 @@ export default function PrayerLogScreen() {
           </View>
 
           {!isLoaded && (
-            <Text style={styles.infoText}>
+            <Text style={[t.caption, { marginTop: spacing.sm, color: c.textSecondary }]}>
               Kayıtlar yükleniyor, lütfen bekle...
             </Text>
           )}
@@ -234,13 +242,6 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
     paddingBottom: spacing.lg,
   },
-  title: {
-    ...textStyles.heading1,
-  },
-  subtitle: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
-  },
   dateRow: {
     marginTop: spacing.lg,
     flexDirection: 'row',
@@ -252,38 +253,18 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  dateButtonPressed: {
-    backgroundColor: '#E5F2ED',
-  },
-  dateButtonText: {
-    fontSize: 16,
-    color: colors.textSoft,
   },
   dateCenter: {
     flex: 1,
     alignItems: 'center',
-  },
-  dateText: {
-    ...textStyles.body,
-    fontWeight: '600',
-  },
-  dateKeyText: {
-    marginTop: spacing.xs,
-    fontSize: 11,
-    color: colors.textSoft,
   },
   summaryRow: {
     marginTop: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  summaryText: {
-    ...textStyles.caption,
   },
   legendRow: {
     marginTop: spacing.md,
@@ -301,25 +282,11 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  legendDotPrayed: {
-    backgroundColor: 'rgba(34, 197, 94, 0.9)',
-  },
-  legendDotQada: {
-    backgroundColor: 'rgba(234, 179, 8, 0.9)',
-  },
-  legendDotNone: {
-    backgroundColor: 'transparent',
-  },
-  legendText: {
-    ...textStyles.caption,
   },
   list: {
     marginTop: spacing.lg,
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
     overflow: 'hidden',
   },
   row: {
@@ -328,29 +295,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.card,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.primarySoft,
-  },
-  rowPressed: {
-    backgroundColor: '#F1F5F3',
-  },
-  rowPrayed: {
-    backgroundColor: 'rgba(34, 197, 94, 0.08)',
-  },
-  rowQada: {
-    backgroundColor: 'rgba(234, 179, 8, 0.08)',
-  },
-  rowLabel: {
-    ...textStyles.body,
   },
   rowLeft: {
     flex: 1,
-  },
-  rowHint: {
-    marginTop: 2,
-    ...textStyles.caption,
-    color: colors.textSoft,
   },
   rowRight: {
     flexDirection: 'row',
@@ -361,14 +309,5 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  statusText: {
-    ...textStyles.caption,
-  },
-  infoText: {
-    marginTop: spacing.sm,
-    ...textStyles.caption,
   },
 });
-

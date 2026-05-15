@@ -21,6 +21,8 @@ import AnalyticsScreen from '../features/analytics/screens/AnalyticsScreen';
 import GoalsScreen from '../features/goals/screens/GoalsScreen';
 import RisaleNurScreen from '../features/risale/screens/RisaleNurScreen';
 import SettingsScreen from '../features/settings/screens/SettingsScreen';
+import RamadanTrackerScreen from '../features/ramadan/screens/RamadanTrackerScreen';
+import PrayerProgressScreen from '../features/progress/screens/PrayerProgressScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -57,6 +59,8 @@ export default function RootNavigator() {
         <Stack.Screen name="Goals"          component={GoalsScreen}           options={{ title: 'Hedeflerim' }} />
         <Stack.Screen name="RisaleNur"      component={RisaleNurScreen}       options={{ title: 'Risale-i Nur' }} />
         <Stack.Screen name="Settings"       component={SettingsScreen}        options={{ title: 'Ayarlar' }} />
+        <Stack.Screen name="RamadanTracker" component={RamadanTrackerScreen}  options={{ title: 'Ramazan Takibi' }} />
+        <Stack.Screen name="PrayerProgress" component={PrayerProgressScreen}  options={{ title: 'Namaz İlerlemesi' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,269 +1,117 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors, spacing, textStyles } from '../../../theme/designSystem';
-import { Card } from '../../../shared/components/Card';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 
-type Dua = {
-  id: string;
-  category: 'sabah' | 'aksam' | 'gunluk';
-  title: string;
-  arabic: string;
-  translation: string;
-};
+type Dua = { id: string; category: 'sabah' | 'aksam' | 'gunluk'; title: string; arabic: string; translation: string };
 
 const DUAS: Dua[] = [
-  {
-    id: 'sabah-1',
-    category: 'sabah',
-    title: 'Sabah Tesbihi',
-    arabic:
-      'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ سُبْحَانَ اللَّهِ الْعَظِيمِ',
-    translation: 'Allah’ı noksan sıfatlardan tenzih eder ve O’nu hamd ile anarım.',
-  },
-  {
-    id: 'aksam-1',
-    category: 'aksam',
-    title: 'Akşam Korunma Duası',
-    arabic:
-      'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ',
-    translation:
-      'Allah’ın eksiksiz kelimelerine, O’nun yarattıklarının şerrinden sığınırım.',
-  },
-  {
-    id: 'gunluk-1',
-    category: 'gunluk',
-    title: 'Eve Girerken',
-    arabic:
-      'بِسْمِ اللَّهِ وَلَجْنَا وَبِسْمِ اللَّهِ خَرَجْنَا وَعَلَى رَبِّنَا تَوَكَّلْنَا',
-    translation:
-      'Allah’ın adıyla girdik, Allah’ın adıyla çıkarız ve Rabbimize tevekkül ettik.',
-  },
-  {
-    id: 'gunluk-2',
-    category: 'gunluk',
-    title: 'Evden Çıkarken',
-    arabic:
-      'بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ',
-    translation:
-      'Allah’ın adıyla (evden çıkıyorum). Allah’a tevekkül ettim. Güç ve kuvvet yalnız Allah iledir.',
-  },
-  {
-    id: 'sabah-2',
-    category: 'sabah',
-    title: 'Sabah Korunma Duası',
-    arabic:
-      'اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ',
-    translation:
-      'Allah’ım, seninle sabahladık, seninle akşamladık, seninle yaşar, seninle ölürüz ve dönüş sanadır.',
-  },
-  {
-    id: 'aksam-2',
-    category: 'aksam',
-    title: 'Akşam Tesbihi',
-    arabic:
-      'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ',
-    translation:
-      'Allah’ım, sen benim Rabbimsin, senden başka ilah yoktur; beni sen yarattın, ben senin kulunum. (Kısa bir bölüm)',
-  },
+  { id: 'sabah-1', category: 'sabah', title: 'Sabah Tesbihi', arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ سُبْحَانَ اللَّهِ الْعَظِيمِ', translation: 'Allah\'ı noksan sıfatlardan tenzih eder ve O\'nu hamd ile anarım.' },
+  { id: 'aksam-1', category: 'aksam', title: 'Akşam Korunma Duası', arabic: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ', translation: 'Allah\'ın eksiksiz kelimelerine, O\'nun yarattıklarının şerrinden sığınırım.' },
+  { id: 'gunluk-1', category: 'gunluk', title: 'Eve Girerken', arabic: 'بِسْمِ اللَّهِ وَلَجْنَا وَبِسْمِ اللَّهِ خَرَجْنَا وَعَلَى رَبِّنَا تَوَكَّلْنَا', translation: 'Allah\'ın adıyla girdik, Allah\'ın adıyla çıkarız ve Rabbimize tevekkül ettik.' },
+  { id: 'gunluk-2', category: 'gunluk', title: 'Evden Çıkarken', arabic: 'بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', translation: 'Allah\'ın adıyla çıkıyorum. Allah\'a tevekkül ettim. Güç ve kuvvet yalnız Allah iledir.' },
+  { id: 'sabah-2', category: 'sabah', title: 'Sabah Korunma Duası', arabic: 'اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ', translation: 'Allah\'ım, seninle sabahladık, seninle akşamladık, seninle yaşar, seninle ölürüz ve dönüş sanadır.' },
+  { id: 'aksam-2', category: 'aksam', title: 'Akşam Tesbihi', arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ', translation: 'Allah\'ım, sen benim Rabbimsin, senden başka ilah yoktur; beni sen yarattın, ben senin kulunum.' },
+  { id: 'gunluk-3', category: 'gunluk', title: 'Yemek Duası', arabic: 'بِسْمِ اللَّهِ وَعَلَى بَرَكَةِ اللَّهِ', translation: 'Allah\'ın adıyla ve Allah\'ın bereketi üzere.' },
+  { id: 'sabah-3', category: 'sabah', title: 'Seyyidül İstiğfar', arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ وَأَنَا عَلَى عَهْدِكَ', translation: 'Allah\'ım! Sen benim Rabbimsin, senden başka ilah yoktur. Beni sen yarattın, ben senin kulun ve ahdindeyim.' },
 ];
 
+const CATEGORY_COLORS: Record<string, { bg: string; text: string; emoji: string }> = {
+  sabah: { bg: `${palette.gold500}20`, text: palette.gold400, emoji: '🌅' },
+  aksam: { bg: `${palette.green500}20`, text: palette.green300, emoji: '🌙' },
+  gunluk: { bg: 'rgba(139,92,246,.2)', text: '#A78BFA', emoji: '☀️' },
+};
+
 export default function DuasScreen() {
-  const [activeCategory, setActiveCategory] = useState<
-    'hepsi' | 'sabah' | 'aksam' | 'gunluk'
-  >('hepsi');
-  const [fontScale, setFontScale] = useState<'small' | 'medium' | 'large'>(
-    'medium',
-  );
+  const { theme } = useTheme();
+  const c = theme.colors;
+  const t = theme.text;
+
+  const [activeCategory, setActiveCategory] = useState<'hepsi' | 'sabah' | 'aksam' | 'gunluk'>('hepsi');
+  const [fontScale, setFontScale] = useState<'small' | 'medium' | 'large'>('medium');
 
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const raw = await AsyncStorage.getItem('app-settings-v1');
-        if (raw) {
-          const parsed = JSON.parse(raw) as { fontScale?: string };
-          if (
-            parsed.fontScale === 'small' ||
-            parsed.fontScale === 'medium' ||
-            parsed.fontScale === 'large'
-          ) {
-            setFontScale(parsed.fontScale);
-          }
-        }
-      } catch {
-        // ignore
+    AsyncStorage.getItem('app-settings-v2').then((raw) => {
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (['small', 'medium', 'large'].includes(p.fontScale)) setFontScale(p.fontScale);
       }
-    };
-
-    loadSettings();
+    });
   }, []);
 
-  const fontMultiplier =
-    fontScale === 'small' ? 0.9 : fontScale === 'large' ? 1.15 : 1;
+  const fontMult = fontScale === 'small' ? 0.9 : fontScale === 'large' ? 1.15 : 1;
+  const filteredDuas = useMemo(() => activeCategory === 'hepsi' ? DUAS : DUAS.filter((d) => d.category === activeCategory), [activeCategory]);
 
-  const filteredDuas = useMemo(() => {
-    if (activeCategory === 'hepsi') return DUAS;
-    return DUAS.filter((d) => d.category === activeCategory);
-  }, [activeCategory]);
+  const tabs = [
+    { id: 'hepsi' as const, label: 'Hepsi', emoji: '📚' },
+    { id: 'sabah' as const, label: 'Sabah', emoji: '🌅' },
+    { id: 'aksam' as const, label: 'Akşam', emoji: '🌙' },
+    { id: 'gunluk' as const, label: 'Günlük', emoji: '☀️' },
+  ];
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <Card style={styles.headerCard}>
-        <Text style={styles.title}>Günlük Dualar</Text>
-        <Text style={styles.subtitle}>
-          Sabah-akşam ve günlük hayatta sık okunan bazı temel dualar. Kategori
-          butonlarıyla filtreleyebilirsin.
-        </Text>
-      </Card>
+    <ScrollView style={[styles.root, { backgroundColor: c.background }]} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
+      {/* Hero */}
+      <LinearGradient colors={[c.heroGradientStart, c.heroGradientEnd] as [string, string]} style={styles.hero}>
+        <Text style={[{ fontSize: 28, fontWeight: '800', color: '#fff', letterSpacing: -0.5 }]}>🤲 Günlük Dualar</Text>
+        <Text style={[t.caption, { color: 'rgba(255,255,255,.6)', marginTop: spacing.xs }]}>Sabah-akşam ve günlük hayatta okunacak dualar</Text>
+      </LinearGradient>
+
+      {/* Category tabs */}
       <View style={styles.tabsRow}>
-        {[
-          { id: 'hepsi' as const, label: 'Hepsi' },
-          { id: 'sabah' as const, label: 'Sabah' },
-          { id: 'aksam' as const, label: 'Akşam' },
-          { id: 'gunluk' as const, label: 'Günlük' },
-        ].map((tab) => (
-          <Pressable
-            key={tab.id}
-            onPress={() => setActiveCategory(tab.id)}
-            style={({ pressed }) => [
-              styles.tabPill,
-              activeCategory === tab.id && styles.tabPillActive,
-              pressed && styles.tabPillPressed,
-            ]}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeCategory === tab.id && styles.tabTextActive,
-              ]}
-            >
-              {tab.label}
-            </Text>
+        {tabs.map((tab) => (
+          <Pressable key={tab.id} onPress={() => setActiveCategory(tab.id)}
+            style={({ pressed }) => [styles.tab, activeCategory === tab.id && { backgroundColor: c.primarySoft, borderColor: c.primary }, pressed && { opacity: 0.75 }]}>
+            <Text style={{ fontSize: 14 }}>{tab.emoji}</Text>
+            <Text style={[t.captionBold, { color: activeCategory === tab.id ? c.primary : c.textSecondary }]}>{tab.label}</Text>
           </Pressable>
         ))}
       </View>
 
-      {filteredDuas.map((dua) => (
-        <Card key={dua.id} style={styles.duaCard}>
-          <View style={styles.duaHeader}>
-            <View style={styles.categoryPill}>
-              <Text style={styles.categoryText}>
-                {dua.category === 'sabah'
-                  ? 'Sabah'
-                  : dua.category === 'aksam'
-                  ? 'Akşam'
-                  : 'Günlük'}
+      {/* Dua cards */}
+      {filteredDuas.map((dua) => {
+        const cat = CATEGORY_COLORS[dua.category];
+        return (
+          <View key={dua.id} style={[styles.duaCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+            <View style={styles.duaHeader}>
+              <View style={[styles.catBadge, { backgroundColor: cat.bg }]}>
+                <Text style={[{ fontSize: 10, fontWeight: '700', color: cat.text }]}>{cat.emoji} {dua.category === 'sabah' ? 'Sabah' : dua.category === 'aksam' ? 'Akşam' : 'Günlük'}</Text>
+              </View>
+              <Text style={[t.bodyBold, { color: c.text, flex: 1 }]}>{dua.title}</Text>
+            </View>
+
+            {/* Arabic */}
+            <View style={[styles.arabicBox, { backgroundColor: `${palette.gold500}08`, borderColor: `${palette.gold500}20` }]}>
+              <Text style={[styles.arabic, { fontSize: 20 * fontMult, color: theme.dark ? palette.gold300 : palette.gold500 }]}>
+                {dua.arabic}
               </Text>
             </View>
-            <Text style={styles.duaTitle}>{dua.title}</Text>
+
+            {/* Translation */}
+            <Text style={[t.caption, { color: c.textSecondary, lineHeight: 20, fontSize: 13 * fontMult, marginTop: spacing.sm }]}>
+              {dua.translation}
+            </Text>
           </View>
-          <Text
-            style={[
-              styles.duaArabic,
-              { fontSize: 18 * fontMultiplier },
-            ]}
-          >
-            {dua.arabic}
-          </Text>
-          <Text
-            style={[
-              styles.duaTranslation,
-              {
-                fontSize: 13 * fontMultiplier,
-              },
-            ]}
-          >
-            {dua.translation}
-          </Text>
-        </Card>
-      ))}
+        );
+      })}
+
+      <View style={{ height: spacing.xxl }} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
-    paddingBottom: spacing.xl,
-  },
-  headerCard: {
-    marginBottom: spacing.md,
-  },
-  title: {
-    ...textStyles.heading1,
-  },
-  subtitle: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
-  },
-  tabsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  tabPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  tabPillActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primarySoft,
-  },
-  tabPillPressed: {
-    backgroundColor: '#E5F2ED',
-  },
-  tabText: {
-    ...textStyles.caption,
-    color: colors.textSoft,
-  },
-  tabTextActive: {
-    color: colors.primaryDark,
-    fontWeight: '600',
-  },
-  duaCard: {
-    marginTop: spacing.md,
-  },
-  duaHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-    gap: spacing.sm,
-  },
-  categoryPill: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    backgroundColor: colors.primarySoft,
-  },
-  categoryText: {
-    fontSize: 11,
-    color: colors.primary,
-  },
-  duaTitle: {
-    ...textStyles.body,
-    fontWeight: '600',
-  },
-  duaArabic: {
-    ...textStyles.arabic,
-    marginTop: spacing.xs,
-  },
-  duaTranslation: {
-    marginTop: spacing.sm,
-    ...textStyles.caption,
-  },
+  root:      { flex: 1 },
+  content:   { paddingBottom: spacing.xxl },
+  hero:      { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.lg },
+  tabsRow:   { flexDirection: 'row', paddingHorizontal: spacing.lg, gap: spacing.sm, marginVertical: spacing.md },
+  tab:       { flex: 1, alignItems: 'center', gap: 4, paddingVertical: spacing.sm, borderRadius: radii.lg, borderWidth: 1, borderColor: 'transparent' },
+  duaCard:   { marginHorizontal: spacing.lg, marginBottom: spacing.md, borderRadius: radii.xl, padding: spacing.lg, borderWidth: StyleSheet.hairlineWidth, ...shadows.card },
+  duaHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
+  catBadge:  { paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radii.full },
+  arabicBox: { borderRadius: radii.lg, padding: spacing.md, borderWidth: 1, marginVertical: spacing.sm },
+  arabic:    { textAlign: 'right', lineHeight: 42, direction: 'rtl' as any },
 });
-

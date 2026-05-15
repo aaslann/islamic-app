@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors, spacing, textStyles } from '../../../theme/designSystem';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { spacing } from '../../../core/theme/tokens';
 import { Card } from '../../../shared/components/Card';
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
 
@@ -40,6 +41,10 @@ function getDateKey(d: Date) {
 }
 
 export default function GoalsScreen() {
+  const { theme } = useTheme();
+  const c = theme.colors;
+  const t = theme.text;
+
   const [prayerLog, setPrayerLog] = useState<PrayerLogState>({});
   const [zikrState, setZikrState] = useState<ZikrState | null>(null);
   const [quranDaily, setQuranDaily] = useState<QuranDailyState>({});
@@ -140,20 +145,25 @@ export default function GoalsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Card style={[styles.card, styles.headerCard]}>
-          <Text style={styles.title}>Hedeflerim</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[t.heading1, { color: c.text }]}>Hedeflerim</Text>
+          <Text style={[t.caption, { marginTop: spacing.xs, color: c.textSecondary }]}>
             Günlük ibadet hedeflerini takip et; sabah namazı, zikir ve Kur&apos;an ile
             istikrarlı bir rutin oluştur.
           </Text>
         </Card>
 
         <Card style={styles.card}>
-          <Text style={styles.goalTitle}>30 Gün Sabah Namazı</Text>
-          <Text style={styles.goalSubtitle}>
+          <Text style={[t.heading2, { color: c.text }]}>30 Gün Sabah Namazı</Text>
+          <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
             Sabah namazını her gün vaktinde kılmaya yönelik hedef.
           </Text>
           <View style={styles.progressRow}>
-            <View style={styles.progressBarBackground}>
+            <View
+              style={[
+                styles.progressBarBackground,
+                { backgroundColor: c.surface, borderColor: c.primarySoft },
+              ]}
+            >
               <View
                 style={[
                   styles.progressBarFill,
@@ -161,43 +171,51 @@ export default function GoalsScreen() {
                 ]}
               />
             </View>
-            <Text style={styles.progressText}>
+            <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
               Seri: {sabahStreak} / 30 gün (en iyi: {sabahBestStreak})
             </Text>
           </View>
-          <Text style={styles.tipText}>
+          <Text style={{ marginTop: spacing.sm, fontSize: 11, color: c.textSecondary }}>
             Sabah hedefi, Namaz Hatıra Defteri&apos;nde sabah vakti &quot;Kılındı&quot;
             olarak işaretlendiğinde ilerler.
           </Text>
         </Card>
 
         <Card style={styles.card}>
-          <Text style={styles.goalTitle}>Günlük 100 Zikir</Text>
-          <Text style={styles.goalSubtitle}>
+          <Text style={[t.heading2, { color: c.text }]}>Günlük 100 Zikir</Text>
+          <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
             Bugün çektiğin toplam zikir sayısı. Hedef: 100.
           </Text>
           <View style={styles.progressRow}>
-            <View style={styles.progressBarBackground}>
+            <View
+              style={[
+                styles.progressBarBackground,
+                { backgroundColor: c.surface, borderColor: c.primarySoft },
+              ]}
+            >
               <View
                 style={[
                   styles.progressBarFillZikr,
-                  { width: `${Math.min((zikrToday / zikrTarget) * 100, 100)}%` },
+                  {
+                    backgroundColor: c.primary,
+                    width: `${Math.min((zikrToday / zikrTarget) * 100, 100)}%`,
+                  },
                 ]}
               />
             </View>
-            <Text style={styles.progressText}>
+            <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
               {zikrToday} / {zikrTarget}
             </Text>
           </View>
-          <Text style={styles.tipText}>
+          <Text style={{ marginTop: spacing.sm, fontSize: 11, color: c.textSecondary }}>
             Zikir hedefi, Zikir Sayacı ekranında &quot;Kaydet&quot; ile
             oluşturduğun günlük kayıtlarla artar.
           </Text>
         </Card>
 
         <Card style={styles.card}>
-          <Text style={styles.goalTitle}>Günlük 1 Sayfa Kur&apos;an</Text>
-          <Text style={styles.goalSubtitle}>
+          <Text style={[t.heading2, { color: c.text }]}>Günlük 1 Sayfa Kur&apos;an</Text>
+          <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
             Her gün en az bir sayfa Kur&apos;an okumayı hedefle.
           </Text>
           <View style={styles.row}>
@@ -205,13 +223,14 @@ export default function GoalsScreen() {
               onPress={toggleQuranToday}
               style={({ pressed }) => [
                 styles.quranToggle,
+                { borderColor: c.primarySoft },
                 quranTodayCompleted && styles.quranToggleActive,
-                pressed && styles.quranTogglePressed,
+                pressed && { backgroundColor: '#E5F2ED' },
               ]}
             >
               <Text
                 style={[
-                  styles.quranToggleText,
+                  { fontSize: 12, color: c.textSecondary },
                   quranTodayCompleted && styles.quranToggleTextActive,
                 ]}
               >
@@ -221,7 +240,7 @@ export default function GoalsScreen() {
               </Text>
             </Pressable>
           </View>
-          <Text style={styles.tipText}>
+          <Text style={{ marginTop: spacing.sm, fontSize: 11, color: c.textSecondary }}>
             Okuduğun sayfa sayısını Kur&apos;an ekranından değil, şimdilik bu
             ekrandan işaretliyorsun. İleride doğrudan okuma ekranına bağlanabilir.
           </Text>
@@ -249,30 +268,13 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
     paddingBottom: spacing.lg,
   },
-  title: {
-    ...textStyles.heading1,
-  },
-  subtitle: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
-  },
-  goalTitle: {
-    ...textStyles.heading2,
-  },
-  goalSubtitle: {
-    marginTop: spacing.xs,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
   progressRow: {
     marginTop: spacing.sm,
   },
   progressBarBackground: {
     height: 10,
     borderRadius: 999,
-    backgroundColor: colors.card,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
     overflow: 'hidden',
   },
   progressBarFill: {
@@ -281,17 +283,7 @@ const styles = StyleSheet.create({
   },
   progressBarFillZikr: {
     height: '100%',
-    backgroundColor: colors.primary,
-  },
-  progressText: {
-    marginTop: spacing.xs,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  tipText: {
-    marginTop: spacing.sm,
-    fontSize: 11,
-    color: colors.textSoft,
+    // backgroundColor set inline via theme
   },
   row: {
     marginTop: spacing.sm,
@@ -303,22 +295,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
   },
   quranToggleActive: {
     borderColor: '#22C55E',
     backgroundColor: 'rgba(34, 197, 94, 0.15)',
-  },
-  quranTogglePressed: {
-    backgroundColor: '#E5F2ED',
-  },
-  quranToggleText: {
-    fontSize: 12,
-    color: colors.textSoft,
   },
   quranToggleTextActive: {
     color: '#22C55E',
     fontWeight: '600',
   },
 });
-
