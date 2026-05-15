@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { scheduleDailyPrayerNotifications } from '../../../core/notifications/prayerNotifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -149,20 +150,10 @@ export default function PrayerTimesScreen() {
     try {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== 'granted') { setErrorMessage('Bildirim izni verilmedi.'); return; }
-      await Notifications.cancelAllScheduledNotificationsAsync();
-      const today = new Date();
-      for (const item of times) {
-        const base = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const prayerDate = parseTimeToDate(item.time, base);
-        if (!prayerDate) continue;
-        const triggerDate = new Date(prayerDate.getTime());
-        triggerDate.setMinutes(triggerDate.getMinutes() - 15);
-        if (triggerDate <= now) continue;
-        await Notifications.scheduleNotificationAsync({
-          content: { title: 'Namaz Vakti Hatırlatıcı', body: `${item.label} vakti yaklaşıyor (${item.time}).`, sound: true },
-          trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: triggerDate },
-        });
-      }
+      await scheduleDailyPrayerNotifications(
+        times.map((item) => ({ id: item.id, label: item.label, time: item.time }))
+      );
+      setErrorMessage(null);
     } catch { setErrorMessage('Bildirimler planlanırken bir hata oluştu.'); }
   };
 

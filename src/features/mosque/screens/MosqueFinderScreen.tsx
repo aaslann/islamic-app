@@ -1,519 +1,235 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Linking,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
-import { colors, spacing, textStyles } from '../../../theme/designSystem';
-import { Card } from '../../../shared/components/Card';
-import { PrimaryButton } from '../../../shared/components/PrimaryButton';
-import { IslamicBackground } from '../../../shared/components/IslamicBackground';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 
-type Mosque = {
-  id: string;
-  name: string;
-  address?: string;
-  lat: number;
-  lon: number;
-  distanceKm: number;
-};
+type Mosque = { id: string; name: string; address?: string; lat: number; lon: number; distanceKm: number };
+type LoadState = 'idle' | 'loading' | 'success' | 'error' | 'permission-denied';
 
-type AladhanResponse = {
-  data?: {
-    timings?: {
-      Dhuhr?: string;
-    };
-  };
-};
-
-function haversineDistanceKm(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const R = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371, r = (d: number) => (d * Math.PI) / 180;
+  const dLat = r(lat2 - lat1), dLon = r(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(r(lat1)) * Math.cos(r(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function getNextFriday(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay(); // 0 pazar, 5 cuma
-  const diff = (5 - day + 7) % 7;
-  d.setDate(d.getDate() + diff);
+function getNextFriday(): Date {
+  const d = new Date();
+  d.setDate(d.getDate() + ((5 - d.getDay() + 7) % 7));
   d.setHours(12, 0, 0, 0);
   return d;
 }
 
-async function fetchFridayDhuhr(lat: number, lon: number): Promise<string> {
-  try {
-    const friday = getNextFriday(new Date());
-    const timestamp = Math.floor(friday.getTime() / 1000);
-    const url = `https://api.aladhan.com/v1/timings/${timestamp}?latitude=${lat}&longitude=${lon}&method=13&school=1`;
-    const res = await fetch(url);
-    const json = (await res.json()) as AladhanResponse;
-    const dhuhr = json.data?.timings?.Dhuhr;
-    return dhuhr ?? '';
-  } catch {
-    return '';
-  }
+async function fetchNearbyMosques(lat: number, lon: number): Promise<Mosque[]> {
+  const q = `[out:json];(node["amenity"="place_of_worship"]["religion"="muslim"](around:5000,${lat},${lon});way["amenity"="place_of_worship"]["religion"="muslim"](around:5000,${lat},${lon}););out center;`;
+  const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`);
+  const json = await res.json();
+  return ((json.elements ?? []) as any[])
+    .map((el: any) => {
+      const eLat = el.lat ?? el.center?.lat;
+      const eLon = el.lon ?? el.center?.lon;
+      if (eLat == null || eLon == null) return null;
+      const tags = el.tags ?? {};
+      return {
+        id: String(el.id),
+        name: tags['name:tr'] ?? tags.name ?? tags['name:en'] ?? 'İsimsiz Cami',
+        address: [tags['addr:street'], tags['addr:housenumber'], tags['addr:city']].filter(Boolean).join(' ') || undefined,
+        lat: eLat, lon: eLon,
+        distanceKm: haversine(lat, lon, eLat, eLon),
+      } as Mosque;
+    })
+    .filter((m): m is Mosque => m !== null)
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, 25);
 }
 
-async function fetchNearbyMosques(
-  lat: number,
-  lon: number,
-  radiusMeters = 3000,
-): Promise<Mosque[]> {
+async function fetchFridayDhuhr(lat: number, lon: number): Promise<string> {
   try {
-    const overpassQuery = `
-    [out:json];
-    (
-      node["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusMeters},${lat},${lon});
-      way["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusMeters},${lat},${lon});
-    );
-    out center;
-  `;
-
-    const res = await fetch(
-      `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(
-        overpassQuery,
-      )}`,
-    );
-
+    const ts = Math.floor(getNextFriday().getTime() / 1000);
+    const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=13&school=1`);
     const json = await res.json();
-
-    const elements = (json.elements ?? []) as Array<{
-      id: number;
-      lat?: number;
-      lon?: number;
-      center?: { lat: number; lon: number };
-      tags?: Record<string, string>;
-    }>;
-
-    const list: Mosque[] = elements
-      .map((el) => {
-        const centerLat = el.lat ?? el.center?.lat;
-        const centerLon = el.lon ?? el.center?.lon;
-        if (centerLat == null || centerLon == null) return null;
-
-        const tags = el.tags ?? {};
-        const name =
-          tags['name:tr'] ??
-          tags.name ??
-          tags['name:en'] ??
-          'İsimsiz Cami / Mescit';
-
-        const addressParts = [
-          tags['addr:street'],
-          tags['addr:housenumber'],
-          tags['addr:city'],
-        ].filter(Boolean);
-
-        const address =
-          addressParts.length > 0 ? addressParts.join(' ') : undefined;
-
-        const distanceKm = haversineDistanceKm(
-          lat,
-          lon,
-          centerLat,
-          centerLon,
-        );
-
-        return {
-          id: String(el.id),
-          name,
-          address,
-          lat: centerLat,
-          lon: centerLon,
-          distanceKm,
-        } as Mosque;
-      })
-      .filter((m): m is Mosque => m !== null)
-      .sort((a, b) => a.distanceKm - b.distanceKm)
-      .slice(0, 20);
-
-    return list;
-  } catch {
-    return [];
-  }
+    return json.data?.timings?.Dhuhr ?? '';
+  } catch { return ''; }
 }
 
 export default function MosqueFinderScreen() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { theme } = useTheme();
+  const c = theme.colors;
+  const t = theme.text;
+
+  const [loadState, setLoadState] = useState<LoadState>('idle');
   const [mosques, setMosques] = useState<Mosque[]>([]);
-  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(
-    null,
-  );
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [cityName, setCityName] = useState<string | null>(null);
   const [fridayDhuhr, setFridayDhuhr] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
+  const load = useCallback(async () => {
+    setLoadState('loading'); setErrorMsg(null);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') { setLoadState('permission-denied'); return; }
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const lat = loc.coords.latitude, lon = loc.coords.longitude;
+      setCoords({ lat, lon });
       try {
-        setLoading(true);
-        setError(null);
-
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          setError(
-            'Konum izni verilmedi. Yakındaki camileri ve Cuma saatini gösterebilmek için konum iznine ihtiyaç var.',
-          );
-          setLoading(false);
-          return;
-        }
-
-        const loc = await Location.getCurrentPositionAsync({});
-        const lat = loc.coords.latitude;
-        const lon = loc.coords.longitude;
-
-        if (cancelled) return;
-        setCoords({ lat, lon });
-
-        const [mosquesResult, dhuhr] = await Promise.all([
-          fetchNearbyMosques(lat, lon),
-          fetchFridayDhuhr(lat, lon),
-        ]);
-
-        if (cancelled) return;
-
-        setMosques(mosquesResult);
-        setFridayDhuhr(dhuhr);
-        setLoading(false);
-      } catch (e) {
-        if (!cancelled) {
-          setError(
-            'Veriler yüklenirken bir sorun oluştu. İnternet bağlantını kontrol edip tekrar deneyebilirsin.',
-          );
-          setLoading(false);
-        }
-      }
+        const geo = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lon });
+        if (geo[0]) setCityName(geo[0].city ?? geo[0].subregion ?? null);
+      } catch {}
+      const [mosqueList, dhuhr] = await Promise.all([fetchNearbyMosques(lat, lon), fetchFridayDhuhr(lat, lon)]);
+      setMosques(mosqueList); setFridayDhuhr(dhuhr);
+      setLoadState('success');
+    } catch (e) {
+      setErrorMsg('Veriler yüklenirken sorun oluştu. İnternet bağlantını kontrol et.');
+      setLoadState('error');
     }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
+  useEffect(() => { load(); }, [load]);
+
   const fridayLabel = useMemo(() => {
-    if (!fridayDhuhr) return '';
-    const isTodayFriday = new Date().getDay() === 5;
-    if (isTodayFriday) {
-      return `Bugünkü Cuma (öğle) vakti: ${fridayDhuhr}`;
-    }
-    return `Bu haftaki Cuma (öğle) vakti: ${fridayDhuhr}`;
+    if (!fridayDhuhr) return null;
+    return new Date().getDay() === 5 ? `Bugünkü Cuma öğle: ${fridayDhuhr}` : `Bu haftaki Cuma öğle: ${fridayDhuhr}`;
   }, [fridayDhuhr]);
 
-  const handleOpenInMaps = (mosque: Mosque) => {
-    const { lat, lon, name } = mosque;
-    const label = encodeURIComponent(name);
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
-      const url =
-        Platform.OS === 'ios'
-          ? `http://maps.apple.com/?ll=${lat},${lon}&q=${label}`
-          : `geo:${lat},${lon}?q=${label}`;
-      Linking.openURL(url);
-    } else {
-      const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}&query_place_id=${label}`;
-      Linking.openURL(url);
-    }
-  };
-
-  const handleRetry = () => {
-    // basitçe ekranı yeniden yüklemek için state'i tetiklemek yerine
-    // aynı yükleme fonksiyonunu yeniden çağırmak gerekiyor.
-    // Bunu yapmak için effect içindeki load fonksiyonunu dışarı çıkarmak yerine
-    // burada konumu tekrar isteyelim.
-    (async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          setError(
-            'Konum izni verilmedi. Yakındaki camileri ve Cuma saatini gösterebilmek için konum iznine ihtiyaç var.',
-          );
-          setLoading(false);
-          return;
-        }
-
-        const loc = await Location.getCurrentPositionAsync({});
-        const lat = loc.coords.latitude;
-        const lon = loc.coords.longitude;
-
-        setCoords({ lat, lon });
-
-        const [mosquesResult, dhuhr] = await Promise.all([
-          fetchNearbyMosques(lat, lon),
-          fetchFridayDhuhr(lat, lon),
-        ]);
-
-        setMosques(mosquesResult);
-        setFridayDhuhr(dhuhr);
-        setLoading(false);
-      } catch (e) {
-        setError(
-          'Veriler yüklenirken bir sorun oluştu. İnternet bağlantını kontrol edip tekrar deneyebilirsin.',
-        );
-        setLoading(false);
-      }
-    })();
+  const openInMaps = (m: Mosque) => {
+    const label = encodeURIComponent(m.name);
+    const url = Platform.OS === 'ios'
+      ? `http://maps.apple.com/?ll=${m.lat},${m.lon}&q=${label}`
+      : `geo:${m.lat},${m.lon}?q=${label}`;
+    Linking.openURL(url);
   };
 
   return (
-    <IslamicBackground>
-      <ScrollView
-        style={styles.root}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.container}>
-          <Card style={[styles.card, styles.headerCard]}>
-            <View style={styles.headerTitleRow}>
-              <Text style={styles.headerEmoji}>🕌</Text>
-              <View style={styles.headerTextBlock}>
-                <Text style={styles.title}>Cami Bulucu</Text>
-                <Text style={styles.subtitle}>
-                  Yakınındaki cami ve mescitlere hızlıca ulaş.
-                </Text>
-              </View>
-            </View>
+    <ScrollView style={[styles.root, { backgroundColor: c.background }]} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-            {coords && (
-              <Text style={styles.coordsText}>
-                Konum: {coords.lat.toFixed(3)}, {coords.lon.toFixed(3)}
-              </Text>
-            )}
-
-            {fridayLabel ? (
-              <View style={styles.fridayBox}>
-                <Text style={styles.fridayLabel}>Cuma Saati</Text>
-                <Text style={styles.fridayValue}>{fridayLabel}</Text>
-                <Text style={styles.fridayHint}>
-                  Cuma namazı vakti, öğle (Zuhr) vaktine göre gösterilmektedir.
-                </Text>
-              </View>
-            ) : null}
-          </Card>
-
-          <Card style={styles.card}>
-            <Text style={styles.sectionTitle}>Yakındaki Camiler</Text>
-            {loading && (
-              <View style={styles.centerBox}>
-                <ActivityIndicator size="small" color={colors.primary} />
-                <Text style={styles.infoText}>Konum ve camiler yükleniyor...</Text>
-              </View>
-            )}
-            {error && !loading && (
-              <View style={styles.centerBox}>
-                <Text style={styles.errorText}>{error}</Text>
-                <PrimaryButton label="Tekrar dene" onPress={handleRetry} />
-              </View>
-            )}
-            {!loading && !error && mosques.length === 0 && (
-              <Text style={styles.infoText}>
-                Yakınında kayıtlı cami veya mescit bulunamadı. Yarıçapı artırmak
-                veya daha sonra tekrar denemek isteyebilirsin.
-              </Text>
-            )}
-
-            {!loading &&
-              !error &&
-              mosques.map((m) => (
-                <View key={m.id} style={styles.mosqueCard}>
-                  <View style={styles.mosqueHeader}>
-                    <View style={styles.mosqueTitleBlock}>
-                      <Text style={styles.mosqueName}>{m.name}</Text>
-                      {m.address ? (
-                        <Text style={styles.mosqueAddress}>{m.address}</Text>
-                      ) : null}
-                    </View>
-                    <View style={styles.distancePill}>
-                      <Text style={styles.distanceText}>
-                        {m.distanceKm.toFixed(1)} km
-                      </Text>
-                    </View>
-                  </View>
-
-                  <Pressable
-                    onPress={() => handleOpenInMaps(m)}
-                    style={({ pressed }) => [
-                      styles.mapButton,
-                      pressed && styles.mapButtonPressed,
-                    ]}
-                  >
-                    <Text style={styles.mapButtonText}>Haritada Aç</Text>
-                  </Pressable>
-                </View>
-              ))}
-          </Card>
+      {/* Hero */}
+      <LinearGradient colors={[c.heroGradientStart, c.heroGradientEnd] as [string, string]} style={styles.hero}>
+        <View style={styles.heroRow}>
+          <Text style={{ fontSize: 36 }}>🕌</Text>
+          <View style={{ flex: 1, marginLeft: spacing.md }}>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: palette.gold400, letterSpacing: 1.2, marginBottom: 4 }}>CAMİ BULUCU</Text>
+            <Text style={{ fontSize: 22, fontWeight: '900', color: '#fff', letterSpacing: -0.5 }}>Yakındaki Camiler</Text>
+            <Text style={[t.caption, { color: 'rgba(255,255,255,.5)', marginTop: 2 }]}>
+              {cityName ? `📍 ${cityName}` : '5 km yarıçapında Overpass API'}
+            </Text>
+          </View>
         </View>
-      </ScrollView>
-    </IslamicBackground>
+
+        {/* Friday prayer banner */}
+        {fridayLabel && (
+          <View style={[styles.fridayBanner, { backgroundColor: `${palette.gold500}15`, borderColor: `${palette.gold500}30` }]}>
+            <Text style={{ fontSize: 16 }}>🕋</Text>
+            <View style={{ flex: 1, marginLeft: spacing.sm }}>
+              <Text style={{ fontSize: 10, fontWeight: '700', color: palette.gold400, letterSpacing: 0.8 }}>CUMA NAMAZI</Text>
+              <Text style={{ fontSize: 15, fontWeight: '800', color: '#fff', marginTop: 2 }}>{fridayLabel}</Text>
+            </View>
+          </View>
+        )}
+      </LinearGradient>
+
+      {/* Loading */}
+      {loadState === 'loading' && (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={palette.gold500} />
+          <Text style={[t.caption, { color: c.textSecondary, marginTop: spacing.md }]}>Konum ve camiler yükleniyor...</Text>
+        </View>
+      )}
+
+      {/* Permission denied */}
+      {loadState === 'permission-denied' && (
+        <View style={styles.center}>
+          <Text style={{ fontSize: 48, marginBottom: spacing.md }}>📍</Text>
+          <Text style={[t.bodyBold, { color: '#fff', textAlign: 'center', marginBottom: spacing.sm }]}>Konum İzni Gerekli</Text>
+          <Text style={[t.caption, { color: c.textSecondary, textAlign: 'center', marginBottom: spacing.lg }]}>
+            Yakındaki camileri gösterebilmek için konum iznine ihtiyaç var.
+          </Text>
+          <Pressable onPress={load} style={[styles.retryBtn, { backgroundColor: c.primary }]}>
+            <Text style={[t.bodyBold, { color: '#fff' }]}>İzin Ver</Text>
+          </Pressable>
+        </View>
+      )}
+
+      {/* Error */}
+      {loadState === 'error' && (
+        <View style={styles.center}>
+          <Text style={{ fontSize: 48, marginBottom: spacing.md }}>⚠️</Text>
+          <Text style={[t.body, { color: '#FCA5A5', textAlign: 'center', marginBottom: spacing.lg }]}>{errorMsg}</Text>
+          <Pressable onPress={load} style={[styles.retryBtn, { backgroundColor: c.primary }]}>
+            <Text style={[t.bodyBold, { color: '#fff' }]}>Tekrar Dene</Text>
+          </Pressable>
+        </View>
+      )}
+
+      {/* Success */}
+      {loadState === 'success' && (
+        <>
+          <View style={styles.listHeader}>
+            <Text style={[t.heading2, { color: c.text }]}>
+              {mosques.length > 0 ? `${mosques.length} cami bulundu` : 'Cami bulunamadı'}
+            </Text>
+            <Pressable onPress={load}>
+              <Text style={{ fontSize: 12, color: palette.gold400, fontWeight: '700' }}>Yenile</Text>
+            </Pressable>
+          </View>
+
+          {mosques.length === 0 && (
+            <View style={styles.center}>
+              <Text style={{ fontSize: 48 }}>🔍</Text>
+              <Text style={[t.body, { color: c.textSecondary, marginTop: spacing.sm, textAlign: 'center' }]}>
+                5 km içinde kayıtlı cami bulunamadı.
+              </Text>
+            </View>
+          )}
+
+          {mosques.map((m) => (
+            <View key={m.id} style={[styles.mosqueCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+              <View style={styles.mosqueRow}>
+                <View style={[styles.mosqueIcon, { backgroundColor: `${palette.green500}15` }]}>
+                  <Text style={{ fontSize: 20 }}>🕌</Text>
+                </View>
+                <View style={styles.mosqueInfo}>
+                  <Text style={[t.bodyBold, { color: c.text }]} numberOfLines={2}>{m.name}</Text>
+                  {m.address && (
+                    <Text style={[t.caption, { color: c.textSecondary, marginTop: 2 }]} numberOfLines={1}>{m.address}</Text>
+                  )}
+                </View>
+                <View style={[styles.distBadge, { backgroundColor: `${palette.gold500}15` }]}>
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: palette.gold400 }}>{m.distanceKm.toFixed(1)}</Text>
+                  <Text style={{ fontSize: 9, color: palette.gold400 }}>km</Text>
+                </View>
+              </View>
+              <Pressable
+                onPress={() => openInMaps(m)}
+                style={({ pressed }) => [styles.mapBtn, { borderColor: c.border }, pressed && { backgroundColor: c.primarySoft }]}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '700', color: c.primary }}>🗺 Haritada Aç</Text>
+              </Pressable>
+            </View>
+          ))}
+        </>
+      )}
+
+      <View style={{ height: spacing.xxl }} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
-    paddingBottom: spacing.xl,
-    gap: spacing.md,
-  },
-  container: {
-    flex: 1,
-    gap: spacing.md,
-  },
-  card: {
-    padding: spacing.md,
-  },
-  headerCard: {
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.lg,
-  },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  headerEmoji: {
-    fontSize: 32,
-  },
-  headerTextBlock: {
-    flex: 1,
-  },
-  title: {
-    ...textStyles.heading1,
-  },
-  subtitle: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
-  },
-  coordsText: {
-    marginTop: spacing.sm,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  sectionTitle: {
-    ...textStyles.heading2,
-  },
-  centerBox: {
-    marginTop: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  infoText: {
-    ...textStyles.caption,
-  },
-  errorText: {
-    marginTop: spacing.sm,
-    fontSize: 12,
-    color: '#FCA5A5',
-  },
-  fridayBox: {
-    marginTop: spacing.sm,
-    padding: spacing.md,
-    borderRadius: 12,
-    backgroundColor: colors.card,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  fridayLabel: {
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  fridayValue: {
-    marginTop: spacing.xs,
-    ...textStyles.body,
-    fontWeight: '600',
-  },
-  fridayHint: {
-    marginTop: spacing.xs,
-    fontSize: 11,
-    color: colors.textSoft,
-  },
-  mosqueCard: {
-    marginTop: spacing.sm,
-    padding: spacing.md,
-    borderRadius: 12,
-    backgroundColor: colors.card,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  mosqueHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  mosqueTitleBlock: {
-    flex: 1,
-    paddingRight: spacing.sm,
-  },
-  mosqueName: {
-    ...textStyles.body,
-    fontWeight: '600',
-  },
-  mosqueDistance: {
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  mosqueAddress: {
-    marginTop: spacing.xs,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  distancePill: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    backgroundColor: colors.primarySoft,
-  },
-  distanceText: {
-    fontSize: 12,
-    color: colors.primaryDark,
-    fontWeight: '500',
-  },
-  mapButton: {
-    marginTop: spacing.sm,
-    alignSelf: 'flex-start',
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primary,
-  },
-  mapButtonPressed: {
-    backgroundColor: colors.primarySoft,
-  },
-  mapButtonText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: colors.primaryDark,
-  },
+  root:        { flex: 1 },
+  content:     { paddingBottom: spacing.xxl },
+  hero:        { paddingTop: spacing.lg, paddingHorizontal: spacing.lg, paddingBottom: spacing.md },
+  heroRow:     { flexDirection: 'row', alignItems: 'center' },
+  fridayBanner:{ flexDirection: 'row', alignItems: 'center', borderRadius: radii.lg, borderWidth: 1, padding: spacing.md, marginTop: spacing.md },
+  center:      { alignItems: 'center', justifyContent: 'center', padding: spacing.xl, minHeight: 200 },
+  retryBtn:    { paddingHorizontal: spacing.xl, paddingVertical: spacing.sm, borderRadius: radii.full },
+  listHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm },
+  mosqueCard:  { marginHorizontal: spacing.lg, marginBottom: spacing.sm, borderRadius: radii.xl, borderWidth: StyleSheet.hairlineWidth, padding: spacing.md, ...shadows.card },
+  mosqueRow:   { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  mosqueIcon:  { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  mosqueInfo:  { flex: 1 },
+  distBadge:   { paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radii.lg, alignItems: 'center' },
+  mapBtn:      { marginTop: spacing.sm, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, borderRadius: radii.md, borderWidth: StyleSheet.hairlineWidth, alignSelf: 'flex-start' },
 });
-

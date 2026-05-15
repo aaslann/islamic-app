@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>İslami Asistan – App Store Screenshots</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ─── tokens ─────────────────────────────────── */
+  :root {
+    --gold:   #C8A24A;
+    --gold3:  #D4AF60;
+    --gold4:  #F0C96B;
+    --green8: #0F3D2E;
+    --green5: #1A6648;
+    --green4: #22885E;
+    --green3: #34C985;
+    --bg:     #0D1F18;
+    --bg2:    #0A1520;
+    --surf:   rgba(255,255,255,.05);
+    --surfl:  rgba(255,255,255,.08);
+    --txt:    #FFFFFF;
+    --txts:   rgba(255,255,255,.5);
+    --txtt:   rgba(255,255,255,.3);
+  }
+
+  body {
+    background: #080E0A;
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+  }
+
+  h1.page-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  p.page-sub {
+    text-align: center;
+    color: rgba(255,255,255,.4);
+    font-size: 13px;
+    margin-bottom: 48px;
+  }
+
+  /* ─── frame grid ─────────────────────────────── */
+  .frames {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 32px;
+  }
+
+  /* 6.5" iPhone: 1242 × 2688 px → scale 0.22 → 273 × 591 */
+  .frame-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .frame-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.35);
+  }
+
+  /* iPhone 14 Pro shell */
+  .iphone {
+    width: 280px;
+    height: 606px;
+    background: #1A1A1A;
+    border-radius: 48px;
+    padding: 14px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.1),
+      0 0 0 3px #0D0D0D,
+      0 30px 80px rgba(0,0,0,.8),
+      0 0 60px rgba(200,162,74,.08);
+    position: relative;
+  }
+  .iphone::before {
+    content: '';
+    position: absolute;
+    top: 14px; left: 50%; transform: translateX(-50%);
+    width: 100px; height: 30px;
+    background: #1A1A1A;
+    border-radius: 0 0 18px 18px;
+    z-index: 10;
+  }
+  /* side buttons */
+  .iphone::after {
+    content: '';
+    position: absolute;
+    left: -3px; top: 120px;
+    width: 3px; height: 34px;
+    background: #2A2A2A;
+    border-radius: 2px 0 0 2px;
+    box-shadow: 0 50px 0 #2A2A2A, 0 92px 0 #2A2A2A;
+  }
+
+  .screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 36px;
+    overflow: hidden;
+    position: relative;
+    background: var(--bg);
+  }
+
+  /* ─── status bar ──────────────────────────────── */
+  .sbar {
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 20px 6px;
+    position: relative;
+    z-index: 5;
+  }
+  .sbar-time { font-size: 12px; font-weight: 700; color: #fff; }
+  .sbar-icons { display: flex; gap: 4px; align-items: center; }
+  .sbar-icons span { font-size: 11px; color: #fff; }
+
+  /* ─── nav bar ─────────────────────────────────── */
+  .nbar {
+    background: var(--green8);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .nbar-title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+  .nbar-btn { font-size: 12px; color: var(--gold); font-weight: 600; }
+
+  /* ─── shared helpers ──────────────────────────── */
+  .sc { flex: 1; overflow: hidden; }
+  .grad-bg { width: 100%; height: 100%; }
+  .px { padding: 0 14px; }
+  .gap8 { display: flex; flex-direction: column; gap: 8px; }
+  .row { display: flex; align-items: center; }
+  .row-sb { display: flex; align-items: center; justify-content: space-between; }
+  .bold { font-weight: 700; }
+  .xs { font-size: 9px; }
+  .sm { font-size: 11px; }
+  .md { font-size: 13px; }
+  .lg { font-size: 16px; }
+  .xl { font-size: 22px; }
+  .gold { color: var(--gold); }
+  .green3 { color: var(--green3); }
+  .muted { color: var(--txts); }
+  .vdim  { color: var(--txtt); }
+  .card {
+    background: var(--surf);
+    border: 1px solid var(--surfl);
+    border-radius: 16px;
+    padding: 12px;
+  }
+  .grad-pill {
+    background: linear-gradient(135deg, var(--green8), #0A1F15);
+    border-radius: 14px;
+    padding: 12px;
+  }
+
+  /* ─── badge ───────────────────────────────────── */
+  .badge {
+    background: rgba(200,162,74,.2);
+    color: var(--gold);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 99px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── progress bar ────────────────────────────── */
+  .pbar-track {
+    height: 6px;
+    background: rgba(255,255,255,.08);
+    border-radius: 99px;
+    overflow: hidden;
+    flex: 1;
+  }
+  .pbar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--green5), var(--gold));
+  }
+
+  /* ─── caption below screenshot ───────────────── */
+  .frame-caption {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255,255,255,.7);
+    text-align: center;
+  }
+  .frame-caption-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,.35);
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  /* ─── SCREEN 1: Home ─────────────────────────── */
+  .s1-hero {
+    background: linear-gradient(160deg, #1A6648 0%, #0F3D2E 100%);
+    padding: 14px;
+  }
+  .s1-greeting { font-size: 10px; color: rgba(255,255,255,.7); margin-bottom: 2px; }
+  .s1-title { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: #fff; }
+  .s1-sub { font-size: 10px; color: rgba(255,255,255,.6); margin-top: 2px; }
+
+  .s1-quick { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px 14px 0; }
+  .s1-qcard {
+    background: var(--surf);
+    border: 1px solid var(--surfl);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  .s1-qcard-big { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 10px; }
+  .s1-qemoji { font-size: 20px; }
+  .s1-qlabel { font-size: 11px; font-weight: 700; color: #fff; }
+  .s1-qsub { font-size: 9px; color: var(--txts); }
+  .s1-qbtn {
+    margin-top: 4px;
+    background: var(--gold);
+    color: #000;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 99px;
+    display: inline-block;
+  }
+  .s1-row { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,.04); }
+  .s1-row-emoji { font-size: 16px; width: 24px; text-align: center; }
+  .s1-row-text { flex: 1; }
+  .s1-row-title { font-size: 11px; font-weight: 700; color: #fff; }
+  .s1-row-sub { font-size: 9px; color: var(--txts); }
+  .s1-chevron { font-size: 14px; color: var(--txtt); }
+
+  /* ─── SCREEN 2: Prayer Times ─────────────────── */
+  .s2-hero {
+    background: linear-gradient(160deg, #0F3D2E 0%, #0A1F15 100%);
+    padding: 14px;
+  }
+  .s2-next-label { font-size: 9px; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
+  .s2-next-name { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -1px; margin-top: 2px; }
+  .s2-countdown { font-size: 13px; color: rgba(255,255,255,.6); }
+  .s2-circle { width: 60px; height: 60px; border-radius: 50%; border: 2px solid rgba(200,162,74,.3); background: rgba(200,162,74,.1); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .s2-prayer-list { display: flex; flex-direction: column; gap: 0; padding: 6px 14px; }
+  .s2-prayer-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+  .s2-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.15); flex-shrink: 0; }
+  .s2-dot.active { background: var(--green3); box-shadow: 0 0 6px rgba(52,201,133,.4); }
+  .s2-prayer-name { font-size: 12px; font-weight: 600; color: #fff; flex: 1; }
+  .s2-prayer-time { font-size: 12px; font-weight: 700; color: var(--gold); }
+  .s2-prog { padding: 10px 14px; }
+  .s2-prog-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+
+  /* ─── SCREEN 3: Quran Reader ────────────────── */
+  .s3-scroll { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .s3-bismillah { text-align: center; font-size: 18px; color: var(--gold3); padding: 8px 0; direction: rtl; }
+  .s3-ayah { background: var(--surf); border: 1px solid var(--surfl); border-radius: 12px; padding: 10px; }
+  .s3-ayah-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .s3-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(200,162,74,.15); border: 1px solid rgba(200,162,74,.3); display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--gold); font-weight: 700; }
+  .s3-arabic { text-align: right; direction: rtl; font-size: 14px; line-height: 1.9; color: var(--gold3); margin-bottom: 6px; }
+  .s3-trans { font-size: 9px; color: var(--txts); line-height: 1.5; }
+  .s3-player {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(13,31,24,.95);
+    border-top: 1px solid rgba(200,162,74,.2);
+    padding: 10px 14px;
+    backdrop-filter: blur(20px);
+  }
+  .s3-player-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .s3-player-label { font-size: 10px; font-weight: 700; color: var(--gold); flex: 1; }
+  .s3-play-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--green5), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .s3-prev-next { font-size: 14px; color: rgba(255,255,255,.5); }
+
+  /* ─── SCREEN 4: Zikir Counter ───────────────── */
+  .s4-bg { background: linear-gradient(180deg, #0A1F15 0%, #0D1F18 100%); height: 100%; display: flex; flex-direction: column; }
+  .s4-title-area { padding: 10px 14px; }
+  .s4-arabic { font-size: 18px; color: var(--gold3); text-align: center; direction: rtl; margin-bottom: 4px; }
+  .s4-tr { font-size: 9px; color: var(--txts); text-align: center; }
+  .s4-ring-wrap { display: flex; justify-content: center; align-items: center; padding: 16px 0; position: relative; }
+  .s4-ring { width: 110px; height: 110px; border-radius: 50%; border: 3px solid rgba(200,162,74,.15); display: flex; align-items: center; justify-content: center; }
+  .s4-count { font-size: 44px; font-weight: 900; color: #fff; letter-spacing: -2px; text-align: center; }
+  .s4-of { font-size: 13px; color: var(--txts); text-align: center; }
+  .s4-btn { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--green5), var(--green8)); border: 2px solid rgba(52,201,133,.3); display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 24px; box-shadow: 0 0 30px rgba(52,201,133,.2); }
+  .s4-stats { display: flex; gap: 6px; padding: 10px 14px 0; }
+  .s4-stat { flex: 1; background: var(--surf); border: 1px solid var(--surfl); border-radius: 12px; padding: 8px; text-align: center; }
+  .s4-stat-val { font-size: 16px; font-weight: 800; color: var(--gold); }
+  .s4-stat-lbl { font-size: 8px; color: var(--txtt); margin-top: 2px; }
+
+  /* ─── SCREEN 5: Ramadan Tracker ─────────────── */
+  .s5-bg { background: linear-gradient(180deg, #0A1A0E 0%, #0D2616 50%, #0A1F15 100%); height: 100%; }
+  .s5-hero {
+    display: flex; align-items: center; gap: 10px;
+    margin: 8px 14px;
+    background: rgba(200,162,74,.08);
+    border: 1px solid rgba(200,162,74,.2);
+    border-radius: 14px;
+    padding: 12px;
+  }
+  .s5-moon { font-size: 28px; }
+  .s5-hero-title { font-size: 15px; font-weight: 800; color: #fff; }
+  .s5-hero-sub { font-size: 10px; color: var(--gold); margin-top: 2px; }
+  .s5-iftar {
+    margin: 0 14px 8px;
+    background: rgba(200,162,74,.08);
+    border: 1px solid rgba(200,162,74,.2);
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+  }
+  .s5-iftar-time { font-size: 20px; font-weight: 800; color: #fff; }
+  .s5-iftar-lbl { font-size: 9px; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
+  .s5-iftar-mid { flex: 1; text-align: center; }
+  .s5-countdown { font-size: 15px; font-weight: 800; color: var(--gold); }
+  .s5-prog { margin: 0 14px 8px; }
+  .s5-actions { display: flex; gap: 6px; margin: 0 14px 8px; }
+  .s5-tile { flex: 1; background: var(--surf); border: 1px solid var(--surfl); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .s5-tile.active { border-color: rgba(200,162,74,.35); background: rgba(200,162,74,.06); }
+  .s5-tile-icon { font-size: 22px; }
+  .s5-tile-lbl { font-size: 9px; font-weight: 700; color: rgba(255,255,255,.6); }
+  .s5-tile.active .s5-tile-lbl { color: var(--gold); }
+  .s5-check { width: 18px; height: 18px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 10px; color: #000; font-weight: 700; }
+  .s5-heatmap { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 14px; }
+  .s5-dot { width: 22px; height: 22px; border-radius: 5px; background: rgba(26,102,72,.4); }
+  .s5-dot.fasted { background: rgba(26,102,72,.85); }
+  .s5-dot.today { outline: 2px solid var(--gold); }
+
+  /* ─── SCREEN 6: Prayer Progress ─────────────── */
+  .s6-bg { background: linear-gradient(180deg, #0A1520 0%, #0D1F18 100%); height: 100%; }
+  .s6-today {
+    margin: 8px 14px;
+    background: linear-gradient(135deg, #1A6648, #0F3D2E);
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .s6-today-row { display: flex; align-items: flex-start; justify-content: space-between; }
+  .s6-count { font-size: 38px; font-weight: 900; color: #fff; letter-spacing: -2px; line-height: 1; }
+  .s6-count-of { font-size: 16px; font-weight: 400; color: rgba(255,255,255,.4); }
+  .s6-circle { width: 64px; height: 64px; border-radius: 50%; border: 2px solid rgba(200,162,74,.3); background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
+  .s6-pct { font-size: 16px; font-weight: 800; color: var(--gold); }
+  .s6-dots { display: flex; gap: 4px; margin-top: 10px; }
+  .s6-pdot { flex: 1; height: 28px; border-radius: 6px; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+  .s6-pdot.done { background: var(--gold); }
+  .s6-stats-row { display: flex; gap: 6px; margin: 8px 14px 0; }
+  .s6-stat { flex: 1; background: var(--surf); border: 1px solid var(--surfl); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .s6-stat-val { font-size: 20px; font-weight: 800; color: var(--gold); }
+  .s6-stat-lbl { font-size: 8px; color: var(--txtt); text-align: center; }
+  .s6-chart { margin: 8px 14px 0; background: var(--surf); border: 1px solid var(--surfl); border-radius: 14px; padding: 10px; }
+  .s6-bars { display: flex; align-items: flex-end; gap: 4px; height: 72px; }
+  .s6-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .s6-bar-track { flex: 1; width: 100%; background: rgba(255,255,255,.05); border-radius: 4px; overflow: hidden; display: flex; align-items: flex-end; }
+  .s6-bar-fill { width: 100%; border-radius: 4px; background: linear-gradient(180deg, var(--green5), var(--green4)); }
+  .s6-bar-fill.today { background: linear-gradient(180deg, var(--gold), var(--gold3)); }
+  .s6-bar-lbl { font-size: 8px; color: rgba(255,255,255,.35); }
+
+  /* ─── info section below frames ─────────────── */
+  .info-section {
+    max-width: 960px;
+    margin: 60px auto 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .info-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .info-card h3 { font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+  .info-card p  { font-size: 11px; color: rgba(255,255,255,.5); line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">İslami Asistan</h1>
+<p class="page-sub">App Store Screenshot Mockups — iPhone 6.5" (1242 × 2688 px)</p>
+
+<div class="frames">
+
+  <!-- ══ SCREENSHOT 1: Home ══════════════════════════════════════════ -->
+  <div class="frame-wrap">
+    <span class="frame-label">Ekran 1</span>
+    <div class="iphone">
+      <div class="screen">
+        <div class="sbar">
+          <span class="sbar-time">9:41</span>
+          <div class="sbar-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nbar">
+          <span class="nbar-title">İslami Asistan</span>
+          <span class="nbar-btn">⚙️</span>
+        </div>
+
+        <div class="s1-hero">
+          <div class="s1-greeting">Hayırlı sabahlar</div>
+          <div class="s1-title">İslami Asistan</div>
+          <div class="s1-sub">Günlük ibadetlerin için rehber</div>
+        </div>
+
+        <div style="padding: 10px 14px 0; font-size:10px; font-weight:700; color:rgba(255,255,255,.5); letter-spacing:.5px;">HIZLI ERİŞİM</div>
+        <div class="s1-quick">
+          <div class="s1-qcard s1-qcard-big">
+            <span class="s1-qemoji">🕌</span>
+            <div>
+              <div class="s1-qlabel">Namaz Vakitleri</div>
+              <div class="s1-qsub">Bugün: İkindi 16:24</div>
+              <div class="s1-qbtn">Vakitleri Gör</div>
+            </div>
+          </div>
+          <div class="s1-qcard">
+            <span class="s1-qemoji">📖</span>
+            <div class="s1-qlabel">Kur'an-ı Kerim</div>
+            <div class="s1-qsub">114 sure</div>
+          </div>
+          <div class="s1-qcard">
+            <span class="s1-qemoji">📿</span>
+            <div class="s1-qlabel">Zikir Sayacı</div>
+            <div class="s1-qsub">Günlük zikir</div>
+          </div>
+        </div>
+
+        <div style="padding: 8px 14px 0; font-size:10px; font-weight:700; color:rgba(255,255,255,.5); letter-spacing:.5px;">NAMAZ</div>
+        <div class="s1-row"><span class="s1-row-emoji">🧭</span><div class="s1-row-text"><div class="s1-row-title">Namaz Kılavuzu</div><div class="s1-row-sub">Adım adım rehber</div></div><span class="s1-chevron">›</span></div>
+        <div class="s1-row"><span class="s1-row-emoji">📓</span><div class="s1-row-text"><div class="s1-row-title">Namaz Hatıra Defteri</div><div class="s1-row-sub">Kıldığın vakitleri işaretle</div></div><span class="s1-chevron">›</span></div>
+
+        <div style="padding: 8px 14px 0; font-size:10px; font-weight:700; color:rgba(255,255,255,.5); letter-spacing:.5px;">TAKİP & KEŞFET</div>
+        <div class="s1-row"><span class="s1-row-emoji">🌙</span><div class="s1-row-text"><div class="s1-row-title">Ramazan Takibi</div><div class="s1-row-sub">Oruç, teravih, Kur'an sayfası</div></div><span class="s1-chevron">›</span></div>
+        <div class="s1-row"><span class="s1-row-emoji">🔥</span><div class="s1-row-text"><div class="s1-row-title">Namaz İlerlemesi</div><div class="s1-row-sub">Seri, haftalık grafik, heatmap</div></div><span class="s1-chevron">›</span></div>
+      </div>
+    </div>
+    <div class="frame-caption">Ana Sayfa</div>
+    <div class="frame-caption-sub">Tüm özelliklere hızlı erişim</div>
+  </div>
+
+  <!-- ══ SCREENSHOT 2: Prayer Times ════════════════════════════════ -->
+  <div class="frame-wrap">
+    <span class="frame-label">Ekran 2</span>
+    <div class="iphone">
+      <div class="screen">
+        <div class="sbar">
+          <span class="sbar-time">9:41</span>
+          <div class="sbar-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nbar"><span class="nbar-title">Namaz Vakitleri</span></div>
+
+        <div class="s2-hero">
+          <div class="row-sb">
+            <div>
+              <div class="s2-next-label">SIRA DAKİ NAMAZ</div>
+              <div class="s2-next-name">İkindi</div>
+              <div class="s2-countdown">2 saat 38 dk sonra</div>
+            </div>
+            <div class="s2-circle">
+              <div style="font-size:18px; font-weight:800; color:var(--gold)">53%</div>
+              <div style="font-size:8px; color:var(--txts)">bugün</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="s2-prayer-list">
+          <div class="s2-prayer-row"><div class="s2-dot"></div><span class="s2-prayer-name">🌅 Sabah</span><span class="s2-prayer-time">05:12</span></div>
+          <div class="s2-prayer-row"><div class="s2-dot"></div><span class="s2-prayer-name">☀️ Öğle</span><span class="s2-prayer-time">13:08</span></div>
+          <div class="s2-prayer-row"><div class="s2-dot active"></div><span class="s2-prayer-name">🌤 İkindi</span><span class="s2-prayer-time">16:24</span></div>
+          <div class="s2-prayer-row"><div class="s2-dot"></div><span class="s2-prayer-name">🌇 Akşam</span><span class="s2-prayer-time">19:45</span></div>
+          <div class="s2-prayer-row"><div class="s2-dot"></div><span class="s2-prayer-name">🌙 Yatsı</span><span class="s2-prayer-time">21:15</span></div>
+        </div>
+
+        <div class="s2-prog" style="margin-top:8px;">
+          <div class="s2-prog-row"><span style="font-size:11px; font-weight:700; color:#fff">Bugünkü İlerleme</span><span style="font-size:11px; color:var(--gold); font-weight:700">3/5</span></div>
+          <div class="pbar-track"><div class="pbar-fill" style="width:60%"></div></div>
+        </div>
+
+        <div style="margin:8px 14px 0">
+          <div class="card" style="padding:10px">
+            <div style="font-size:9px; font-weight:700; color:var(--gold); letter-spacing:1px; margin-bottom:6px">İSTATİSTİKLER</div>
+            <div class="row-sb">
+              <div style="text-align:center; flex:1">
+                <div style="font-size:18px; font-weight:800; color:var(--green3)">7</div>
+                <div style="font-size:8px; color:var(--txtt)">Günlük Seri</div>
+              </div>
+              <div style="text-align:center; flex:1">
+                <div style="font-size:18px; font-weight:800; color:var(--gold)">87%</div>
+                <div style="font-size:8px; color:var(--txtt)">Haftalık Oran</div>
+              </div>
+              <div style="text-align:center; flex:1">
+                <div style="font-size:18px; font-weight:800; color:var(--green3)">28</div>
+                <div style="font-size:8px; color:var(--txtt)">Bu Ay</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="frame-caption">Namaz Vakitleri</div>
+    <div class="frame-caption-sub">Otomatik konum tespiti ile</div>
+  </div>
+
+  <!-- ══ SCREENSHOT 3: Quran Reader ════════════════════════════════ -->
+  <div class="frame-wrap">
+    <span class="frame-label">Ekran 3</span>
+    <div class="iphone">
+      <div class="screen" style="position:relative;">
+        <div class="sbar">
+          <span class="sbar-time">9:41</span>
+          <div class="sbar-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nbar">
+          <span style="font-size:13px; font-weight:800; color:#fff">Al-Fatiha <span style="font-weight:400; color:rgba(255,255,255,.5)">7 ayet</span></span>
+          <div class="row" style="gap:8px">
+            <span style="font-size:14px; color:var(--gold)">🔍</span>
+            <span style="font-size:14px; color:var(--gold)">⭐ 2</span>
+          </div>
+        </div>
+
+        <div class="s3-scroll">
+          <div class="s3-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+
+          <div class="s3-ayah">
+            <div class="s3-ayah-top">
+              <div class="row" style="gap:6px">
+                <div class="s3-num">1</div>
+                <span style="font-size:12px; color:var(--gold)">▶</span>
+                <span style="font-size:12px; color:rgba(255,255,255,.3)">☆</span>
+              </div>
+            </div>
+            <div class="s3-arabic">الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ</div>
+            <div class="s3-trans">Hamd, âlemlerin Rabbi Allah'a mahsustur.</div>
+          </div>
+
+          <div class="s3-ayah">
+            <div class="s3-ayah-top">
+              <div class="row" style="gap:6px">
+                <div class="s3-num">2</div>
+                <span style="font-size:12px; color:var(--gold)">▶</span>
+                <span style="font-size:12px; color:var(--gold)">★</span>
+              </div>
+            </div>
+            <div class="s3-arabic">الرَّحْمَٰنِ الرَّحِيمِ</div>
+            <div class="s3-trans">O, Rahman ve Rahim'dir.</div>
+          </div>
+
+          <div class="s3-ayah">
+            <div class="s3-ayah-top">
+              <div class="row" style="gap:6px">
+                <div class="s3-num">3</div>
+                <span style="font-size:12px; color:var(--gold)">⏸</span>
+                <span style="font-size:12px; color:rgba(255,255,255,.3)">☆</span>
+              </div>
+            </div>
+            <div class="s3-arabic">مَالِكِ يَوْمِ الدِّينِ</div>
+            <div class="s3-trans">Din günü'nün sahibidir.</div>
+          </div>
+        </div>
+
+        <!-- audio player bar -->
+        <div class="s3-player">
+          <div class="s3-player-row">
+            <span class="s3-player-label">🎵 Ayet 3 · Al-Fatiha</span>
+            <span class="s3-prev-next">⏮</span>
+            <div class="s3-play-btn">⏸</div>
+            <span class="s3-prev-next">⏭</span>
+          </div>
+          <div class="pbar-track"><div class="pbar-fill" style="width:40%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="frame-caption">Kur'an-ı Kerim Okuyucu</div>
+    <div class="frame-caption-sub">Sesli okuma ve ayet favorileme</div>
+  </div>
+
+  <!-- ══ SCREENSHOT 4: Zikir Counter ═══════════════════════════════ -->
+  <div class="frame-wrap">
+    <span class="frame-label">Ekran 4</span>
+    <div class="iphone">
+      <div class="screen">
+        <div class="sbar" style="position:relative;z-index:2">
+          <span class="sbar-time">9:41</span>
+          <div class="sbar-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nbar"><span class="nbar-title">Zikir Sayacı</span></div>
+
+        <div class="s4-bg">
+          <div class="s4-title-area">
+            <div class="s4-arabic">سُبْحَانَ اللَّهِ</div>
+            <div class="s4-tr">Sübhanallah · Allah'ı tenzih ederim</div>
+          </div>
+
+          <div class="s4-ring-wrap">
+            <div class="s4-ring" style="position:relative">
+              <svg width="110" height="110" style="position:absolute;top:0;left:0">
+                <circle cx="55" cy="55" r="50" fill="none" stroke="rgba(200,162,74,.08)" stroke-width="5"/>
+                <circle cx="55" cy="55" r="50" fill="none" stroke="var(--gold)" stroke-width="5" stroke-dasharray="314" stroke-dashoffset="94" stroke-linecap="round" transform="rotate(-90 55 55)"/>
+              </svg>
+              <div style="text-align:center">
+                <div class="s4-count">71</div>
+                <div class="s4-of">/ 99</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="s4-btn">🤲</div>
+
+          <div class="s4-stats">
+            <div class="s4-stat">
+              <div class="s4-stat-val">247</div>
+              <div class="s4-stat-lbl">Toplam</div>
+            </div>
+            <div class="s4-stat">
+              <div class="s4-stat-val">3</div>
+              <div class="s4-stat-lbl">Seans</div>
+            </div>
+            <div class="s4-stat">
+              <div class="s4-stat-val">4</div>
+              <div class="s4-stat-lbl">Çeşit</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="frame-caption">Zikir Sayacı</div>
+    <div class="frame-caption-sub">Hedef bazlı sayaç ve istatistik</div>
+  </div>
+
+  <!-- ══ SCREENSHOT 5: Ramadan Tracker ═════════════════════════════ -->
+  <div class="frame-wrap">
+    <span class="frame-label">Ekran 5</span>
+    <div class="iphone">
+      <div class="screen">
+        <div class="sbar">
+          <span class="sbar-time">9:41</span>
+          <div class="sbar-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nbar"><span class="nbar-title">Ramazan Takibi</span></div>
+
+        <div class="s5-bg">
+          <div class="s5-hero">
+            <span class="s5-moon">🌙</span>
+            <div>
+              <div class="s5-hero-title">Ramazan 14. Gün</div>
+              <div class="s5-hero-sub">16 gün kaldı</div>
+            </div>
+          </div>
+
+          <div class="s5-iftar">
+            <div style="flex:1">
+              <div class="s5-iftar-lbl">İMSAK</div>
+              <div class="s5-iftar-time">05:12</div>
+            </div>
+            <div class="s5-iftar-mid">
+              <div style="font-size:9px; color:var(--txts)">İftara</div>
+              <div class="s5-countdown">8s 34dk</div>
+            </div>
+            <div style="flex:1; text-align:right">
+              <div class="s5-iftar-lbl">İFTAR</div>
+              <div class="s5-iftar-time">18:45</div>
+            </div>
+          </div>
+
+          <div class="s5-prog">
+            <div class="row-sb" style="margin-bottom:5px">
+              <span style="font-size:11px; font-weight:700; color:#fff">Ramazan İlerlemesi</span>
+              <span style="font-size:13px; font-weight:800; color:var(--gold)">47%</span>
+            </div>
+            <div class="pbar-track"><div class="pbar-fill" style="width:47%"></div></div>
+            <div style="font-size:9px; color:var(--txtt); margin-top:3px">14 / 30 gün tamamlandı</div>
+          </div>
+
+          <div style="padding:0 14px 6px; font-size:10px; font-weight:700; color:rgba(255,255,255,.5)">BUGÜN</div>
+          <div class="s5-actions">
+            <div class="s5-tile active">
+              <span class="s5-tile-icon">🌙</span>
+              <span class="s5-tile-lbl">Oruç</span>
+              <div class="s5-check">✓</div>
+            </div>
+            <div class="s5-tile active">
+              <span class="s5-tile-icon">🕌</span>
+              <span class="s5-tile-lbl">Teravih</span>
+              <div class="s5-check">✓</div>
+            </div>
+            <div class="s5-tile">
+              <span class="s5-tile-icon">📖</span>
+              <span class="s5-tile-lbl">Kur'an</span>
+              <div style="width:18px;height:18px;border-radius:50%;background:var(--green4);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#000">3s</div>
+            </div>
+          </div>
+
+          <div style="padding:6px 14px 4px; font-size:10px; font-weight:700; color:rgba(255,255,255,.5)">30 GÜNLÜK HARİTA</div>
+          <div class="s5-heatmap">
+            <!-- 30 dots, first 14 fasted, 14th is today -->
+            <div class="s5-dot fasted"></div><div class="s5-dot fasted"></div><div class="s5-dot fasted"></div><div class="s5-dot fasted"></div><div class="s5-dot fasted"></div><div class="s5-dot fasted"></div><div class="s5-dot fasted"></div>
+            <div class="s5-dot fasted"></div><div class="s5-dot fasted"></div><div class="s5-dot fasted"></div><div class="s5-dot fasted"></div><div class="s5-dot fasted"></div><div class="s5-dot fasted"></div>
+            <div class="s5-dot fasted today"></div>
+            <div class="s5-dot"></div><div class="s5-dot"></div><div class="s5-dot"></div><div class="s5-dot"></div><div class="s5-dot"></div><div class="s5-dot"></div><div class="s5-dot"></div>
+            <div class="s5-dot"></div><div class="s5-dot"></div><div class="s5-dot"></div><div class="s5-dot"></div><div class="s5-dot"></div><div class="s5-dot"></div><div class="s5-dot"></div>
+            <div class="s5-dot"></div><div class="s5-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="frame-caption">Ramazan Takibi</div>
+    <div class="frame-caption-sub">Oruç, teravih ve Kur'an takibi</div>
+  </div>
+
+  <!-- ══ SCREENSHOT 6: Prayer Progress ═════════════════════════════ -->
+  <div class="frame-wrap">
+    <span class="frame-label">Ekran 6</span>
+    <div class="iphone">
+      <div class="screen">
+        <div class="sbar">
+          <span class="sbar-time">9:41</span>
+          <div class="sbar-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nbar"><span class="nbar-title">Namaz İlerlemesi</span></div>
+
+        <div class="s6-bg">
+          <div class="s6-today">
+            <div class="s6-today-row">
+              <div>
+                <div style="font-size:9px; font-weight:700; color:var(--gold); letter-spacing:1px; margin-bottom:2px">BUGÜN</div>
+                <div class="s6-count">4<span class="s6-count-of">/5</span></div>
+                <div style="font-size:10px; color:rgba(255,255,255,.5); margin-top:2px">namaz kılındı</div>
+              </div>
+              <div class="s6-circle"><div class="s6-pct">80%</div></div>
+            </div>
+            <div class="s6-dots">
+              <div class="s6-pdot done">🌅</div>
+              <div class="s6-pdot done">☀️</div>
+              <div class="s6-pdot done">🌤</div>
+              <div class="s6-pdot done">🌇</div>
+              <div class="s6-pdot">🌙</div>
+            </div>
+          </div>
+
+          <div class="s6-stats-row">
+            <div class="s6-stat">
+              <div style="font-size:18px">🔥</div>
+              <div class="s6-stat-val" style="font-size:18px">12</div>
+              <div class="s6-stat-lbl">Gün Serisi</div>
+            </div>
+            <div class="s6-stat">
+              <div style="font-size:18px">📊</div>
+              <div class="s6-stat-val" style="font-size:18px; color:var(--green3)">87%</div>
+              <div class="s6-stat-lbl">Haftalık Oran</div>
+            </div>
+            <div class="s6-stat">
+              <div style="font-size:18px">✅</div>
+              <div class="s6-stat-val" style="font-size:18px; color:var(--green3)">30</div>
+              <div class="s6-stat-lbl">Bu Hafta</div>
+            </div>
+          </div>
+
+          <div class="s6-chart" style="margin:8px 14px 0">
+            <div style="font-size:11px; font-weight:700; color:#fff; margin-bottom:6px">Son 7 Gün</div>
+            <div class="s6-bars">
+              <div class="s6-bar-col">
+                <div class="s6-bar-track"><div class="s6-bar-fill" style="height:80%"></div></div>
+                <div class="s6-bar-lbl">Pzt</div>
+              </div>
+              <div class="s6-bar-col">
+                <div class="s6-bar-track"><div class="s6-bar-fill" style="height:100%"></div></div>
+                <div class="s6-bar-lbl">Sal</div>
+              </div>
+              <div class="s6-bar-col">
+                <div class="s6-bar-track"><div class="s6-bar-fill" style="height:60%"></div></div>
+                <div class="s6-bar-lbl">Çar</div>
+              </div>
+              <div class="s6-bar-col">
+                <div class="s6-bar-track"><div class="s6-bar-fill" style="height:80%"></div></div>
+                <div class="s6-bar-lbl">Per</div>
+              </div>
+              <div class="s6-bar-col">
+                <div class="s6-bar-track"><div class="s6-bar-fill" style="height:100%"></div></div>
+                <div class="s6-bar-lbl">Cum</div>
+              </div>
+              <div class="s6-bar-col">
+                <div class="s6-bar-track"><div class="s6-bar-fill" style="height:80%"></div></div>
+                <div class="s6-bar-lbl">Cmt</div>
+              </div>
+              <div class="s6-bar-col">
+                <div class="s6-bar-track"><div class="s6-bar-fill today" style="height:80%"></div></div>
+                <div class="s6-bar-lbl" style="color:var(--gold)">Bug</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- per-prayer bars -->
+          <div class="card" style="margin:8px 14px 0; padding:10px">
+            <div style="font-size:10px; font-weight:700; color:#fff; margin-bottom:8px">Namaz Bazlı (7 gün)</div>
+            <div style="display:flex; flex-direction:column; gap:5px">
+              <div class="row" style="gap:6px"><span style="font-size:12px">🌅</span><span style="font-size:10px; font-weight:700; color:#fff; width:40px">Sabah</span><div class="pbar-track"><div class="pbar-fill" style="width:71%"></div></div><span style="font-size:9px; color:var(--gold); width:24px; text-align:right">5/7</span></div>
+              <div class="row" style="gap:6px"><span style="font-size:12px">☀️</span><span style="font-size:10px; font-weight:700; color:#fff; width:40px">Öğle</span><div class="pbar-track"><div class="pbar-fill" style="width:100%"></div></div><span style="font-size:9px; color:var(--gold); width:24px; text-align:right">7/7</span></div>
+              <div class="row" style="gap:6px"><span style="font-size:12px">🌤</span><span style="font-size:10px; font-weight:700; color:#fff; width:40px">İkindi</span><div class="pbar-track"><div class="pbar-fill" style="width:86%"></div></div><span style="font-size:9px; color:var(--gold); width:24px; text-align:right">6/7</span></div>
+              <div class="row" style="gap:6px"><span style="font-size:12px">🌇</span><span style="font-size:10px; font-weight:700; color:#fff; width:40px">Akşam</span><div class="pbar-track"><div class="pbar-fill" style="width:100%"></div></div><span style="font-size:9px; color:var(--gold); width:24px; text-align:right">7/7</span></div>
+              <div class="row" style="gap:6px"><span style="font-size:12px">🌙</span><span style="font-size:10px; font-weight:700; color:#fff; width:40px">Yatsı</span><div class="pbar-track"><div class="pbar-fill" style="width:57%"></div></div><span style="font-size:9px; color:var(--gold); width:24px; text-align:right">4/7</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="frame-caption">Namaz İlerlemesi</div>
+    <div class="frame-caption-sub">Seri takibi ve haftalık analiz</div>
+  </div>
+
+</div><!-- /frames -->
+
+<!-- info strip -->
+<div class="info-section">
+  <div class="info-card">
+    <h3>📐 Format</h3>
+    <p>iPhone 6.5" (Max / Plus)<br>1242 × 2688 px retina<br>App Store standart format</p>
+  </div>
+  <div class="info-card">
+    <h3>🎨 Tasarım Dili</h3>
+    <p>Koyu İslami yeşil (#0F3D2E)<br>Altın vurgu (#C8A24A)<br>Şeffaf glassmorphism kartlar</p>
+  </div>
+  <div class="info-card">
+    <h3>📱 Ekranlar</h3>
+    <p>Ana Sayfa · Namaz Vakitleri<br>Kur'an Okuyucu · Zikir Sayacı<br>Ramazan Takibi · Namaz İlerlemesi</p>
+  </div>
+  <div class="info-card">
+    <h3>🌐 Dil</h3>
+    <p>Türkçe arayüz<br>Arapça metin (RTL)<br>Türkçe çeviri desteği</p>
+  </div>
+</div>
+
+</body>
+</html>

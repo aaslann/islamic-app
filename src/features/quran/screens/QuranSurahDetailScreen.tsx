@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -7,9 +7,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../../../core/theme/ThemeContext';
 import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
+import { useAyahAudio } from '../hooks/useAyahAudio';
+import { getCache, setCache, TTL } from '../../../core/cache/appCache';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'QuranSurahDetail'>;
-type Ayah = { numberInSurah: number; arabic: string; translation: string };
+type Ayah = { numberInSurah: number; globalNum: number; arabic: string; translation: string };
 type AyahNote = { note?: string; isFavorite?: boolean };
 type SurahNotes = Record<number, AyahNote>;
 type NotesState = Record<string, SurahNotes>;
@@ -32,14 +34,53 @@ export default function QuranSurahDetailScreen({ route }: Props) {
   const [fontScale, setFontScale] = useState<'small' | 'medium' | 'large'>('medium');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [playingAyah, setPlayingAyah] = useState<number | null>(null);
 
   const surahKey = String(surahId);
 
+  // ── Audio ───────────────────────────────────────────────────────────────
+  const handleAyahEnded = useCallback((endedGlobalNum: number) => {
+    const idx = ayahs.findIndex((a) => a.globalNum === endedGlobalNum);
+    if (idx >= 0 && idx < ayahs.length - 1) {
+      audio.play(ayahs[idx + 1].globalNum);
+    } else {
+      audio.stop();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ayahs]);
+
+  const audio = useAyahAudio(handleAyahEnded);
+
+  const playingAyahNum = useMemo(
+    () => ayahs.find((a) => a.globalNum === audio.currentNum)?.numberInSurah ?? null,
+    [ayahs, audio.currentNum],
+  );
+
+  const handlePressPlay = useCallback((ayah: Ayah) => {
+    if (audio.currentNum === ayah.globalNum) {
+      audio.togglePause();
+    } else {
+      audio.play(ayah.globalNum);
+    }
+  }, [audio]);
+
+  const handlePrev = useCallback(() => {
+    const idx = ayahs.findIndex((a) => a.globalNum === audio.currentNum);
+    if (idx > 0) audio.play(ayahs[idx - 1].globalNum);
+  }, [ayahs, audio]);
+
+  const handleNext = useCallback(() => {
+    const idx = ayahs.findIndex((a) => a.globalNum === audio.currentNum);
+    if (idx >= 0 && idx < ayahs.length - 1) audio.play(ayahs[idx + 1].globalNum);
+  }, [ayahs, audio]);
+
+  // ── Fetch ───────────────────────────────────────────────────────────────
   useEffect(() => {
+    const cacheKey = `qcache-surah-${surahId}-v1`;
     const load = async () => {
       try {
         setLoadState('loading'); setErrorMsg(null);
+        const cached = await getCache<Ayah[]>(cacheKey, TTL.THIRTY_DAYS);
+        if (cached) { setAyahs(cached); setLoadState('success'); return; }
         const [arabicRes, turkishRes] = await Promise.all([
           fetch(`https://api.alquran.cloud/v1/surah/${surahId}`),
           fetch(`https://api.alquran.cloud/v1/surah/${surahId}/tr.diyanet`),
@@ -47,18 +88,29 @@ export default function QuranSurahDetailScreen({ route }: Props) {
         if (!arabicRes.ok || !turkishRes.ok) throw new Error('api-error');
         const [aJ, tJ] = await Promise.all([arabicRes.json(), turkishRes.json()]);
         if (!Array.isArray(aJ?.data?.ayahs) || !Array.isArray(tJ?.data?.ayahs)) throw new Error('invalid-response');
-        setAyahs(aJ.data.ayahs.map((a: any, i: number) => ({
+        const mapped: Ayah[] = aJ.data.ayahs.map((a: any, i: number) => ({
           numberInSurah: a.numberInSurah,
+          globalNum: a.number,
           arabic: a.text,
           translation: tJ.data.ayahs[i]?.text ?? '',
-        })));
+        }));
+        setAyahs(mapped);
         setLoadState('success');
+        setCache(cacheKey, mapped);
       } catch {
+        // Stale cache fallback
+        const stale = await getCache<Ayah[]>(cacheKey, TTL.THIRTY_DAYS * 12);
+        if (stale) { setAyahs(stale); setLoadState('success'); return; }
         setLoadState('error');
         setErrorMsg('Ayetler yüklenirken hata oluştu. İnternet bağlantını kontrol et.');
       }
     };
     load();
+  }, [surahId]);
+
+  useEffect(() => {
+    return () => { audio.stop(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [surahId]);
 
   useEffect(() => {
@@ -72,6 +124,7 @@ export default function QuranSurahDetailScreen({ route }: Props) {
 
   const fontMult = fontScale === 'small' ? 0.9 : fontScale === 'large' ? 1.15 : 1;
 
+  // ── Notes ───────────────────────────────────────────────────────────────
   const persist = async (nextAll: NotesState) => {
     try { await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextAll)); } catch {}
   };
@@ -99,6 +152,7 @@ export default function QuranSurahDetailScreen({ route }: Props) {
   }, [ayahs, searchQuery]);
 
   const favoriteCount = Object.values(notes).filter((n) => n.isFavorite).length;
+  const isPlayerVisible = audio.currentNum !== null;
 
   return (
     <View style={[styles.root, { backgroundColor: c.background }]}>
@@ -129,16 +183,14 @@ export default function QuranSurahDetailScreen({ route }: Props) {
           </View>
         </View>
 
-        {/* Bismillah */}
         {surahId !== 1 && surahId !== 9 && (
           <View style={[styles.bismillah, { borderColor: `${palette.gold500}25` }]}>
-            <Text style={{ fontFamily: 'serif', fontSize: 18, color: palette.gold400, textAlign: 'center' }}>
+            <Text style={{ fontFamily: 'Amiri_400Regular', fontSize: 20, color: palette.gold400, textAlign: 'center' }}>
               بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
             </Text>
           </View>
         )}
 
-        {/* Search bar */}
         {showSearch && (
           <View style={[styles.searchBar, { backgroundColor: 'rgba(255,255,255,.1)', borderColor: 'rgba(255,255,255,.15)' }]}>
             <Text style={{ fontSize: 14, marginRight: spacing.sm }}>🔍</Text>
@@ -160,7 +212,7 @@ export default function QuranSurahDetailScreen({ route }: Props) {
       {/* Ayah list */}
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.content, { paddingBottom: playingAyah ? 140 : 80 }]}
+        contentContainerStyle={[styles.content, { paddingBottom: isPlayerVisible ? 140 : 80 }]}
         showsVerticalScrollIndicator={false}
       >
         {loadState === 'loading' && (
@@ -180,15 +232,14 @@ export default function QuranSurahDetailScreen({ route }: Props) {
           const isFav = !!meta?.isFavorite;
           const hasNote = !!meta?.note;
           const isEditing = activeNoteAyah === ayah.numberInSurah;
-          const isPlaying = playingAyah === ayah.numberInSurah;
+          const isActive = audio.currentNum === ayah.globalNum;
 
           return (
             <View key={ayah.numberInSurah} style={[
               styles.ayahCard,
               { backgroundColor: c.surface, borderColor: isFav ? `${palette.gold500}40` : c.border },
-              isPlaying && { borderColor: `${palette.green400}50`, backgroundColor: c.surfaceElevated },
+              isActive && { borderColor: `${palette.green400}50`, backgroundColor: c.surfaceElevated },
             ]}>
-              {/* Ayah header */}
               <View style={styles.ayahHeader}>
                 <View style={[styles.ayahNumBadge, { backgroundColor: `${palette.gold500}18`, borderColor: `${palette.gold500}35` }]}>
                   <Text style={{ fontSize: 11, fontWeight: '800', color: palette.gold500 }}>{ayah.numberInSurah}</Text>
@@ -199,9 +250,11 @@ export default function QuranSurahDetailScreen({ route }: Props) {
                       <Text style={{ fontSize: 10, color: palette.green300, fontWeight: '700' }}>📝 Not</Text>
                     </View>
                   )}
-                  <Pressable onPress={() => setPlayingAyah(isPlaying ? null : ayah.numberInSurah)}
-                    style={[styles.actionBtn, { borderColor: isPlaying ? `${palette.green400}50` : c.border }, isPlaying && { backgroundColor: `${palette.green500}15` }]}>
-                    <Text style={{ fontSize: 12 }}>{isPlaying ? '⏸' : '▶'}</Text>
+                  <Pressable onPress={() => handlePressPlay(ayah)}
+                    style={[styles.actionBtn, { borderColor: isActive ? `${palette.green400}50` : c.border }, isActive && { backgroundColor: `${palette.green500}15` }]}>
+                    <Text style={{ fontSize: 12 }}>
+                      {isActive && audio.isLoading ? '⏳' : isActive && audio.isPlaying ? '⏸' : '▶'}
+                    </Text>
                   </Pressable>
                   <Pressable onPress={() => toggleFavorite(ayah.numberInSurah)}
                     style={[styles.actionBtn, { borderColor: isFav ? `${palette.gold500}50` : c.border }, isFav && { backgroundColor: `${palette.gold500}12` }]}>
@@ -210,23 +263,23 @@ export default function QuranSurahDetailScreen({ route }: Props) {
                 </View>
               </View>
 
-              {/* Arabic text */}
-              <Text style={[{
-                fontSize: 22 * fontMult, lineHeight: 44 * fontMult, textAlign: 'right',
+              <Text style={{
+                fontFamily: 'Amiri_400Regular',
+                fontSize: 24 * fontMult,
+                lineHeight: 48 * fontMult,
+                textAlign: 'right',
                 color: theme.dark ? palette.gold300 : palette.green800,
-                fontFamily: 'serif', marginVertical: spacing.sm,
-              }]}>
+                marginVertical: spacing.sm,
+              }}>
                 {ayah.arabic}
               </Text>
 
               <View style={[styles.divider, { backgroundColor: c.border }]} />
 
-              {/* Translation */}
               <Text style={[t.body, { fontSize: 14 * fontMult, color: c.textSecondary, lineHeight: 22, marginTop: spacing.xs }]}>
                 {ayah.translation}
               </Text>
 
-              {/* Existing note display */}
               {hasNote && !isEditing && (
                 <View style={[styles.noteDisplay, { backgroundColor: `${palette.green500}08`, borderColor: `${palette.green500}20` }]}>
                   <Text style={{ fontSize: 10, color: palette.green400, fontWeight: '700', marginBottom: 4 }}>📝 NOTUN</Text>
@@ -234,7 +287,6 @@ export default function QuranSurahDetailScreen({ route }: Props) {
                 </View>
               )}
 
-              {/* Note editor */}
               {isEditing ? (
                 <View style={[styles.noteEditor, { borderTopColor: c.border }]}>
                   <TextInput
@@ -274,25 +326,43 @@ export default function QuranSurahDetailScreen({ route }: Props) {
       </ScrollView>
 
       {/* Audio player bar */}
-      {playingAyah && (
+      {isPlayerVisible && (
         <BlurView intensity={theme.dark ? 60 : 80} tint={theme.dark ? 'dark' : 'light'} style={styles.playerBar}>
           <LinearGradient
             colors={theme.dark ? ['rgba(15,61,46,.95)', 'rgba(8,26,18,.98)'] : ['rgba(255,255,255,.98)', 'rgba(240,255,250,.98)']}
             style={styles.playerInner}
           >
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 10, color: palette.gold500, fontWeight: '700', marginBottom: 2 }}>🎧 OYNATILIYOR — Ayet {playingAyah}</Text>
+              <Text style={{ fontSize: 10, color: palette.gold500, fontWeight: '700', marginBottom: 2 }}>
+                {audio.isLoading ? '⏳ Yükleniyor...' : audio.error ? '⚠️ Ses yüklenemedi' : `🎧 OYNATILIYOR — Ayet ${playingAyahNum}`}
+              </Text>
               <Text style={[t.caption, { color: c.textSecondary }]}>{surahName}</Text>
               <View style={[styles.playerProgress, { backgroundColor: c.border }]}>
-                <LinearGradient colors={[palette.green500, palette.gold500]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.playerProgressFill, { width: '35%' }]} />
+                <LinearGradient
+                  colors={[palette.green500, palette.gold500]}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                  style={[styles.playerProgressFill, { width: `${Math.round(audio.position * 100)}%` }]}
+                />
               </View>
             </View>
             <View style={styles.playerControls}>
-              <Pressable style={styles.playerBtn}><Text style={{ fontSize: 20 }}>⏮</Text></Pressable>
-              <Pressable onPress={() => setPlayingAyah(null)} style={[styles.playerBtn, styles.playerPlayBtn, { backgroundColor: c.primary }]}>
-                <Text style={{ fontSize: 18 }}>⏸</Text>
+              <Pressable onPress={handlePrev} style={styles.playerBtn}>
+                <Text style={{ fontSize: 20 }}>⏮</Text>
               </Pressable>
-              <Pressable style={styles.playerBtn}><Text style={{ fontSize: 20 }}>⏭</Text></Pressable>
+              <Pressable
+                onPress={() => audio.togglePause()}
+                style={[styles.playerBtn, styles.playerPlayBtn, { backgroundColor: c.primary }]}
+              >
+                <Text style={{ fontSize: 18 }}>
+                  {audio.isLoading ? '⏳' : audio.isPlaying ? '⏸' : '▶'}
+                </Text>
+              </Pressable>
+              <Pressable onPress={handleNext} style={styles.playerBtn}>
+                <Text style={{ fontSize: 20 }}>⏭</Text>
+              </Pressable>
+              <Pressable onPress={() => audio.stop()} style={styles.playerBtn}>
+                <Text style={{ fontSize: 16 }}>✕</Text>
+              </Pressable>
             </View>
           </LinearGradient>
         </BlurView>
@@ -330,7 +400,7 @@ const styles = StyleSheet.create({
   playerInner:        { flexDirection: 'row', alignItems: 'center', padding: spacing.lg, gap: spacing.lg },
   playerProgress:     { height: 3, borderRadius: 99, marginTop: spacing.sm, overflow: 'hidden' },
   playerProgressFill: { height: '100%', borderRadius: 99 },
-  playerControls:     { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  playerControls:     { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   playerBtn:          { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   playerPlayBtn:      { width: 44, height: 44, borderRadius: 22 },
 });

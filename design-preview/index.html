@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İslami Asistan – Design Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green900: #081A12;
+    --green800: #0F3D2E;
+    --green700: #145E43;
+    --green600: #1A7A56;
+    --green500: #1F6E5A;
+    --green400: #2D8A70;
+    --green300: #4AA88C;
+    --green100: #D0EDE7;
+    --green50:  #EAF6F3;
+    --gold500:  #C8A24A;
+    --gold400:  #D4B46A;
+    --gold300:  #E0C88A;
+    --gold100:  #F5EDD5;
+    --cream50:  #F7F3E8;
+    --gray900:  #111827;
+    --gray500:  #6B7280;
+    --gray100:  #F3F4F6;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0A0F0D;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .page-header {
+    text-align: center;
+    padding: 60px 24px 48px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(31,110,90,.25) 0%, transparent 70%);
+  }
+  .brand-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(200,162,74,.12);
+    border: 1px solid rgba(200,162,74,.3);
+    border-radius: 99px;
+    padding: 6px 16px;
+    font-size: 12px; font-weight: 600; letter-spacing: .08em;
+    color: var(--gold400);
+    margin-bottom: 20px;
+  }
+  .page-header h1 {
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    background: linear-gradient(135deg, #fff 30%, var(--gold300) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+  .page-header p {
+    margin-top: 16px;
+    color: rgba(255,255,255,.5);
+    font-size: 17px;
+    max-width: 480px;
+    margin-left: auto; margin-right: auto;
+    line-height: 1.6;
+  }
+
+  /* ── Section ── */
+  .section { padding: 48px 24px; }
+  .section-label {
+    text-align: center;
+    font-size: 11px; font-weight: 700; letter-spacing: .12em;
+    color: var(--gold500);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    text-align: center;
+    font-size: clamp(22px, 3.5vw, 34px);
+    font-weight: 700;
+    letter-spacing: -.5px;
+    color: #fff;
+    margin-bottom: 48px;
+  }
+
+  /* ── Phone Frame ── */
+  .phones-row {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .phone-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.4); letter-spacing: .06em; }
+  .phone {
+    width: 280px;
+    height: 580px;
+    border-radius: 40px;
+    background: var(--green900);
+    border: 6px solid #1a2a24;
+    box-shadow:
+      0 0 0 1px rgba(200,162,74,.15),
+      0 40px 80px rgba(0,0,0,.6),
+      inset 0 1px 0 rgba(255,255,255,.08);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .phone.featured { transform: scale(1.06); }
+  /* notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 12px; left: 50%; transform: translateX(-50%);
+    width: 90px; height: 24px;
+    background: #0A0F0D;
+    border-radius: 99px;
+    z-index: 100;
+  }
+
+  /* ── Status bar ── */
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 22px 6px;
+    font-size: 11px; font-weight: 600; color: rgba(255,255,255,.8);
+  }
+  .status-icons { display: flex; gap: 4px; align-items: center; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.6); }
+
+  /* ══════════════════════════════════════════
+     SCREEN: HOME (DARK)
+  ══════════════════════════════════════════ */
+  .screen-home {
+    height: 100%;
+    background: linear-gradient(180deg,
+      var(--green800) 0%,
+      #0c2e22 28%,
+      var(--green500) 48%,
+      #1a5c4d 62%,
+      var(--green900) 78%,
+      #0A0F0D 100%
+    );
+    display: flex; flex-direction: column;
+    font-family: 'Inter', sans-serif;
+  }
+  .home-hero {
+    padding: 8px 20px 20px;
+    background: linear-gradient(160deg, rgba(15,61,46,.95), rgba(31,110,90,.85));
+    border-bottom: 1px solid rgba(200,162,74,.12);
+  }
+  .home-greeting { font-size: 11px; color: rgba(255,255,255,.65); margin-bottom: 4px; }
+  .home-title { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -.3px; }
+  .home-subtitle { font-size: 12px; color: rgba(255,255,255,.55); margin-top: 2px; }
+  .home-body { flex: 1; overflow: hidden; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .home-section-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.4); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+
+  /* Quick grid */
+  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .quick-card {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    padding: 12px;
+    backdrop-filter: blur(8px);
+  }
+  .quick-card.gold-card {
+    background: linear-gradient(135deg, rgba(200,162,74,.2), rgba(200,162,74,.06));
+    border-color: rgba(200,162,74,.25);
+  }
+  .quick-emoji { font-size: 20px; margin-bottom: 6px; }
+  .quick-card-label { font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 8px; line-height: 1.3; }
+  .quick-btn {
+    background: var(--green500);
+    color: #fff;
+    font-size: 10px; font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 99px;
+    display: inline-block;
+  }
+  .quick-btn.gold-btn { background: var(--gold500); color: #0A0F0D; }
+
+  /* Row links */
+  .row-links { display: flex; flex-direction: column; gap: 6px; }
+  .row-link {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .row-link-emoji { font-size: 16px; }
+  .row-link-text { flex: 1; }
+  .row-link-title { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.9); }
+  .row-link-sub { font-size: 10px; color: rgba(255,255,255,.35); margin-top: 1px; }
+  .row-link-chevron { font-size: 14px; color: rgba(255,255,255,.2); }
+
+  /* ══════════════════════════════════════════
+     SCREEN: PRAYER TIMES
+  ══════════════════════════════════════════ */
+  .screen-prayer {
+    height: 100%;
+    background: linear-gradient(175deg, var(--green800) 0%, #0c2a1e 45%, var(--green900) 100%);
+    display: flex; flex-direction: column;
+  }
+  .prayer-hero {
+    padding: 8px 20px 20px;
+    background: rgba(15,61,46,.7);
+  }
+  .prayer-city { font-size: 11px; color: rgba(255,255,255,.5); display: flex; align-items: center; gap: 4px; }
+  .prayer-city::before { content: '📍'; font-size: 10px; }
+  .prayer-next {
+    margin-top: 6px;
+    background: linear-gradient(135deg, rgba(200,162,74,.25), rgba(200,162,74,.08));
+    border: 1px solid rgba(200,162,74,.3);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .prayer-next-label { font-size: 10px; color: var(--gold400); font-weight: 600; margin-bottom: 3px; }
+  .prayer-next-name { font-size: 18px; font-weight: 700; color: #fff; }
+  .prayer-next-time { font-size: 24px; font-weight: 800; color: var(--gold400); letter-spacing: -1px; }
+  .prayer-countdown { font-size: 10px; color: rgba(255,255,255,.4); text-align: right; margin-top: 2px; }
+
+  .prayer-list { flex: 1; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .prayer-row {
+    display: flex; align-items: center;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  .prayer-row.active {
+    background: rgba(31,110,90,.25);
+    border-color: rgba(31,110,90,.4);
+  }
+  .prayer-row-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.15); margin-right: 10px; }
+  .prayer-row.active .prayer-row-dot { background: var(--green300); }
+  .prayer-row-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.85); flex: 1; }
+  .prayer-row.active .prayer-row-name { color: #fff; }
+  .prayer-row-time { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.5); }
+  .prayer-row.active .prayer-row-time { color: var(--green300); }
+  .prayer-row-bell { font-size: 12px; margin-left: 8px; opacity: .3; }
+  .prayer-row.active .prayer-row-bell { opacity: 1; }
+
+  /* ══════════════════════════════════════════
+     SCREEN: QURAN READER
+  ══════════════════════════════════════════ */
+  .screen-quran {
+    height: 100%;
+    background: linear-gradient(180deg, #0D1F18 0%, #0A1A10 100%);
+    display: flex; flex-direction: column;
+  }
+  .quran-header {
+    padding: 8px 14px 14px;
+    background: linear-gradient(180deg, rgba(15,61,46,.9), rgba(15,61,46,.4));
+  }
+  .quran-surah-banner {
+    background: linear-gradient(135deg, rgba(200,162,74,.2), rgba(31,110,90,.3));
+    border: 1px solid rgba(200,162,74,.2);
+    border-radius: 14px;
+    padding: 12px 14px;
+    text-align: center;
+    margin-top: 8px;
+  }
+  .quran-bismillah {
+    font-family: 'Amiri', serif;
+    font-size: 18px;
+    color: var(--gold400);
+    margin-bottom: 6px;
+    direction: rtl;
+  }
+  .quran-surah-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .quran-surah-meta { font-size: 10px; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+  .quran-body { flex: 1; padding: 10px 14px; overflow: hidden; display: flex; flex-direction: column; gap: 10px; }
+  .ayah-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px;
+    padding: 12px;
+  }
+  .ayah-number {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(200,162,74,.2);
+    border: 1px solid rgba(200,162,74,.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: var(--gold400);
+    margin-bottom: 8px;
+  }
+  .ayah-arabic {
+    font-family: 'Amiri', serif;
+    font-size: 17px;
+    line-height: 1.8;
+    color: #EDF5F2;
+    text-align: right;
+    direction: rtl;
+    margin-bottom: 8px;
+  }
+  .ayah-divider { height: 1px; background: rgba(255,255,255,.06); margin: 6px 0; }
+  .ayah-turkish { font-size: 10px; color: rgba(255,255,255,.45); line-height: 1.6; }
+  .ayah-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .ayah-action-btn {
+    font-size: 10px; padding: 4px 8px;
+    border-radius: 99px;
+    background: rgba(31,110,90,.25);
+    border: 1px solid rgba(31,110,90,.3);
+    color: var(--green300);
+    font-weight: 600;
+  }
+
+  /* ══════════════════════════════════════════
+     SCREEN: SETTINGS (LIGHT MODE)
+  ══════════════════════════════════════════ */
+  .screen-settings {
+    height: 100%;
+    background: var(--cream50);
+    display: flex; flex-direction: column;
+  }
+  .settings-header {
+    padding: 8px 16px 16px;
+    background: linear-gradient(160deg, var(--green800) 0%, var(--green700) 100%);
+  }
+  .settings-title { font-size: 20px; font-weight: 700; color: #fff; }
+  .settings-subtitle { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; }
+
+  .settings-body { flex: 1; padding: 12px; overflow: hidden; display: flex; flex-direction: column; gap: 10px; }
+  .settings-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    overflow: hidden;
+  }
+  .settings-row {
+    display: flex; align-items: center;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(0,0,0,.04);
+    gap: 10px;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .settings-row-icon.green { background: var(--green50); }
+  .settings-row-icon.gold { background: var(--gold100); }
+  .settings-row-icon.blue { background: #EBF5FF; }
+  .settings-row-text { flex: 1; }
+  .settings-row-title { font-size: 13px; font-weight: 600; color: var(--gray900); }
+  .settings-row-sub { font-size: 10px; color: var(--gray500); margin-top: 1px; }
+
+  /* Toggle switch */
+  .toggle { width: 38px; height: 22px; border-radius: 99px; background: var(--green500); position: relative; flex-shrink: 0; }
+  .toggle::after { content: ''; position: absolute; top: 3px; right: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .toggle.off { background: #D1D5DB; }
+  .toggle.off::after { left: 3px; right: auto; }
+
+  /* Pill selector */
+  .pill-row { display: flex; gap: 6px; padding: 8px 14px 12px; }
+  .pill {
+    padding: 5px 12px;
+    border-radius: 99px;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid rgba(0,0,0,.1);
+    color: var(--gray500);
+    background: var(--gray100);
+  }
+  .pill.active {
+    background: var(--green50);
+    border-color: var(--green500);
+    color: var(--green700);
+  }
+
+  /* ══════════════════════════════════════════
+     SCREEN: ZIKR (TASBIH)
+  ══════════════════════════════════════════ */
+  .screen-zikr {
+    height: 100%;
+    background: radial-gradient(ellipse at 50% 30%, rgba(31,110,90,.3) 0%, var(--green900) 60%);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .zikr-header { width: 100%; padding: 8px 16px 12px; }
+  .zikr-name { font-size: 11px; color: rgba(255,255,255,.4); text-align: center; margin-bottom: 2px; }
+  .zikr-arabic {
+    font-family: 'Amiri', serif;
+    font-size: 20px;
+    color: var(--gold400);
+    text-align: center;
+    direction: rtl;
+    line-height: 1.5;
+  }
+  .zikr-turkish { font-size: 10px; color: rgba(255,255,255,.4); text-align: center; margin-top: 4px; }
+
+  .zikr-counter-wrap {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 20px;
+  }
+  .zikr-ring {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    border: 3px solid rgba(200,162,74,.2);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .zikr-ring::before {
+    content: '';
+    position: absolute; inset: -8px;
+    border-radius: 50%;
+    border: 1px solid rgba(200,162,74,.1);
+  }
+  .zikr-count { font-size: 52px; font-weight: 800; color: #fff; letter-spacing: -2px; line-height: 1; }
+  .zikr-target { font-size: 11px; color: rgba(255,255,255,.3); margin-top: 2px; }
+  .zikr-btn {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green500), var(--green700));
+    border: 2px solid rgba(200,162,74,.3);
+    box-shadow: 0 8px 24px rgba(31,110,90,.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .zikr-pills { display: flex; gap: 8px; }
+  .zikr-pill {
+    padding: 6px 14px;
+    border-radius: 99px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    font-size: 10px; color: rgba(255,255,255,.5); font-weight: 600;
+  }
+  .zikr-pill.active { background: rgba(200,162,74,.15); border-color: rgba(200,162,74,.3); color: var(--gold400); }
+
+  /* ══════════════════════════════════════════
+     DESIGN TOKENS SECTION
+  ══════════════════════════════════════════ */
+  .tokens-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .token-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .token-card-title { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.4); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
+  .color-swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+  .swatch {
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.1);
+    position: relative;
+  }
+  .swatch::after { content: attr(data-label); position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 8px; color: rgba(255,255,255,.3); white-space: nowrap; }
+  .swatch-row { display: flex; gap: 6px; flex-direction: column; }
+  .swatch-item { display: flex; align-items: center; gap: 10px; }
+  .swatch-circle { width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,.1); }
+  .swatch-info { font-size: 11px; color: rgba(255,255,255,.5); }
+  .swatch-info span { color: rgba(255,255,255,.8); font-weight: 600; }
+
+  /* type scale */
+  .type-scale { display: flex; flex-direction: column; gap: 10px; }
+  .type-item { display: flex; align-items: baseline; gap: 12px; }
+  .type-sample { color: #fff; line-height: 1; }
+  .type-meta { font-size: 10px; color: rgba(255,255,255,.3); white-space: nowrap; }
+
+  /* ── Footer ── */
+  .page-footer {
+    text-align: center;
+    padding: 48px 24px;
+    color: rgba(255,255,255,.25);
+    font-size: 13px;
+    border-top: 1px solid rgba(255,255,255,.05);
+  }
+
+  /* ── Geometric ornament ── */
+  .ornament {
+    text-align: center;
+    font-size: 32px;
+    opacity: .15;
+    margin: 8px 0;
+    letter-spacing: 8px;
+  }
+
+  /* Progress bar */
+  .progress-bar { height: 3px; background: rgba(255,255,255,.08); border-radius: 99px; margin-top: 10px; }
+  .progress-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--green500), var(--gold500)); width: 62%; }
+
+  /* Qibla preview */
+  .qibla-compass {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    border: 2px solid rgba(200,162,74,.3);
+    background: radial-gradient(circle, rgba(31,110,90,.3) 0%, rgba(8,26,18,.8) 100%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    margin: 0 auto 12px;
+  }
+  .compass-needle {
+    width: 4px; height: 60px;
+    background: linear-gradient(180deg, var(--gold500) 50%, #333 50%);
+    border-radius: 2px;
+    transform: rotate(35deg);
+    transform-origin: center;
+  }
+  .compass-north { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-size: 8px; color: rgba(255,255,255,.4); font-weight: 700; }
+  .compass-ka { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--gold400); font-weight: 700; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!-- ══ PAGE HEADER ══ -->
+<div class="page-header">
+  <div class="brand-badge">🕌 İslami Asistan · UI Design Preview</div>
+  <h1>Islamic Life App<br>Design System</h1>
+  <p>Modern, minimal ve manevî his veren bir İslami uygulama tasarımı. Dark mode öncelikli, altın vurgulu.</p>
+  <div class="ornament">✦ ✦ ✦</div>
+</div>
+
+<!-- ══ SCREENS: CORE ══ -->
+<div class="section">
+  <div class="section-label">Core Screens</div>
+  <div class="section-title">Ana Ekranlar</div>
+
+  <div class="phones-row">
+
+    <!-- HOME DARK -->
+    <div class="phone-wrap">
+      <div class="phone featured">
+        <div class="screen-home">
+          <div class="status-bar">
+            <span>09:41</span>
+            <div class="status-icons">
+              <div class="status-dot"></div>
+              <div class="status-dot"></div>
+              <div class="status-dot" style="background:rgba(255,255,255,.3)"></div>
+            </div>
+          </div>
+          <div class="home-hero">
+            <div class="home-greeting">Hayırlı sabahlar ☀️</div>
+            <div class="home-title">İslami Asistan</div>
+            <div class="home-subtitle">Günlük ibadetlerin için rehber</div>
+          </div>
+          <div class="home-body">
+            <div>
+              <div class="home-section-title">Hızlı Erişim</div>
+              <div class="quick-grid">
+                <div class="quick-card gold-card">
+                  <div class="quick-emoji">🕌</div>
+                  <div class="quick-card-label">Namaz Vakitleri</div>
+                  <div class="quick-btn gold-btn">Vakitleri Gör</div>
+                </div>
+                <div class="quick-card">
+                  <div class="quick-emoji">📖</div>
+                  <div class="quick-card-label">Kur'an-ı Kerim</div>
+                  <div class="quick-btn">Sureleri Aç</div>
+                </div>
+                <div class="quick-card">
+                  <div class="quick-emoji">📿</div>
+                  <div class="quick-card-label">Zikir Sayacı</div>
+                  <div class="quick-btn">Sayacı Aç</div>
+                </div>
+                <div class="quick-card">
+                  <div class="quick-emoji">🤲</div>
+                  <div class="quick-card-label">Günlük Dualar</div>
+                  <div class="quick-btn">Duaları Aç</div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="home-section-title">Namaz</div>
+              <div class="row-links">
+                <div class="row-link">
+                  <div class="row-link-emoji">🧭</div>
+                  <div class="row-link-text">
+                    <div class="row-link-title">Namaz Kılavuzu</div>
+                    <div class="row-link-sub">Adım adım rehber</div>
+                  </div>
+                  <div class="row-link-chevron">›</div>
+                </div>
+                <div class="row-link">
+                  <div class="row-link-emoji">📍</div>
+                  <div class="row-link-text">
+                    <div class="row-link-title">Kıble Yönü</div>
+                    <div class="row-link-sub">Pusula ile bul</div>
+                  </div>
+                  <div class="row-link-chevron">›</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home · Dark Mode</div>
+    </div>
+
+    <!-- PRAYER TIMES -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="screen-prayer">
+          <div class="status-bar">
+            <span>09:41</span>
+            <div class="status-icons">
+              <div class="status-dot"></div><div class="status-dot"></div><div class="status-dot" style="background:rgba(255,255,255,.3)"></div>
+            </div>
+          </div>
+          <div class="prayer-hero">
+            <div class="prayer-city">İstanbul, Türkiye</div>
+            <div class="prayer-next" style="margin-top:10px">
+              <div>
+                <div class="prayer-next-label">Sıradaki Namaz</div>
+                <div class="prayer-next-name">Öğle</div>
+                <div class="prayer-countdown">1 saat 23 dk kaldı</div>
+              </div>
+              <div class="prayer-next-time">12:24</div>
+            </div>
+          </div>
+          <div class="prayer-list">
+            <div class="prayer-row">
+              <div class="prayer-row-dot"></div>
+              <div class="prayer-row-name">İmsak</div>
+              <div class="prayer-row-time">04:18</div>
+              <div class="prayer-row-bell">🔔</div>
+            </div>
+            <div class="prayer-row">
+              <div class="prayer-row-dot"></div>
+              <div class="prayer-row-name">Güneş</div>
+              <div class="prayer-row-time">05:52</div>
+              <div class="prayer-row-bell">🔔</div>
+            </div>
+            <div class="prayer-row">
+              <div class="prayer-row-dot"></div>
+              <div class="prayer-row-name">Sabah</div>
+              <div class="prayer-row-time">04:42</div>
+              <div class="prayer-row-bell">🔔</div>
+            </div>
+            <div class="prayer-row active">
+              <div class="prayer-row-dot"></div>
+              <div class="prayer-row-name">Öğle</div>
+              <div class="prayer-row-time">12:24</div>
+              <div class="prayer-row-bell">🔔</div>
+            </div>
+            <div class="prayer-row">
+              <div class="prayer-row-dot"></div>
+              <div class="prayer-row-name">İkindi</div>
+              <div class="prayer-row-time">16:05</div>
+              <div class="prayer-row-bell">🔔</div>
+            </div>
+            <div class="prayer-row">
+              <div class="prayer-row-dot"></div>
+              <div class="prayer-row-name">Akşam</div>
+              <div class="prayer-row-time">19:01</div>
+              <div class="prayer-row-bell">🔔</div>
+            </div>
+            <div class="prayer-row">
+              <div class="prayer-row-dot"></div>
+              <div class="prayer-row-name">Yatsı</div>
+              <div class="prayer-row-time">20:27</div>
+              <div class="prayer-row-bell">🔔</div>
+            </div>
+            <div style="margin-top:8px">
+              <div style="font-size:10px; color:rgba(255,255,255,.35); margin-bottom:4px;">Bugünkü İlerleme</div>
+              <div class="progress-bar"><div class="progress-fill"></div></div>
+              <div style="font-size:9px; color:rgba(255,255,255,.25); margin-top:4px; text-align:right;">3 / 5 kılındı</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Prayer Times</div>
+    </div>
+
+    <!-- QURAN READER -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="screen-quran">
+          <div class="status-bar">
+            <span>09:41</span>
+            <div class="status-icons">
+              <div class="status-dot"></div><div class="status-dot"></div><div class="status-dot" style="background:rgba(255,255,255,.3)"></div>
+            </div>
+          </div>
+          <div class="quran-header">
+            <div class="quran-surah-banner">
+              <div class="quran-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+              <div class="quran-surah-name">Al-Fatiha · الفاتحة</div>
+              <div class="quran-surah-meta">1. Sure · 7 Ayet · Mekki</div>
+            </div>
+          </div>
+          <div class="quran-body">
+            <div class="ayah-card">
+              <div class="ayah-number">1</div>
+              <div class="ayah-arabic">ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ</div>
+              <div class="ayah-divider"></div>
+              <div class="ayah-turkish">Hamd, âlemlerin Rabbi Allah'a mahsustur.</div>
+              <div class="ayah-actions">
+                <div class="ayah-action-btn">⭐ Favori</div>
+                <div class="ayah-action-btn">📋 Kopyala</div>
+                <div class="ayah-action-btn">🔊 Dinle</div>
+              </div>
+            </div>
+            <div class="ayah-card">
+              <div class="ayah-number">2</div>
+              <div class="ayah-arabic">ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+              <div class="ayah-divider"></div>
+              <div class="ayah-turkish">O, Rahman'dır, Rahim'dir.</div>
+              <div class="ayah-actions">
+                <div class="ayah-action-btn">⭐ Favori</div>
+                <div class="ayah-action-btn">📋 Kopyala</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Quran Reader</div>
+    </div>
+
+  </div><!-- /phones-row -->
+</div>
+
+<!-- ══ SCREENS: PREMIUM ══ -->
+<div class="section" style="padding-top:24px">
+  <div class="section-label">Premium Screens</div>
+  <div class="section-title">Zikir, Kıble & Ayarlar</div>
+
+  <div class="phones-row">
+
+    <!-- ZIKR / TASBIH -->
+    <div class="phone-wrap">
+      <div class="phone featured">
+        <div class="screen-zikr">
+          <div class="status-bar" style="width:100%">
+            <span>09:41</span>
+            <div class="status-icons">
+              <div class="status-dot"></div><div class="status-dot"></div><div class="status-dot" style="background:rgba(255,255,255,.3)"></div>
+            </div>
+          </div>
+          <div class="zikr-header">
+            <div class="zikr-name">Günün Zikri</div>
+            <div class="zikr-arabic">سُبْحَانَ اللَّهِ</div>
+            <div class="zikr-turkish">Sübhanallah · Allah'ı tenzih ederim</div>
+          </div>
+          <div class="zikr-counter-wrap">
+            <div class="zikr-ring">
+              <div>
+                <div class="zikr-count">33</div>
+                <div class="zikr-target" style="text-align:center">/ 99</div>
+              </div>
+            </div>
+            <div class="zikr-btn">📿</div>
+            <div class="progress-bar" style="width:180px">
+              <div class="progress-fill" style="width:33%"></div>
+            </div>
+            <div class="zikr-pills">
+              <div class="zikr-pill active">Sübhanallah</div>
+              <div class="zikr-pill">Alhamdülillah</div>
+              <div class="zikr-pill">Allahü Ekber</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Zikir Sayacı</div>
+    </div>
+
+    <!-- QIBLA -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="screen-prayer" style="background: radial-gradient(ellipse at 50% 20%, rgba(31,110,90,.35) 0%, var(--green900) 65%); align-items:center; justify-content:center;">
+          <div class="status-bar" style="width:100%; position:absolute; top:0; left:0;">
+            <span>09:41</span>
+            <div class="status-icons">
+              <div class="status-dot"></div><div class="status-dot"></div>
+            </div>
+          </div>
+          <div style="text-align:center; padding: 60px 24px 0;">
+            <div style="font-size:11px; color:rgba(255,255,255,.4); margin-bottom:4px;">Kıble Yönü</div>
+            <div style="font-size:18px; font-weight:700; color:#fff; margin-bottom:6px;">Kuzey'den 135° SE</div>
+            <div style="font-size:10px; color:rgba(255,255,255,.35); margin-bottom:24px;">GPS konum aktif</div>
+            <div class="qibla-compass">
+              <div class="compass-needle"></div>
+              <div class="compass-north">K</div>
+            </div>
+            <div style="margin-top:24px; font-size:11px; color:var(--gold400); font-weight:600;">🕋 Mekke • 2.847 km</div>
+            <div style="margin-top:16px; font-size:9px; color:rgba(255,255,255,.25);">Cihazı yavaşça döndür</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Kıble Pusulası</div>
+    </div>
+
+    <!-- SETTINGS LIGHT -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="screen-settings">
+          <div class="status-bar" style="background: linear-gradient(160deg,#0F3D2E,#145E43)">
+            <span>09:41</span>
+            <div class="status-icons">
+              <div class="status-dot"></div><div class="status-dot"></div>
+            </div>
+          </div>
+          <div class="settings-header">
+            <div class="settings-title">Ayarlar</div>
+            <div class="settings-subtitle">Kişiselleştirme & tercihler</div>
+          </div>
+          <div class="settings-body">
+            <div class="settings-card">
+              <div class="settings-row">
+                <div class="settings-row-icon gold">🌙</div>
+                <div class="settings-row-text">
+                  <div class="settings-row-title">Gece Modu</div>
+                  <div class="settings-row-sub">Koyu tema aktif</div>
+                </div>
+                <div class="toggle"></div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-icon green">🔔</div>
+                <div class="settings-row-text">
+                  <div class="settings-row-title">Namaz Bildirimleri</div>
+                  <div class="settings-row-sub">Tüm vakitler açık</div>
+                </div>
+                <div class="toggle"></div>
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="settings-row">
+                <div class="settings-row-icon blue">Aa</div>
+                <div class="settings-row-text">
+                  <div class="settings-row-title">Yazı Boyutu</div>
+                </div>
+              </div>
+              <div class="pill-row">
+                <div class="pill">Küçük</div>
+                <div class="pill active">Orta</div>
+                <div class="pill">Büyük</div>
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="settings-row">
+                <div class="settings-row-icon green">📍</div>
+                <div class="settings-row-text">
+                  <div class="settings-row-title">Konum İzni</div>
+                  <div class="settings-row-sub">İstanbul · Otomatik</div>
+                </div>
+                <div class="toggle"></div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-icon gold">⭐</div>
+                <div class="settings-row-text">
+                  <div class="settings-row-title">Hakkında</div>
+                  <div class="settings-row-sub">v1.0 · islami-asistan</div>
+                </div>
+                <div class="row-link-chevron" style="color:#ccc; font-size:16px;">›</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Ayarlar · Light Mode</div>
+    </div>
+
+  </div><!-- /phones-row -->
+</div>
+
+<!-- ══ DESIGN TOKENS ══ -->
+<div class="section" style="padding-top:24px">
+  <div class="section-label">Design System</div>
+  <div class="section-title">Renk Paleti & Tipografi</div>
+
+  <div class="tokens-grid">
+
+    <!-- Colors -->
+    <div class="token-card">
+      <div class="token-card-title">Brand Colors</div>
+      <div class="swatch-row">
+        <div class="swatch-item">
+          <div class="swatch-circle" style="background:#0F3D2E;"></div>
+          <div class="swatch-info"><span>Green 800</span> · #0F3D2E<br>Primary Dark</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" style="background:#1F6E5A;"></div>
+          <div class="swatch-info"><span>Green 500</span> · #1F6E5A<br>Primary</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" style="background:#4AA88C;"></div>
+          <div class="swatch-info"><span>Green 300</span> · #4AA88C<br>Primary Light</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" style="background:#C8A24A;"></div>
+          <div class="swatch-info"><span>Gold 500</span> · #C8A24A<br>Accent</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" style="background:#F7F3E8;"></div>
+          <div class="swatch-info"><span>Cream 50</span> · #F7F3E8<br>Light BG</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dark mode -->
+    <div class="token-card">
+      <div class="token-card-title">Dark Mode Surfaces</div>
+      <div class="swatch-row">
+        <div class="swatch-item">
+          <div class="swatch-circle" style="background:#0D1F18; border:1px solid rgba(255,255,255,.15)"></div>
+          <div class="swatch-info"><span>Background</span> · #0D1F18</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" style="background:#162820; border:1px solid rgba(255,255,255,.15)"></div>
+          <div class="swatch-info"><span>Surface</span> · #162820</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" style="background:#1D3328; border:1px solid rgba(255,255,255,.15)"></div>
+          <div class="swatch-info"><span>Elevated</span> · #1D3328</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" style="background:#EDF5F2;"></div>
+          <div class="swatch-info"><span>Text</span> · #EDF5F2</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" style="background:#7AADA0;"></div>
+          <div class="swatch-info"><span>Text Soft</span> · #7AADA0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typography -->
+    <div class="token-card" style="grid-column: span 1">
+      <div class="token-card-title">Typography Scale</div>
+      <div class="type-scale">
+        <div class="type-item">
+          <div class="type-sample" style="font-size:28px; font-weight:800;">İA</div>
+          <div class="type-meta">Hero / 42px / 800</div>
+        </div>
+        <div class="type-item">
+          <div class="type-sample" style="font-size:20px; font-weight:700;">Namaz Vakitleri</div>
+          <div class="type-meta">H1 / 24px / 700</div>
+        </div>
+        <div class="type-item">
+          <div class="type-sample" style="font-size:16px; font-weight:600;">Öğle • 12:24</div>
+          <div class="type-meta">H2 / 18px / 600</div>
+        </div>
+        <div class="type-item">
+          <div class="type-sample" style="font-size:13px; font-weight:400; color:rgba(255,255,255,.7);">Günlük ibadetlerin için rehber</div>
+          <div class="type-meta">Body / 16px / 400</div>
+        </div>
+        <div class="type-item">
+          <div class="type-sample" style="font-family:'Amiri',serif; font-size:18px; direction:rtl; color:var(--gold400);">بِسْمِ اللَّهِ</div>
+          <div class="type-meta">Arabic / Amiri / 24px</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<div class="page-footer">
+  <div class="ornament" style="opacity:.08">✦ ✦ ✦ ✦ ✦</div>
+  <p style="margin-top:16px">İslami Asistan · UI Kit Design Preview<br>React Native (Expo) · Dark & Light Mode · Arabic Support</p>
+</div>
+
+</body>
+</html>

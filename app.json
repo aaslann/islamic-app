@@ -1,38 +1,89 @@
 {
   "expo": {
-    "name": "islami-asistan",
+    "name": "İslami Asistan",
     "slug": "islami-asistan",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "scheme": "islami-asistan",
+    "backgroundColor": "#0D1F18",
+    "primaryColor": "#C8A24A",
+
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0D1F18"
     },
+
+    "assetBundlePatterns": ["**/*"],
+
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.islamiasistan.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Bulunduğunuz şehre göre doğru namaz vakitlerini hesaplamak için konumunuza ihtiyaç duyuyoruz.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Namaz vakti bildirimlerini konumunuza göre göndermek için konum erişimi gereklidir.",
+        "UIBackgroundModes": ["audio", "fetch"]
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
+
     "android": {
+      "package": "com.islamiasistan.app",
+      "versionCode": 2,
+      "compileSdkVersion": 35,
+      "targetSdkVersion": 35,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "monochromeImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#0D1F18"
       },
-      "predictiveBackGestureEnabled": false,
-      "package": "com.islamiasistan.app",
-      "versionCode": 2
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "SCHEDULE_EXACT_ALARM"
+      ],
+      "predictiveBackGestureEnabled": false
     },
+
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
     },
-    "owner": "aaslann",
+
+    "plugins": [
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#C8A24A",
+          "sounds": []
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Namaz vakitleri için konumunuza ihtiyaç var.",
+          "locationWhenInUsePermission": "Namaz vakitleri için konumunuza ihtiyaç var."
+        }
+      ],
+      "expo-av"
+    ],
+
     "extra": {
       "eas": {
         "projectId": "3d6bed03-d5c8-47db-b28b-bcb09f1209de"
       }
-    }
+    },
+
+    "owner": "aaslann"
   }
 }

@@ -1,43 +1,83 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../../core/theme/ThemeContext';
-import { spacing } from '../../../core/theme/tokens';
-import { Card } from '../../../shared/components/Card';
+import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
 
 type PrayerId = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
 type PrayerStatus = 'none' | 'prayed' | 'qada';
-
 type DayLog = Record<PrayerId, PrayerStatus>;
 type PrayerLogState = Record<string, DayLog>;
-
-type ZikrHistoryEntry = {
-  id: string;
-  timestamp: string;
-  count: number;
-};
-
-type ZikrPresetState = {
-  count: number;
-  target: number;
-  history: ZikrHistoryEntry[];
-};
-
-type ZikrState = {
-  activePhrase: string;
-  presets: string[];
-  data: Record<string, ZikrPresetState>;
-};
-
-type QuranDailyState = Record<string, boolean>; // YYYY-MM-DD -> completed?
+type ZikrHistoryEntry = { id: string; timestamp: string; count: number };
+type ZikrPresetState = { count: number; target: number; history: ZikrHistoryEntry[] };
+type ZikrState = { activePhrase: string; presets: string[]; data: Record<string, ZikrPresetState> };
+type QuranDailyState = Record<string, boolean>;
 
 const PRAYER_LOG_KEY = 'prayer-log-v1';
 const ZIKR_KEY = 'zikr-counter-presets-v2';
 const QURAN_DAILY_KEY = 'quran-daily-v1';
 
-function getDateKey(d: Date) {
-  return d.toISOString().slice(0, 10);
+function getDateKey(d: Date) { return d.toISOString().slice(0, 10); }
+
+type GoalCardProps = {
+  emoji: string;
+  title: string;
+  subtitle: string;
+  current: number;
+  target: number;
+  color: string;
+  unit: string;
+  extra?: string;
+  c: import('../../../core/theme/themes').AppTheme['colors'];
+};
+
+function GoalCard({ emoji, title, subtitle, current, target, color, unit, extra, c }: GoalCardProps) {
+  const pct = Math.min(1, target > 0 ? current / target : 0);
+  const done = current >= target;
+
+  return (
+    <View style={[styles.goalCard, { backgroundColor: c.surface, borderColor: done ? `${color}40` : c.border }]}>
+      {done && (
+        <View style={[styles.completedBanner, { backgroundColor: `${color}18` }]}>
+          <Text style={{ fontSize: 11, fontWeight: '800', color, letterSpacing: 0.8 }}>✓  HEDEF TAMAMLANDI</Text>
+        </View>
+      )}
+      <View style={styles.goalBody}>
+        {/* Ring */}
+        <View style={styles.ringWrap}>
+          <View style={[styles.ringOuter, { borderColor: `${color}20` }]}>
+            <View style={[styles.ringFill, {
+              borderColor: color,
+              transform: [{ rotate: `${pct * 360}deg` }],
+            }]} />
+            <View style={styles.ringCenter}>
+              <Text style={{ fontSize: 22 }}>{emoji}</Text>
+            </View>
+          </View>
+          <Text style={{ fontSize: 11, fontWeight: '700', color, marginTop: 4, textAlign: 'center' }}>
+            {Math.round(pct * 100)}%
+          </Text>
+        </View>
+
+        {/* Text info */}
+        <View style={{ flex: 1, marginLeft: spacing.md }}>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: c.text }}>{title}</Text>
+          <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 2 }}>{subtitle}</Text>
+
+          {/* Progress bar */}
+          <View style={[styles.progressTrack, { backgroundColor: `${color}15`, marginTop: spacing.sm }]}>
+            <View style={[styles.progressFill, { width: `${pct * 100}%`, backgroundColor: color }]} />
+          </View>
+          <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 4 }}>
+            <Text style={{ fontWeight: '700', color }}>{current}</Text> / {target} {unit}
+          </Text>
+          {extra && <Text style={{ fontSize: 11, color: c.textSecondary, marginTop: 2 }}>{extra}</Text>}
+        </View>
+      </View>
+    </View>
+  );
 }
 
 export default function GoalsScreen() {
@@ -45,263 +85,219 @@ export default function GoalsScreen() {
   const c = theme.colors;
   const t = theme.text;
 
+  const today = useMemo(() => new Date(), []);
+  const todayKey = getDateKey(today);
+
   const [prayerLog, setPrayerLog] = useState<PrayerLogState>({});
   const [zikrState, setZikrState] = useState<ZikrState | null>(null);
   const [quranDaily, setQuranDaily] = useState<QuranDailyState>({});
 
-  const today = new Date();
-  const todayKey = getDateKey(today);
-
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [prayerRaw, zikrRaw, quranRaw] = await Promise.all([
-          AsyncStorage.getItem(PRAYER_LOG_KEY),
-          AsyncStorage.getItem(ZIKR_KEY),
-          AsyncStorage.getItem(QURAN_DAILY_KEY),
-        ]);
-
-        if (prayerRaw) setPrayerLog(JSON.parse(prayerRaw) as PrayerLogState);
-        if (zikrRaw) setZikrState(JSON.parse(zikrRaw) as ZikrState);
-        if (quranRaw) setQuranDaily(JSON.parse(quranRaw) as QuranDailyState);
-      } catch {
-        // ignore
-      }
-    };
-
-    load();
+    Promise.all([
+      AsyncStorage.getItem(PRAYER_LOG_KEY),
+      AsyncStorage.getItem(ZIKR_KEY),
+      AsyncStorage.getItem(QURAN_DAILY_KEY),
+    ]).then(([pRaw, zRaw, qRaw]) => {
+      if (pRaw) setPrayerLog(JSON.parse(pRaw) as PrayerLogState);
+      if (zRaw) setZikrState(JSON.parse(zRaw) as ZikrState);
+      if (qRaw) setQuranDaily(JSON.parse(qRaw) as QuranDailyState);
+    }).catch(() => {});
   }, []);
 
+  // Sabah streak (consecutive fajr days)
   const sabahStreak = useMemo(() => {
-    // bugünden geriye doğru kesintisiz sabah namazı kılınan gün sayısı
     let streak = 0;
     const d = new Date(today);
-    // güvenli sınır: son 365 gün
-    for (let i = 0; i < 365; i += 1) {
+    for (let i = 0; i < 365; i++) {
       const key = getDateKey(d);
-      const day = prayerLog[key];
-      if (day && day.fajr === 'prayed') {
-        streak += 1;
-        d.setDate(d.getDate() - 1);
-      } else {
-        break;
-      }
+      if (prayerLog[key]?.fajr === 'prayed') { streak++; d.setDate(d.getDate() - 1); }
+      else break;
     }
     return streak;
   }, [prayerLog, today]);
 
-  const sabahBestStreak = useMemo(() => {
-    // tüm kayıtlar içinde en uzun sabah kılınan seri (yaklaşık)
-    const keys = Object.keys(prayerLog).sort();
-    let best = 0;
-    let current = 0;
-    keys.forEach((key) => {
-      const day = prayerLog[key];
-      if (day && day.fajr === 'prayed') {
-        current += 1;
-        if (current > best) best = current;
-      } else {
-        current = 0;
-      }
+  const sabahBest = useMemo(() => {
+    let best = 0, cur = 0;
+    Object.keys(prayerLog).sort().forEach((key) => {
+      if (prayerLog[key]?.fajr === 'prayed') { cur++; if (cur > best) best = cur; }
+      else cur = 0;
     });
     return best;
   }, [prayerLog]);
 
+  // Today's 5 prayers count
+  const prayedToday = useMemo(() => {
+    const day = prayerLog[todayKey];
+    if (!day) return 0;
+    return (['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as PrayerId[]).filter((id) => day[id] === 'prayed').length;
+  }, [prayerLog, todayKey]);
+
+  // Today's zikir total
   const zikrToday = useMemo(() => {
     if (!zikrState) return 0;
-    let total = 0;
-    Object.values(zikrState.data ?? {}).forEach((preset) => {
-      (preset.history ?? []).forEach((entry) => {
-        if (entry.timestamp.startsWith(todayKey)) {
-          total += entry.count;
-        }
-      });
-    });
-    return total;
+    return Object.values(zikrState.data ?? {}).reduce((sum, preset) => {
+      return sum + (preset.history ?? []).filter((e) => e.timestamp.startsWith(todayKey)).reduce((s, e) => s + e.count, 0);
+    }, 0);
   }, [zikrState, todayKey]);
 
-  const quranTodayCompleted = !!quranDaily[todayKey];
-
+  const quranTodayDone = !!quranDaily[todayKey];
   const toggleQuranToday = async () => {
-    const next = {
-      ...quranDaily,
-      [todayKey]: !quranTodayCompleted,
-    };
+    const next = { ...quranDaily, [todayKey]: !quranTodayDone };
     setQuranDaily(next);
-    try {
-      await AsyncStorage.setItem(QURAN_DAILY_KEY, JSON.stringify(next));
-    } catch {
-      // ignore
-    }
+    try { await AsyncStorage.setItem(QURAN_DAILY_KEY, JSON.stringify(next)); } catch {}
   };
 
-  const zikrTarget = 100;
+  // Weekly prayer completion %
+  const weeklyPct = useMemo(() => {
+    let total = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today); d.setDate(today.getDate() - i);
+      const day = prayerLog[getDateKey(d)];
+      if (day) total += (['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as PrayerId[]).filter((id) => day[id] === 'prayed').length;
+    }
+    return Math.round((total / 35) * 100);
+  }, [prayerLog, today]);
 
   return (
     <IslamicBackground>
-      <ScrollView
-        style={styles.root}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <Card style={[styles.card, styles.headerCard]}>
-          <Text style={[t.heading1, { color: c.text }]}>Hedeflerim</Text>
-          <Text style={[t.caption, { marginTop: spacing.xs, color: c.textSecondary }]}>
-            Günlük ibadet hedeflerini takip et; sabah namazı, zikir ve Kur&apos;an ile
-            istikrarlı bir rutin oluştur.
-          </Text>
-        </Card>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: spacing.xxl }} showsVerticalScrollIndicator={false}>
 
-        <Card style={styles.card}>
-          <Text style={[t.heading2, { color: c.text }]}>30 Gün Sabah Namazı</Text>
-          <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
-            Sabah namazını her gün vaktinde kılmaya yönelik hedef.
-          </Text>
-          <View style={styles.progressRow}>
-            <View
-              style={[
-                styles.progressBarBackground,
-                { backgroundColor: c.surface, borderColor: c.primarySoft },
-              ]}
-            >
-              <View
-                style={[
-                  styles.progressBarFill,
-                  { width: `${Math.min((sabahStreak / 30) * 100, 100)}%` },
-                ]}
-              />
-            </View>
-            <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
-              Seri: {sabahStreak} / 30 gün (en iyi: {sabahBestStreak})
-            </Text>
-          </View>
-          <Text style={{ marginTop: spacing.sm, fontSize: 11, color: c.textSecondary }}>
-            Sabah hedefi, Namaz Hatıra Defteri&apos;nde sabah vakti &quot;Kılındı&quot;
-            olarak işaretlendiğinde ilerler.
-          </Text>
-        </Card>
+        {/* Hero */}
+        <LinearGradient colors={[c.heroGradientStart, c.heroGradientEnd]} style={styles.hero}>
+          <Text style={styles.heroLabel}>HEDEFLERİM</Text>
+          <Text style={styles.heroTitle}>Günlük İbadet</Text>
+          <Text style={styles.heroTitle}>Takibi</Text>
+          <Text style={styles.heroSub}>Sabah namazı, zikir ve Kur'an hedeflerini takip et; istikrar kur.</Text>
+        </LinearGradient>
 
-        <Card style={styles.card}>
-          <Text style={[t.heading2, { color: c.text }]}>Günlük 100 Zikir</Text>
-          <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
-            Bugün çektiğin toplam zikir sayısı. Hedef: 100.
-          </Text>
-          <View style={styles.progressRow}>
-            <View
-              style={[
-                styles.progressBarBackground,
-                { backgroundColor: c.surface, borderColor: c.primarySoft },
-              ]}
-            >
-              <View
-                style={[
-                  styles.progressBarFillZikr,
-                  {
-                    backgroundColor: c.primary,
-                    width: `${Math.min((zikrToday / zikrTarget) * 100, 100)}%`,
-                  },
-                ]}
-              />
-            </View>
-            <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
-              {zikrToday} / {zikrTarget}
-            </Text>
-          </View>
-          <Text style={{ marginTop: spacing.sm, fontSize: 11, color: c.textSecondary }}>
-            Zikir hedefi, Zikir Sayacı ekranında &quot;Kaydet&quot; ile
-            oluşturduğun günlük kayıtlarla artar.
-          </Text>
-        </Card>
-
-        <Card style={styles.card}>
-          <Text style={[t.heading2, { color: c.text }]}>Günlük 1 Sayfa Kur&apos;an</Text>
-          <Text style={{ marginTop: spacing.xs, fontSize: 12, color: c.textSecondary }}>
-            Her gün en az bir sayfa Kur&apos;an okumayı hedefle.
-          </Text>
-          <View style={styles.row}>
-            <Pressable
-              onPress={toggleQuranToday}
-              style={({ pressed }) => [
-                styles.quranToggle,
-                { borderColor: c.primarySoft },
-                quranTodayCompleted && styles.quranToggleActive,
-                pressed && { backgroundColor: '#E5F2ED' },
-              ]}
-            >
-              <Text
-                style={[
-                  { fontSize: 12, color: c.textSecondary },
-                  quranTodayCompleted && styles.quranToggleTextActive,
-                ]}
-              >
-                {quranTodayCompleted
-                  ? 'Bugün hedef tamamlandı'
-                  : 'Bugün hedefi tamamla'}
+        {/* Weekly overview */}
+        <View style={[styles.weeklyCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+          <Text style={{ fontSize: 11, fontWeight: '800', color: palette.gold500, letterSpacing: 1 }}>GEÇTİĞİMİZ 7 GÜN</Text>
+          <View style={styles.weeklyRow}>
+            <View style={styles.weeklyRing}>
+              <Text style={{ fontSize: 20, fontWeight: '900', color: weeklyPct >= 80 ? '#22C55E' : weeklyPct >= 50 ? '#F59E0B' : c.text }}>
+                {weeklyPct}%
               </Text>
-            </Pressable>
+              <Text style={{ fontSize: 10, color: c.textSecondary }}>tamamlandı</Text>
+            </View>
+            <View style={{ flex: 1, marginLeft: spacing.md }}>
+              <Text style={[t.bodyBold, { color: c.text }]}>Haftalık Namaz Oranı</Text>
+              <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 2 }}>7 gün × 5 vakit = 35 hedef</Text>
+              <View style={[styles.progressTrack, { backgroundColor: `${palette.green500}20`, marginTop: spacing.sm }]}>
+                <View style={[styles.progressFill, {
+                  width: `${weeklyPct}%`,
+                  backgroundColor: weeklyPct >= 80 ? '#22C55E' : weeklyPct >= 50 ? '#F59E0B' : '#EF4444',
+                }]} />
+              </View>
+            </View>
           </View>
-          <Text style={{ marginTop: spacing.sm, fontSize: 11, color: c.textSecondary }}>
-            Okuduğun sayfa sayısını Kur&apos;an ekranından değil, şimdilik bu
-            ekrandan işaretliyorsun. İleride doğrudan okuma ekranına bağlanabilir.
+        </View>
+
+        {/* Goal cards */}
+        <View style={{ paddingHorizontal: spacing.lg }}>
+
+          <GoalCard
+            emoji="🌅"
+            title="Sabah Namazı Serisi"
+            subtitle="30 gün kesintisiz sabah namazı"
+            current={sabahStreak}
+            target={30}
+            color="#F59E0B"
+            unit="gün"
+            extra={sabahBest > 0 ? `En iyi seri: ${sabahBest} gün` : undefined}
+            c={c}
+          />
+
+          <GoalCard
+            emoji="🕌"
+            title="Bugün 5 Vakit"
+            subtitle="Tüm namaz vakitlerini kılmak"
+            current={prayedToday}
+            target={5}
+            color="#22C55E"
+            unit="vakit"
+            c={c}
+          />
+
+          <GoalCard
+            emoji="📿"
+            title="Günlük 100 Zikir"
+            subtitle="Bugün çekilen toplam zikir"
+            current={zikrToday}
+            target={100}
+            color={palette.gold500}
+            unit="zikir"
+            c={c}
+          />
+
+          {/* Quran daily toggle */}
+          <View style={[styles.goalCard, { backgroundColor: c.surface, borderColor: quranTodayDone ? `${palette.green500}40` : c.border }]}>
+            {quranTodayDone && (
+              <View style={[styles.completedBanner, { backgroundColor: 'rgba(34,197,94,0.12)' }]}>
+                <Text style={{ fontSize: 11, fontWeight: '800', color: '#22C55E', letterSpacing: 0.8 }}>✓  HEDEF TAMAMLANDI</Text>
+              </View>
+            )}
+            <View style={styles.goalBody}>
+              <View style={styles.ringWrap}>
+                <View style={[styles.ringOuter, { borderColor: 'rgba(34,197,94,0.2)' }]}>
+                  <View style={styles.ringCenter}>
+                    <Text style={{ fontSize: 22 }}>📖</Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: '#22C55E', marginTop: 4, textAlign: 'center' }}>
+                  {quranTodayDone ? '100%' : '0%'}
+                </Text>
+              </View>
+
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: c.text }}>Günlük 1 Sayfa Kur'an</Text>
+                <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 2 }}>Bugün en az bir sayfa oku</Text>
+                <Pressable
+                  onPress={toggleQuranToday}
+                  style={[
+                    styles.quranBtn,
+                    { borderColor: quranTodayDone ? '#22C55E' : c.border, backgroundColor: quranTodayDone ? 'rgba(34,197,94,0.12)' : 'transparent' },
+                  ]}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: quranTodayDone ? '#22C55E' : c.textSecondary }}>
+                    {quranTodayDone ? '✓  Tamamlandı' : '○  Tamamla'}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Tip */}
+        <View style={[styles.tipCard, { backgroundColor: c.surface, borderColor: `${palette.gold500}25` }]}>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: palette.gold500, marginBottom: 4 }}>💡  İpucu</Text>
+          <Text style={{ fontSize: 12, color: c.textSecondary, lineHeight: 18 }}>
+            Sabah namazı serisi, Namaz Hatıra Defteri'nde sabah vakti "Kılındı" olarak işaretlendiğinde ilerler.
+            Zikir hedefi de Zikir Sayacı'nda "Kaydet" ile oluşturulan kayıtlarla güncellenir.
           </Text>
-        </Card>
+        </View>
       </ScrollView>
     </IslamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
-    paddingBottom: spacing.xl,
-    gap: spacing.md,
-  },
-  card: {
-    padding: spacing.md,
-  },
-  headerCard: {
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.lg,
-  },
-  progressRow: {
-    marginTop: spacing.sm,
-  },
-  progressBarBackground: {
-    height: 10,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#22C55E',
-  },
-  progressBarFillZikr: {
-    height: '100%',
-    // backgroundColor set inline via theme
-  },
-  row: {
-    marginTop: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  quranToggle: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  quranToggleActive: {
-    borderColor: '#22C55E',
-    backgroundColor: 'rgba(34, 197, 94, 0.15)',
-  },
-  quranToggleTextActive: {
-    color: '#22C55E',
-    fontWeight: '600',
-  },
+  hero:             { paddingTop: 56, paddingBottom: spacing.lg, paddingHorizontal: spacing.lg },
+  heroLabel:        { fontSize: 11, fontWeight: '800', color: palette.gold400, letterSpacing: 1.5, marginBottom: 4 },
+  heroTitle:        { fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: -0.5, lineHeight: 34 },
+  heroSub:          { fontSize: 13, color: 'rgba(255,255,255,0.65)', marginTop: spacing.xs, lineHeight: 18 },
+  weeklyCard:       { marginHorizontal: spacing.lg, marginTop: spacing.md, padding: spacing.md, borderRadius: radii.xl, borderWidth: StyleSheet.hairlineWidth, ...shadows.card },
+  weeklyRow:        { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
+  weeklyRing:       { alignItems: 'center', justifyContent: 'center', width: 70, height: 70, borderRadius: 35, borderWidth: 3, borderColor: `${palette.green500}25` },
+  goalCard:         { borderRadius: radii.xl, marginBottom: spacing.sm, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden', ...shadows.card },
+  completedBanner:  { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'transparent' },
+  goalBody:         { flexDirection: 'row', alignItems: 'center', padding: spacing.md },
+  ringWrap:         { alignItems: 'center', width: 68 },
+  ringOuter:        { width: 60, height: 60, borderRadius: 30, borderWidth: 3, alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  ringFill:         { position: 'absolute', width: 60, height: 60, borderRadius: 30, borderWidth: 3, borderColor: 'transparent' },
+  ringCenter:       { alignItems: 'center', justifyContent: 'center' },
+  progressTrack:    { height: 6, borderRadius: 3, overflow: 'hidden' },
+  progressFill:     { height: '100%', borderRadius: 3 },
+  quranBtn:         { marginTop: spacing.sm, alignSelf: 'flex-start', paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radii.full, borderWidth: 1.5 },
+  tipCard:          { marginHorizontal: spacing.lg, marginTop: spacing.sm, padding: spacing.md, borderRadius: radii.lg, borderWidth: 1 },
 });

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
-import { colors, spacing, textStyles } from '../../../theme/designSystem';
-import { Card } from '../../../shared/components/Card';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
+import { IslamicBackground } from '../../../shared/components/IslamicBackground';
 
 type PrayerKey = 'sabah' | 'ogle' | 'ikindi' | 'aksam' | 'yatsi' | 'vitir';
 
@@ -9,14 +11,14 @@ type PrayerPart = {
   id: string;
   title: string;
   rakaat: number;
-  color: string;
-  summary: string;
+  type: 'sunnet' | 'farz' | 'vitir';
   steps: string[];
 };
 
 type PrayerGuide = {
   key: PrayerKey;
   label: string;
+  emoji: string;
   totalRakaat: number;
   info: string;
   parts: PrayerPart[];
@@ -24,438 +26,313 @@ type PrayerGuide = {
 
 const PRAYER_GUIDES: PrayerGuide[] = [
   {
-    key: 'sabah',
-    label: 'Sabah Namazı',
-    totalRakaat: 4,
-    info: 'Sabah namazı 2 rekât sünnet + 2 rekât farz olmak üzere toplam 4 rekâttır.',
+    key: 'sabah', label: 'Sabah', emoji: '🌅', totalRakaat: 4,
+    info: '2 rekât sünnet + 2 rekât farz — toplam 4 rekât',
     parts: [
       {
-        id: 'sabah-sunnet',
-        title: '2 Rekât Sünnet',
-        rakaat: 2,
-        color: '#38BDF8',
-        summary:
-          'Sabah namazının sünneti sessiz okunur ve mümkünse evde sakin bir ortamda kılınır.',
+        id: 'sabah-sunnet', title: '2 Rekât Sünnet', rakaat: 2, type: 'sunnet',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün sabah namazının sünnetini kılmaya.”',
-          'İftitah tekbiri ile namaza başla; Subhâneke, eûzü-besmele, Fâtiha ve kısa bir sûre oku.',
-          'Birinci rekâtta rükû ve iki secdeyi tam yap; ikinci rekâta kalkıp aynı şekilde kıraat ve rükûnları tamamla.',
-          'Son oturuşta Ettehiyyâtü, salli-barik ve Rabbena dualarını okuyup sağa ve sola selam ver.',
+          'Niyet et: "Allah rızası için bugünün sabah namazının sünnetini kılmaya."',
+          'İftitah tekbiri al, Subhâneke oku, Fâtiha ve kısa sûre oku.',
+          'Rükûya var (Sübhâne Rabbiyel Azîm × 3), doğrul, secdeye git (Sübhâne Rabbiyel A\'lâ × 3).',
+          'İkinci rekâta kalk, aynı şekilde kıraat ve rükünleri tamamla.',
+          'Son oturuşta Ettehiyyâtü, Salli-Bârik ve Rabbena oku; sağa-sola selam ver.',
         ],
       },
       {
-        id: 'sabah-farz',
-        title: '2 Rekât Farz',
-        rakaat: 2,
-        color: '#22C55E',
-        summary:
-          'Farz, cemaatle kılınıyorsa imama uyularak; yalnız kılınıyorsa sünnetle aynı tertipte eda edilir.',
+        id: 'sabah-farz', title: '2 Rekât Farz', rakaat: 2, type: 'farz',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün sabah namazının farzını kılmaya.”',
-          'İlk rekâtta Subhâneke, Fâtiha ve kısa bir sûre okuyup rükû ve secdeleri yerine getir.',
-          'İkinci rekâtta yine Fâtiha ve sûre oku, rükû ve secdeden sonra tahiyyat oturuşuna geç.',
-          'Ettehiyyâtü, salli-barik ve duaları okuduktan sonra sağa ve sola selam vererek namazı bitir.',
+          'Niyet et: "Allah rızası için bugünün sabah namazının farzını kılmaya."',
+          'Cemaatle kılınıyorsa imama uy; yalnız ise sünnetle aynı tertipte kıl.',
+          'İlk rekâtta Fâtiha ve sûre, rükû ve iki secde.',
+          'İkinci rekâtta Fâtiha ve sûre, rükû ve secdelerden sonra son oturuma geç.',
+          'Ettehiyyâtü, Salli-Bârik ve duaları okuyup sağa-sola selam ver.',
         ],
       },
     ],
   },
   {
-    key: 'ogle',
-    label: 'Öğle Namazı',
-    totalRakaat: 10,
-    info:
-      'Öğle namazı 4 rekât ilk sünnet + 4 rekât farz + 2 rekât son sünnet olmak üzere toplam 10 rekâttır.',
+    key: 'ogle', label: 'Öğle', emoji: '☀️', totalRakaat: 10,
+    info: '4 ilk sünnet + 4 farz + 2 son sünnet — toplam 10 rekât',
     parts: [
       {
-        id: 'ogle-sunnet',
-        title: '4 Rekât İlk Sünnet',
-        rakaat: 4,
-        color: '#F97316',
-        summary:
-          'İlk iki rekâtta Fâtiha ile birlikte sûre okunur; üçüncü ve dördüncü rekâtlarda sadece Fâtiha okunur.',
+        id: 'ogle-sunnet1', title: '4 Rekât İlk Sünnet', rakaat: 4, type: 'sunnet',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün öğle namazının ilk sünnetini kılmaya.”',
-          'Her rekâtta Fâtiha; ilk iki rekâtta ayrıca kısa bir sûre oku; rükû ve secdeleri tam yap.',
-          'İkinci rekât sonunda ilk oturuş; Ettehiyyâtü okunur, sonra üçüncü rekâta kalkılır.',
-          'Dördüncü rekâttan sonra son oturuşta Ettehiyyâtü, salli-barik ve dualar okunup selam verilir.',
+          'Niyet et: "Öğle namazının ilk sünnetini kılmaya."',
+          'İlk iki rekâtta Fâtiha + sûre; 3. ve 4. rekâtta yalnız Fâtiha oku.',
+          '2. rekât sonunda ilk oturuş yap, Ettehiyyâtü oku; 3. rekâta kalk.',
+          '4. rekât sonunda son oturuşta Ettehiyyâtü, Salli-Bârik ve duaları okuyup selam ver.',
         ],
       },
       {
-        id: 'ogle-farz',
-        title: '4 Rekât Farz',
-        rakaat: 4,
-        color: '#A855F7',
-        summary:
-          'Farz, erkekler için mümkünse cemaatle; kadınlar için evde sakin bir ortamda kılınması tavsiye edilir.',
+        id: 'ogle-farz', title: '4 Rekât Farz', rakaat: 4, type: 'farz',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün öğle namazının farzını kılmaya.”',
-          'İlk iki rekâtta Fâtiha ve sûre, son iki rekâtta ise sadece Fâtiha okunur.',
-          'İkinci rekât sonunda ilk oturuş yapılır, Ettehiyyâtü okunur ve üçüncü rekâta kalkılır.',
-          'Dördüncü rekât sonrası son oturuşta Ettehiyyâtü, salli-barik, Rabbena ve diğer dualar okunup selam verilir.',
+          'Niyet et: "Öğle namazının farzını kılmaya."',
+          'İlk iki rekâtta Fâtiha + sûre; son iki rekâtta sadece Fâtiha.',
+          '2. rekât sonunda ilk oturuş (Ettehiyyâtü); 4. rekât sonunda son oturuş.',
+          'Son oturuşta Ettehiyyâtü, Salli-Bârik, Rabbena ve diğer duaları okuyup selam ver.',
         ],
       },
       {
-        id: 'ogle-son-sunnet',
-        title: '2 Rekât Son Sünnet',
-        rakaat: 2,
-        color: '#FACC15',
-        summary:
-          'Öğlen farzından sonra kılınan bu sünnet, sabah sünnetine benzer şekilde kılınır.',
+        id: 'ogle-sunnet2', title: '2 Rekât Son Sünnet', rakaat: 2, type: 'sunnet',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün öğle namazının son sünnetini kılmaya.”',
-          'İki rekât sabah sünneti tertibinde kılınır: Fâtiha ve sûre, rükû, secdeler ve son oturuş.',
-          'Son oturuşta Ettehiyyâtü, salli-barik ve dualar okunur; sağa ve sola selam verilir.',
+          'Niyet et: "Öğle namazının son sünnetini kılmaya."',
+          'Sabah sünneti tertibinde iki rekât kıl.',
+          'Son oturuşta duaları okuyup selam ver.',
         ],
       },
     ],
   },
   {
-    key: 'ikindi',
-    label: 'İkindi Namazı',
-    totalRakaat: 8,
-    info:
-      'İkindi namazı 4 rekât sünnet + 4 rekât farz olmak üzere toplam 8 rekâttır.',
+    key: 'ikindi', label: 'İkindi', emoji: '🌤️', totalRakaat: 8,
+    info: '4 rekât sünnet + 4 rekât farz — toplam 8 rekât',
     parts: [
       {
-        id: 'ikindi-sunnet',
-        title: '4 Rekât Sünnet',
-        rakaat: 4,
-        color: '#0EA5E9',
-        summary:
-          'İkindi sünneti, öğlen ilk sünnetine benzer şekilde 4 rekât olarak kılınır.',
+        id: 'ikindi-sunnet', title: '4 Rekât Sünnet', rakaat: 4, type: 'sunnet',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün ikindi namazının sünnetini kılmaya.”',
-          'İlk iki rekâtta Fâtiha ve sûre; son iki rekâtta sadece Fâtiha okunur.',
-          'İkinci rekât sonrası ilk oturuş, dördüncü rekât sonrası son oturuş yapılır.',
-          'Son oturuşta gerekli dualar okunup selam verilir.',
+          'Niyet et: "İkindi namazının sünnetini kılmaya."',
+          'Öğle ilk sünneti gibi 4 rekât kıl; ilk iki rekâtta Fâtiha + sûre.',
+          '2. rekât sonunda ilk oturuş; 4. rekât sonunda son oturuş ve selam.',
         ],
       },
       {
-        id: 'ikindi-farz',
-        title: '4 Rekât Farz',
-        rakaat: 4,
-        color: '#22C55E',
-        summary:
-          'Farzı, öğle farzında olduğu gibi ilk iki rekâtta sûre ile, son iki rekâtta sadece Fâtiha ile kılınır.',
+        id: 'ikindi-farz', title: '4 Rekât Farz', rakaat: 4, type: 'farz',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün ikindi namazının farzını kılmaya.”',
-          'İlk iki rekâtta Fâtiha ve sûre, son iki rekâtta Fâtiha ile namazı tamamla.',
-          'İkinci rekâttan sonra ilk oturuş, dördüncü rekâttan sonra son oturuş yapılır.',
-          'Son oturuşta dualar okunur ve selam verilerek namaz bitirilir.',
+          'Niyet et: "İkindi namazının farzını kılmaya."',
+          'Öğle farzı gibi ilk iki rekâtta sûre, son iki rekâtta yalnız Fâtiha.',
+          'Son oturuşta duaları okuyup selam ver.',
         ],
       },
     ],
   },
   {
-    key: 'aksam',
-    label: 'Akşam Namazı',
-    totalRakaat: 5,
-    info: 'Akşam namazı 3 rekât farz + 2 rekât sünnet olmak üzere toplam 5 rekâttır.',
+    key: 'aksam', label: 'Akşam', emoji: '🌇', totalRakaat: 5,
+    info: '3 rekât farz + 2 rekât sünnet — toplam 5 rekât',
     parts: [
       {
-        id: 'aksam-farz',
-        title: '3 Rekât Farz',
-        rakaat: 3,
-        color: '#F97316',
-        summary:
-          'Akşam farzı sesli okunur; ilk iki rekâtta Fâtiha ve sûre, üçüncü rekâtta sadece Fâtiha okunur.',
+        id: 'aksam-farz', title: '3 Rekât Farz', rakaat: 3, type: 'farz',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün akşam namazının farzını kılmaya.”',
-          'İlk iki rekâtta Fâtiha ve sûre okuyup rükû ve secdeleri tamamla.',
-          'İkinci rekât sonunda otur, Ettehiyyâtü oku; üçüncü rekâta kalk.',
-          'Üçüncü rekâtta sadece Fâtiha okunur; rükû ve secdeden sonra son oturuşta dualar okunup selam verilir.',
+          'Niyet et: "Akşam namazının farzını kılmaya."',
+          'Sesli okunur; ilk iki rekâtta Fâtiha + sûre, 3. rekâtta sadece Fâtiha.',
+          '2. rekât sonunda otur, Ettehiyyâtü oku; 3. rekâta kalk.',
+          '3. rekât sonunda son oturuşta duaları okuyup selam ver.',
         ],
       },
       {
-        id: 'aksam-sunnet',
-        title: '2 Rekât Sünnet',
-        rakaat: 2,
-        color: '#38BDF8',
-        summary:
-          'Akşam farzından sonra kılınan 2 rekât sünnet, sabah sünnetine benzer bir tertiple kılınır.',
+        id: 'aksam-sunnet', title: '2 Rekât Sünnet', rakaat: 2, type: 'sunnet',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün akşam namazının sünnetini kılmaya.”',
-          'İki rekât boyunca Fâtiha ve sûre okuyarak rükû ve secdeleri yap.',
-          'Son oturuşta Ettehiyyâtü, salli-barik ve duaları okuyup selam ver.',
+          'Niyet et: "Akşam namazının sünnetini kılmaya."',
+          'Sabah sünneti gibi iki rekât kıl.',
+          'Son oturuşta duaları okuyup selam ver.',
         ],
       },
     ],
   },
   {
-    key: 'yatsi',
-    label: 'Yatsı Namazı',
-    totalRakaat: 9,
-    info:
-      'Yatsı namazı 4 rekât ilk sünnet + 4 rekât farz + 2 rekât son sünnet (bazı kaynaklarda 11 rekât vitirle birlikte) olarak kılınır.',
+    key: 'yatsi', label: 'Yatsı', emoji: '🌙', totalRakaat: 9,
+    info: '4 ilk sünnet + 4 farz + 2 son sünnet — toplam 9 rekât (vitir ayrı)',
     parts: [
       {
-        id: 'yatsi-sunnet',
-        title: '4 Rekât İlk Sünnet',
-        rakaat: 4,
-        color: '#6366F1',
-        summary:
-          'Tertip olarak öğle ve ikindi sünnetleri gibidir; ilk iki rekâtta sûre ile tilavet yapılır.',
+        id: 'yatsi-sunnet1', title: '4 Rekât İlk Sünnet', rakaat: 4, type: 'sunnet',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün yatsı namazının ilk sünnetini kılmaya.”',
-          'İlk iki rekâtta Fâtiha ve sûre, son iki rekâtta yalnız Fâtiha okunur.',
-          'İkinci rekât sonunda ilk oturuş, dördüncü rekât sonunda son oturuş yapılır.',
+          'Niyet et: "Yatsı namazının ilk sünnetini kılmaya."',
+          'Öğle ilk sünneti gibi kıl; ilk iki rekâtta Fâtiha + sûre.',
+          '2. rekâtta ilk oturuş; 4. rekâtta son oturuş ve selam.',
         ],
       },
       {
-        id: 'yatsi-farz',
-        title: '4 Rekât Farz',
-        rakaat: 4,
-        color: '#22C55E',
-        summary:
-          'Yatsı farzı, öğle ve ikindi farzına benzer; gecenin son farz namazıdır.',
+        id: 'yatsi-farz', title: '4 Rekât Farz', rakaat: 4, type: 'farz',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün yatsı namazının farzını kılmaya.”',
-          'İlk iki rekâtta Fâtiha ve sûre, son iki rekâtta sadece Fâtiha okunur.',
-          'İkinci rekât sonunda ilk oturuş; dördüncü rekât sonunda son oturuş ve dualar ile selam verilir.',
+          'Niyet et: "Yatsı namazının farzını kılmaya."',
+          'Öğle farzı gibi kıl; son iki rekâtta sadece Fâtiha.',
+          'Son oturuşta duaları okuyup selam ver.',
         ],
       },
       {
-        id: 'yatsi-son-sunnet',
-        title: '2 Rekât Son Sünnet',
-        rakaat: 2,
-        color: '#FACC15',
-        summary: 'Yatsı farzından sonra kılınan 2 rekât son sünnettir.',
+        id: 'yatsi-sunnet2', title: '2 Rekât Son Sünnet', rakaat: 2, type: 'sunnet',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için bugünün yatsı namazının son sünnetini kılmaya.”',
-          'İki rekât boyunca Fâtiha ve sûre ile rükû ve secdeleri yerine getir.',
-          'Son oturuşta Ettehiyyâtü ve diğer dualar okuyup selam ver.',
+          'Niyet et: "Yatsı namazının son sünnetini kılmaya."',
+          'İki rekât kıl, son oturuşta selam ver.',
         ],
       },
     ],
   },
   {
-    key: 'vitir',
-    label: 'Vitir Namazı',
-    totalRakaat: 3,
-    info:
-      'Vitir, yatsıdan sonra kılınan 3 rekâtlık vacip bir namazdır; özellikle Hanefî mezhebinde önemle vurgulanır.',
+    key: 'vitir', label: 'Vitir', emoji: '⭐', totalRakaat: 3,
+    info: '3 rekât vacip — yatsıdan sonra kılınır',
     parts: [
       {
-        id: 'vitir-uc-rekat',
-        title: '3 Rekât Vitir',
-        rakaat: 3,
-        color: '#EC4899',
-        summary:
-          'Vitir, üç rekâtlı bir namazdır; genellikle tek selamla bitirilir ve üçüncü rekâtta kunut duaları okunur.',
+        id: 'vitir', title: '3 Rekât Vitir', rakaat: 3, type: 'vitir',
         steps: [
-          'Niyet: “Niyet ettim Allah rızası için vitir namazını kılmaya.”',
-          'İlk iki rekâtta Fâtiha ve sûre okuyup rükû ve secdeleri tamamla; ikinci rekât sonunda oturup Ettehiyyâtü oku ve üçüncü rekâta kalk.',
-          'Üçüncü rekâtta Fâtiha ve sûre okuduktan sonra rükûya varmadan önce kunut dualarını (Allahümme innâ nesteînüke vb.) oku.',
-          'Rükû ve secdeleri tamamlayıp son oturuşta duaları okuduktan sonra selam ver.',
+          'Niyet et: "Allah rızası için vitir namazını kılmaya."',
+          'İlk iki rekâtta Fâtiha + sûre; 2. rekât sonunda otur, Ettehiyyâtü oku.',
+          '3. rekâtta Fâtiha + sûre oku; rükûdan önce tekbir al ve Kunut duasını oku.',
+          'Kunut: "Allahümme innâ nesteînüke ve nestağfiruke ve nü\'minü bike..." okuduktan sonra rükûya var.',
+          'Secdelerden sonra son oturuşta duaları okuyup selam ver.',
         ],
       },
     ],
   },
 ];
 
+const TYPE_COLOR: Record<string, string> = {
+  sunnet: palette.green400,
+  farz:   '#22C55E',
+  vitir:  '#EC4899',
+};
+
+const TYPE_LABEL: Record<string, string> = {
+  sunnet: 'Sünnet',
+  farz:   'Farz',
+  vitir:  'Vacip',
+};
+
 export default function PrayerGuideScreen() {
-  const [activePrayer, setActivePrayer] = useState<PrayerKey>('sabah');
-  const current = PRAYER_GUIDES.find((g) => g.key === activePrayer)!;
+  const { theme } = useTheme();
+  const c = theme.colors;
+  const t = theme.text;
+
+  const [active, setActive] = useState<PrayerKey>('sabah');
+  const [expandedPart, setExpandedPart] = useState<string | null>(null);
+  const current = PRAYER_GUIDES.find((g) => g.key === active)!;
+
+  const togglePart = (id: string) => setExpandedPart((prev) => (prev === id ? null : id));
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <Card style={styles.header}>
-        <Text style={styles.title}>Namaz Kılavuzu</Text>
-        <Text style={styles.subtitle}>
-          Beş vakit namazı ve vitir namazını; rekâtlarına göre adım adım
-          görebilirsin. Aşağıdaki sekmelerden hangi namazı incelemek
-          istediğini seç.
-        </Text>
-      </Card>
+    <IslamicBackground>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: spacing.xxl }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero */}
+        <LinearGradient
+          colors={[c.heroGradientStart, c.heroGradientEnd]}
+          style={styles.hero}
+        >
+          <Text style={styles.heroLabel}>NAMAZ KILAVUZU</Text>
+          <Text style={styles.heroTitle}>Adım Adım Rehber</Text>
+          <Text style={styles.heroSub}>
+            Vakit seç, rekâtları ve adımları gör. Mezheplere göre ayrıntılar değişebilir.
+          </Text>
+        </LinearGradient>
 
-      <View style={styles.tabsRow}>
-        {PRAYER_GUIDES.map((guide) => (
-          <Pressable
-            key={guide.key}
-            onPress={() => setActivePrayer(guide.key)}
-            style={({ pressed }) => [
-              styles.tabPill,
-              activePrayer === guide.key && styles.tabPillActive,
-              pressed && styles.tabPillPressed,
-            ]}
+        {/* Prayer tabs */}
+        <View style={styles.tabsContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabsContent}
           >
-            <Text
-              style={[
-                styles.tabText,
-                activePrayer === guide.key && styles.tabTextActive,
-              ]}
-            >
-              {guide.label.split(' ')[0]}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+            {PRAYER_GUIDES.map((guide) => {
+              const isActive = active === guide.key;
+              return (
+                <Pressable
+                  key={guide.key}
+                  onPress={() => { setActive(guide.key); setExpandedPart(null); }}
+                  style={[
+                    styles.tab,
+                    { borderColor: isActive ? c.primary : c.border, backgroundColor: isActive ? c.primarySoft : c.surface },
+                  ]}
+                >
+                  <Text style={{ fontSize: 18 }}>{guide.emoji}</Text>
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: isActive ? c.primary : c.textSecondary, marginTop: 2 }}>
+                    {guide.label}
+                  </Text>
+                  <Text style={{ fontSize: 10, color: isActive ? c.primary : c.textSecondary }}>
+                    {guide.totalRakaat} rekât
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
 
-      <View style={styles.currentHeader}>
-        <Text style={styles.currentTitle}>{current.label}</Text>
-        <Text style={styles.currentInfo}>{current.info}</Text>
-      </View>
-
-      {current.parts.map((part) => (
-        <Card key={part.id} style={styles.partCard}>
-          <View style={styles.partHeader}>
-            <View
-              style={[
-                styles.partDot,
-                { backgroundColor: part.color },
-              ]}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.partTitle}>{part.title}</Text>
-              <Text style={styles.partBadge}>
-                Toplam{' '}
-                <Text style={styles.partBadgeNumber}>{part.rakaat}</Text> rekât
-              </Text>
-              <Text style={styles.partSummary}>{part.summary}</Text>
-            </View>
+        {/* Current prayer info */}
+        <View style={[styles.infoCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+          <Text style={{ fontSize: 22 }}>{current.emoji}</Text>
+          <View style={{ flex: 1, marginLeft: spacing.sm }}>
+            <Text style={[t.heading2, { color: c.text }]}>{current.label} Namazı</Text>
+            <Text style={{ fontSize: 13, color: palette.gold500, marginTop: 2 }}>{current.info}</Text>
           </View>
+        </View>
 
-          {part.steps.map((step, idx) => (
-            <View key={idx} style={styles.stepRow}>
-              <View
-                style={[
-                  styles.stepBullet,
-                  { borderColor: part.color },
-                ]}
-              />
-              <Text style={styles.stepText}>{step}</Text>
-            </View>
-          ))}
-        </Card>
-      ))}
+        {/* Parts */}
+        <View style={{ paddingHorizontal: spacing.lg }}>
+          {current.parts.map((part, idx) => {
+            const isOpen = expandedPart === part.id;
+            const color = TYPE_COLOR[part.type] ?? palette.green400;
+            return (
+              <View key={part.id} style={[styles.partCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+                {/* Part header (tap to expand) */}
+                <Pressable
+                  onPress={() => togglePart(part.id)}
+                  style={styles.partHeader}
+                >
+                  <View style={[styles.partIndexBadge, { backgroundColor: `${color}20`, borderColor: color }]}>
+                    <Text style={{ fontSize: 13, fontWeight: '800', color }}>{idx + 1}</Text>
+                  </View>
+                  <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                    <View style={styles.partTitleRow}>
+                      <Text style={[t.bodyBold, { color: c.text }]}>{part.title}</Text>
+                      <View style={[styles.typeBadge, { backgroundColor: `${color}18` }]}>
+                        <Text style={{ fontSize: 10, fontWeight: '700', color }}>{TYPE_LABEL[part.type]}</Text>
+                      </View>
+                    </View>
+                    <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 2 }}>
+                      {part.rakaat} rekât  •  {part.steps.length} adım
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 18, color: c.textSecondary }}>{isOpen ? '▾' : '▸'}</Text>
+                </Pressable>
 
-      <Text style={styles.noteText}>
-        Not: Bu kılavuz, genel bir özet ve öğretici görsel temsil sunar. Mezheplere
-        göre bazı ayrıntılar değişebilir; detaylı bilgi için güvenilir ilmihal
-        eserlerine ve Diyanet gibi resmî kaynaklara başvurman tavsiye edilir.
-      </Text>
-    </ScrollView>
+                {/* Expanded steps */}
+                {isOpen && (
+                  <View style={[styles.stepsContainer, { borderTopColor: c.border }]}>
+                    {part.steps.map((step, si) => (
+                      <View key={si} style={styles.stepRow}>
+                        <View style={[styles.stepNum, { backgroundColor: color }]}>
+                          <Text style={{ fontSize: 10, fontWeight: '800', color: '#fff' }}>{si + 1}</Text>
+                        </View>
+                        <Text style={{ flex: 1, fontSize: 13, color: c.text, lineHeight: 20 }}>{step}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Disclaimer */}
+        <View style={[styles.disclaimer, { backgroundColor: c.surface, borderColor: c.border }]}>
+          <Text style={{ fontSize: 13, color: palette.gold500, marginBottom: 4 }}>ℹ️  Önemli Not</Text>
+          <Text style={{ fontSize: 12, color: c.textSecondary, lineHeight: 18 }}>
+            Bu kılavuz genel bir özet sunar. Mezheplere göre bazı ayrıntılar farklılık gösterebilir.
+            Daha kapsamlı bilgi için güvenilir ilmihal eserlerine ve Diyanet kaynaklarına başvurunuz.
+          </Text>
+        </View>
+      </ScrollView>
+    </IslamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
-    paddingBottom: spacing.xl,
-  },
-  header: {
-    marginBottom: spacing.lg,
-  },
-  title: {
-    ...textStyles.heading1,
-  },
-  subtitle: {
-    marginTop: spacing.xs,
-    ...textStyles.caption,
-  },
-  tabsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  tabPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primarySoft,
-  },
-  tabPillActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primarySoft,
-  },
-  tabPillPressed: {
-    backgroundColor: '#E5F2ED',
-  },
-  tabText: {
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  tabTextActive: {
-    color: colors.primaryDark,
-    fontWeight: '600',
-  },
-  currentHeader: {
-    marginBottom: spacing.xs,
-  },
-  currentTitle: {
-    ...textStyles.heading2,
-  },
-  currentInfo: {
-    marginTop: spacing.xs,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  partCard: {
-    marginTop: spacing.md,
-    padding: spacing.md,
-  },
-  partHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  partDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginTop: 4,
-  },
-  partTitle: {
-    ...textStyles.body,
-    fontWeight: '600',
-  },
-  partBadge: {
-    marginTop: spacing.xs,
-    fontSize: 11,
-    color: colors.textSoft,
-  },
-  partBadgeNumber: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  partSummary: {
-    marginTop: spacing.xs,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  stepRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.xs,
-    marginTop: spacing.xs,
-  },
-  stepBullet: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    borderWidth: StyleSheet.hairlineWidth,
-    marginTop: 4,
-  },
-  stepText: {
-    flex: 1,
-    fontSize: 12,
-    color: colors.textSoft,
-  },
-  noteText: {
-    marginTop: spacing.lg,
-    ...textStyles.caption,
-  },
+  hero:            { paddingTop: 56, paddingBottom: spacing.lg, paddingHorizontal: spacing.lg },
+  heroLabel:       { fontSize: 11, fontWeight: '800', color: palette.gold400, letterSpacing: 1.5, marginBottom: 4 },
+  heroTitle:       { fontSize: 26, fontWeight: '900', color: '#fff', letterSpacing: -0.5 },
+  heroSub:         { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: spacing.xs, lineHeight: 18 },
+  tabsContainer:   { marginTop: spacing.md },
+  tabsContent:     { paddingHorizontal: spacing.lg, gap: spacing.sm },
+  tab:             { alignItems: 'center', paddingVertical: spacing.sm, paddingHorizontal: spacing.md, borderRadius: radii.lg, borderWidth: 1, minWidth: 70 },
+  infoCard:        { flexDirection: 'row', alignItems: 'center', marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: spacing.md, padding: spacing.md, borderRadius: radii.lg, borderWidth: StyleSheet.hairlineWidth, ...shadows.card },
+  partCard:        { borderRadius: radii.lg, marginBottom: spacing.sm, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden', ...shadows.card },
+  partHeader:      { flexDirection: 'row', alignItems: 'center', padding: spacing.md },
+  partIndexBadge:  { width: 32, height: 32, borderRadius: 16, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  partTitleRow:    { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  typeBadge:       { paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radii.full },
+  stepsContainer:  { borderTopWidth: StyleSheet.hairlineWidth, padding: spacing.md, gap: spacing.sm },
+  stepRow:         { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  stepNum:         { width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 },
+  disclaimer:      { margin: spacing.lg, padding: spacing.md, borderRadius: radii.lg, borderWidth: StyleSheet.hairlineWidth },
 });
-
