@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../../core/theme/ThemeContext';
@@ -110,9 +110,18 @@ export default function SettingsScreen() {
       setPreviewing(null);
       return;
     }
-    setPreviewing(m.id);
-    await previewAdhan(m, 15);
-    setTimeout(() => setPreviewing((cur) => (cur === m.id ? null : cur)), 15000);
+    setPreviewing(`loading-${m.id}`);
+    const result = await previewAdhan(m, 15);
+    if (result.ok) {
+      setPreviewing(m.id);
+      setTimeout(() => setPreviewing((cur) => (cur === m.id ? null : cur)), 15000);
+    } else {
+      setPreviewing(null);
+      Alert.alert(
+        'Ezan çalınamadı',
+        `${m.label}\n\nSebep: ${result.error}\n\nİnternet bağlantını kontrol et veya başka bir müezzin dene.`,
+      );
+    }
   };
 
   const update = (patch: Partial<SettingsState>) => {
@@ -260,18 +269,27 @@ export default function SettingsScreen() {
                       <Pressable
                         onPress={() => onPreview(m)}
                         hitSlop={8}
+                        disabled={previewing === `loading-${m.id}`}
                         style={[
                           styles.previewBtn,
-                          { backgroundColor: isPlaying ? '#FCA5A5' : `${palette.gold500}25` },
+                          {
+                            backgroundColor: isPlaying ? '#FCA5A5' : `${palette.gold500}25`,
+                            minWidth: 76,
+                            alignItems: 'center',
+                          },
                         ]}
                       >
-                        <Text style={{
-                          fontSize: 12,
-                          fontWeight: '800',
-                          color: isPlaying ? '#7F1D1D' : palette.gold500,
-                        }}>
-                          {isPlaying ? '◼ Durdur' : '▶ Dinle'}
-                        </Text>
+                        {previewing === `loading-${m.id}` ? (
+                          <ActivityIndicator size="small" color={palette.gold500} />
+                        ) : (
+                          <Text style={{
+                            fontSize: 12,
+                            fontWeight: '800',
+                            color: isPlaying ? '#7F1D1D' : palette.gold500,
+                          }}>
+                            {isPlaying ? '◼ Durdur' : '▶ Dinle'}
+                          </Text>
+                        )}
                       </Pressable>
                     </View>
                   );

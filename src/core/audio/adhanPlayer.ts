@@ -11,7 +11,7 @@ try {
 }
 
 export const ADHAN_ENABLED_KEY = '@adhan-enabled-v1';
-export const ADHAN_MUEZZIN_KEY = '@adhan-muezzin-v1';
+export const ADHAN_MUEZZIN_KEY = '@adhan-muezzin-v2';
 
 export type Muezzin = {
   id: string;
@@ -20,35 +20,36 @@ export type Muezzin = {
   url: string;
 };
 
-// Kamu erişimine açık ezan sesleri (CC / public domain kaynaklar)
+// Doğrulanmış MP3 kaynaklar (Wikimedia Commons + archive.org)
 export const MUEZZIN_OPTIONS: Muezzin[] = [
   {
-    id: 'mecca',
-    label: 'Mekke (Mescid-i Haram)',
-    region: 'Suudi Arabistan',
-    url: 'https://server8.mp3quran.net/ahmad_huth/Almasshaf-Al-Mojawwad/072.mp3',
+    id: 'aaqib',
+    label: 'Aaqib Azeez',
+    region: 'Klasik · Geleneksel okuyuş',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/7/7d/The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3',
   },
   {
-    id: 'madinah',
-    label: 'Medine (Mescid-i Nebevî)',
-    region: 'Suudi Arabistan',
-    url: 'https://server8.mp3quran.net/afs/072.mp3',
+    id: 'sabah',
+    label: 'Sabah Fakhry',
+    region: 'Suriye · Şam tarzı',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/2/27/Call_to_prayer_by_Sabah_Fakhry.mp3',
   },
   {
-    id: 'istanbul',
-    label: 'Sultanahmet (İstanbul)',
-    region: 'Türkiye',
-    url: 'https://www.islamcan.com/audio/adhan/azan2.mp3',
+    id: 'esam',
+    label: 'Şeyh Esam Khan',
+    region: 'Sade · Mahzun okuyuş',
+    url: 'https://archive.org/download/ABeautifulAzanSheikhEsamKhan/mp3',
   },
   {
-    id: 'egypt',
-    label: 'Mısır Tarzı',
-    region: 'Kahire',
-    url: 'https://www.islamcan.com/audio/adhan/azan3.mp3',
+    id: 'sawt',
+    label: 'Sawt-ı Ezan',
+    region: 'Klasik Arap tarzı',
+    url: 'https://archive.org/download/SawtAzan/new2.mp3',
   },
 ];
 
 let soundInstance: any | null = null;
+let audioModeSet = false;
 
 export async function isAdhanEnabled(): Promise<boolean> {
   try {
@@ -81,32 +82,55 @@ export async function setSelectedMuezzin(id: string): Promise<void> {
   } catch {}
 }
 
-export async function playAdhan(muezzin?: Muezzin): Promise<void> {
-  if (!Audio || Platform.OS === 'web') return;
-
-  await stopAdhan();
-
-  const target = muezzin ?? (await getSelectedMuezzin());
-
+async function ensureAudioMode() {
+  if (!Audio || audioModeSet) return;
   try {
     await Audio.setAudioModeAsync({
       playsInSilentModeIOS: true,
       staysActiveInBackground: true,
       allowsRecordingIOS: false,
+      shouldDuckAndroid: true,
+      playThroughEarpieceAndroid: false,
     });
+    audioModeSet = true;
+  } catch (e) {
+    // Audio mode setup failed, but try playback anyway
+    if (__DEV__) console.warn('[adhan] setAudioModeAsync failed:', e);
+  }
+}
+
+export type PlayResult = { ok: true } | { ok: false; error: string };
+
+export async function playAdhan(muezzin?: Muezzin): Promise<PlayResult> {
+  if (!Audio) return { ok: false, error: 'expo-av yüklü değil. Önce npx expo install expo-av çalıştır.' };
+  if (Platform.OS === 'web') return { ok: false, error: 'Web platformunda ezan oynatılamaz.' };
+
+  await stopAdhan();
+  await ensureAudioMode();
+
+  const target = muezzin ?? (await getSelectedMuezzin());
+
+  try {
     const { sound } = await Audio.Sound.createAsync(
       { uri: target.url },
       { shouldPlay: true, volume: 1.0 },
     );
     soundInstance = sound;
     sound.setOnPlaybackStatusUpdate((status) => {
-      if (status.isLoaded && status.didJustFinish) {
+      if (!status.isLoaded) {
+        const err = (status as any).error;
+        if (err && __DEV__) console.warn('[adhan] playback error:', err);
+        return;
+      }
+      if (status.didJustFinish) {
         sound.unloadAsync().catch(() => {});
         if (soundInstance === sound) soundInstance = null;
       }
     });
-  } catch {
-    // playback failed; ignore — notification still fires
+    return { ok: true };
+  } catch (e: any) {
+    if (__DEV__) console.warn('[adhan] createAsync failed:', e?.message ?? e);
+    return { ok: false, error: e?.message ?? 'Bilinmeyen hata. İnternet bağlantını kontrol et.' };
   }
 }
 
@@ -123,9 +147,12 @@ export async function stopAdhan(): Promise<void> {
   }
 }
 
-export async function previewAdhan(muezzin: Muezzin, seconds = 10): Promise<void> {
-  await playAdhan(muezzin);
-  setTimeout(() => {
-    stopAdhan().catch(() => {});
-  }, seconds * 1000);
+export async function previewAdhan(muezzin: Muezzin, seconds = 15): Promise<PlayResult> {
+  const result = await playAdhan(muezzin);
+  if (result.ok) {
+    setTimeout(() => {
+      stopAdhan().catch(() => {});
+    }, seconds * 1000);
+  }
+  return result;
 }
