@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<title>Varyasyon A2 — Nur (Mihrab Işığı)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #050807;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .frame {
+    width: 390px;
+    height: 844px;
+    background: radial-gradient(ellipse at 50% 35%, #1A3225 0%, #0F2218 40%, #060D0A 100%);
+    border-radius: 48px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 30px 80px rgba(0,0,0,.7);
+  }
+
+  /* Outer mihrab arch — large architectural element */
+  .mihrab-outer {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    height: 440px;
+    border-radius: 160px 160px 0 0;
+    background: linear-gradient(180deg,
+      rgba(200,162,74,0.04) 0%,
+      rgba(200,162,74,0.02) 50%,
+      transparent 100%);
+    border: 1px solid rgba(200,162,74,0.18);
+    border-bottom: none;
+  }
+  /* Inner mihrab — nested arch */
+  .mihrab-inner {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 260px;
+    height: 380px;
+    border-radius: 130px 130px 0 0;
+    border: 1px solid rgba(200,162,74,0.25);
+    border-bottom: none;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 60%,
+      rgba(200,162,74,0.22) 0%,
+      rgba(200,162,74,0.08) 40%,
+      rgba(20,94,67,0.05) 70%,
+      transparent 100%);
+  }
+  .mihrab-inner::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 320px;
+    border-radius: 110px 110px 0 0;
+    border: 1px dashed rgba(200,162,74,0.15);
+    border-bottom: none;
+  }
+
+  /* Light rays SVG container */
+  .rays {
+    position: absolute;
+    top: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    height: 280px;
+    pointer-events: none;
+    animation: pulse 4s ease-in-out infinite alternate;
+  }
+  @keyframes pulse {
+    from { opacity: .65; }
+    to   { opacity: .9; }
+  }
+
+  /* Central 8-point star */
+  .star-center {
+    position: absolute;
+    top: 195px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 56px;
+    height: 56px;
+    z-index: 2;
+  }
+  .star-center svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 20px rgba(200,162,74,0.8))
+            drop-shadow(0 0 40px rgba(200,162,74,0.4));
+  }
+  .star-glow {
+    position: absolute;
+    top: 195px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+      rgba(200,162,74,0.35) 0%,
+      rgba(200,162,74,0.1) 30%,
+      transparent 60%);
+    z-index: 0;
+    animation: glow 3s ease-in-out infinite alternate;
+  }
+  @keyframes glow {
+    from { transform: translate(-50%, -50%) scale(0.95); opacity: .7; }
+    to   { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  }
+
+  /* Floor reflection at the bottom of mihrab */
+  .floor-reflection {
+    position: absolute;
+    top: 420px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    height: 80px;
+    background: linear-gradient(180deg,
+      rgba(200,162,74,0.15) 0%,
+      rgba(200,162,74,0.05) 50%,
+      transparent 100%);
+    filter: blur(8px);
+    pointer-events: none;
+  }
+
+  /* Corner ornaments — top */
+  .corner {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    opacity: .35;
+  }
+  .corner.tl { top: 30px; left: 26px; }
+  .corner.tr { top: 30px; right: 26px; transform: scaleX(-1); }
+
+  /* Content */
+  .content {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+    padding: 60px 32px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .bismillah {
+    margin-top: 30px;
+    font-size: 16px;
+    color: #C8A24A;
+    direction: rtl;
+    letter-spacing: 0.5px;
+    opacity: .85;
+    text-shadow: 0 0 12px rgba(200,162,74,0.4);
+  }
+  .divider-mini {
+    width: 36px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C8A24A, transparent);
+    margin: 14px 0 6px;
+  }
+
+  .title-section {
+    margin-top: 220px;
+    text-align: center;
+  }
+  .label {
+    font-size: 10px;
+    color: #C8A24A;
+    letter-spacing: 4px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    opacity: .8;
+  }
+  .title {
+    font-size: 36px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -1px;
+    line-height: 1;
+    text-shadow: 0 2px 24px rgba(200,162,74,0.25);
+  }
+  .title .gold {
+    background: linear-gradient(135deg, #F4D67E 0%, #C8A24A 50%, #8A6418 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,.5);
+    margin-top: 12px;
+    letter-spacing: 0.3px;
+    line-height: 1.5;
+  }
+
+  .spacer { flex: 1; min-height: 20px; }
+
+  .auth-block {
+    width: 100%;
+  }
+  .btn {
+    width: 100%;
+    height: 52px;
+    border-radius: 16px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, #F4D67E 0%, #C8A24A 50%, #8A6418 100%);
+    color: #0D1F18;
+    box-shadow: 0 8px 28px rgba(200,162,74,.35),
+                inset 0 1px 1px rgba(255,255,255,.4);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-gold::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+    animation: shine 3s ease-in-out infinite;
+  }
+  @keyframes shine {
+    0% { left: -100%; }
+    60%, 100% { left: 100%; }
+  }
+  .row {
+    display: flex;
+    gap: 10px;
+  }
+  .row .btn { flex: 1; margin-bottom: 0; }
+  .btn-glass {
+    background: rgba(255,255,255,.04);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.1);
+    backdrop-filter: blur(10px);
+  }
+  .btn-glass svg { width: 18px; height: 18px; }
+
+  .divider-or {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 18px 0;
+  }
+  .divider-or::before, .divider-or::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,162,74,.25), transparent);
+  }
+  .divider-or span {
+    font-size: 10px;
+    color: rgba(200,162,74,.6);
+    letter-spacing: 3px;
+    font-weight: 700;
+  }
+  .guest {
+    text-align: center;
+    padding: 6px;
+  }
+  .guest a {
+    color: rgba(255,255,255,.6);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .guest a span {
+    border-bottom: 1px solid rgba(200,162,74,.3);
+    padding-bottom: 2px;
+  }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <!-- Architectural mihrab layers -->
+    <div class="mihrab-outer"></div>
+    <div class="mihrab-inner"></div>
+
+    <!-- Glow behind star -->
+    <div class="star-glow"></div>
+
+    <!-- Light rays radiating from center -->
+    <svg class="rays" viewBox="-140 -140 280 280">
+      <defs>
+        <linearGradient id="ray" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#C8A24A" stop-opacity="0.7"/>
+          <stop offset="0.4" stop-color="#C8A24A" stop-opacity="0.25"/>
+          <stop offset="1" stop-color="#C8A24A" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <g>
+        <!-- 16 rays radiating outward -->
+        <g transform="rotate(0)">  <polygon points="0,0 130,-3 135,0 130,3" fill="url(#ray)"/></g>
+        <g transform="rotate(22.5)"><polygon points="0,0 110,-2 115,0 110,2" fill="url(#ray)" opacity=".7"/></g>
+        <g transform="rotate(45)"> <polygon points="0,0 125,-3 130,0 125,3" fill="url(#ray)" opacity=".85"/></g>
+        <g transform="rotate(67.5)"><polygon points="0,0 110,-2 115,0 110,2" fill="url(#ray)" opacity=".7"/></g>
+        <g transform="rotate(90)"> <polygon points="0,0 130,-3 135,0 130,3" fill="url(#ray)"/></g>
+        <g transform="rotate(112.5)"><polygon points="0,0 110,-2 115,0 110,2" fill="url(#ray)" opacity=".7"/></g>
+        <g transform="rotate(135)"><polygon points="0,0 125,-3 130,0 125,3" fill="url(#ray)" opacity=".85"/></g>
+        <g transform="rotate(157.5)"><polygon points="0,0 110,-2 115,0 110,2" fill="url(#ray)" opacity=".7"/></g>
+        <g transform="rotate(180)"><polygon points="0,0 130,-3 135,0 130,3" fill="url(#ray)"/></g>
+        <g transform="rotate(202.5)"><polygon points="0,0 110,-2 115,0 110,2" fill="url(#ray)" opacity=".7"/></g>
+        <g transform="rotate(225)"><polygon points="0,0 125,-3 130,0 125,3" fill="url(#ray)" opacity=".85"/></g>
+        <g transform="rotate(247.5)"><polygon points="0,0 110,-2 115,0 110,2" fill="url(#ray)" opacity=".7"/></g>
+        <g transform="rotate(270)"><polygon points="0,0 130,-3 135,0 130,3" fill="url(#ray)"/></g>
+        <g transform="rotate(292.5)"><polygon points="0,0 110,-2 115,0 110,2" fill="url(#ray)" opacity=".7"/></g>
+        <g transform="rotate(315)"><polygon points="0,0 125,-3 130,0 125,3" fill="url(#ray)" opacity=".85"/></g>
+        <g transform="rotate(337.5)"><polygon points="0,0 110,-2 115,0 110,2" fill="url(#ray)" opacity=".7"/></g>
+      </g>
+    </svg>
+
+    <!-- Floor light reflection -->
+    <div class="floor-reflection"></div>
+
+    <!-- Center 8-point star -->
+    <div class="star-center">
+      <svg viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="starG" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#FBE89C"/>
+            <stop offset="0.5" stop-color="#C8A24A"/>
+            <stop offset="1" stop-color="#8A6418"/>
+          </linearGradient>
+        </defs>
+        <!-- 8-point star: two overlapping squares -->
+        <polygon points="50,5 60,40 95,50 60,60 50,95 40,60 5,50 40,40"
+                 fill="url(#starG)" stroke="#FBE89C" stroke-width="0.5"/>
+        <polygon points="50,18 56,44 82,50 56,56 50,82 44,56 18,50 44,44"
+                 fill="none" stroke="rgba(13,31,24,0.4)" stroke-width="0.6"/>
+        <circle cx="50" cy="50" r="6" fill="#FBE89C" opacity=".9"/>
+      </svg>
+    </div>
+
+    <!-- Corner ornaments -->
+    <svg class="corner tl" viewBox="0 0 50 50">
+      <path d="M0 0 L0 18 Q0 0 18 0 Z" fill="none" stroke="#C8A24A" stroke-width="1.2"/>
+      <path d="M6 0 L6 12 M0 6 L12 6" stroke="#C8A24A" stroke-width="0.6" opacity=".6"/>
+      <circle cx="14" cy="14" r="1.5" fill="#C8A24A"/>
+    </svg>
+    <svg class="corner tr" viewBox="0 0 50 50">
+      <path d="M0 0 L0 18 Q0 0 18 0 Z" fill="none" stroke="#C8A24A" stroke-width="1.2"/>
+      <path d="M6 0 L6 12 M0 6 L12 6" stroke="#C8A24A" stroke-width="0.6" opacity=".6"/>
+      <circle cx="14" cy="14" r="1.5" fill="#C8A24A"/>
+    </svg>
+
+    <!-- Content overlay -->
+    <div class="content">
+      <p class="bismillah">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيمِ</p>
+      <div class="divider-mini"></div>
+
+      <div class="title-section">
+        <p class="label">İSLAMİ ASİSTAN</p>
+        <h1 class="title">Yolculuğa<br/><span class="gold">Hoş Geldin</span></h1>
+        <p class="subtitle">Maneviyat ile her gün biraz daha yakın</p>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="auth-block">
+        <button class="btn btn-gold">Giriş Yap</button>
+        <div class="row">
+          <button class="btn btn-glass">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+            Google
+          </button>
+          <button class="btn btn-glass">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M17.05 12.04c-.03-3.05 2.49-4.52 2.6-4.59-1.42-2.07-3.62-2.36-4.4-2.38-1.87-.19-3.65 1.1-4.6 1.1-.96 0-2.42-1.08-3.99-1.04-2.05.03-3.95 1.19-5 3.03-2.15 3.71-.55 9.18 1.52 12.19 1.04 1.47 2.25 3.11 3.83 3.05 1.55-.06 2.13-.99 4-.99 1.87 0 2.39.99 4.02.95 1.66-.03 2.7-1.48 3.71-2.97z"/></svg>
+            Apple
+          </button>
+        </div>
+        <div class="divider-or"><span>✦  VEYA  ✦</span></div>
+        <div class="guest"><a href="#"><span>Misafir olarak devam et →</span></a></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Audio } from 'expo-av';
 
 const CDN = 'https://cdn.islamic.network/quran/audio/128/ar.alafasy';
 
@@ -7,7 +6,7 @@ export type AudioState = {
   currentNum: number | null;
   isPlaying: boolean;
   isLoading: boolean;
-  position: number; // 0–1
+  position: number;
   error: boolean;
 };
 
@@ -17,26 +16,30 @@ export type AyahAudioControls = AudioState & {
   stop: () => Promise<void>;
 };
 
+// Lazy-load expo-av so the app doesn't crash if the native module is missing
+let Audio: typeof import('expo-av').Audio | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  Audio = require('expo-av').Audio;
+} catch {
+  Audio = null;
+}
+
 export function useAyahAudio(onEnded?: (globalNum: number) => void): AyahAudioControls {
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const soundRef = useRef<any | null>(null);
   const endedNumRef = useRef<number | null>(null);
   const [state, setState] = useState<AudioState>({
-    currentNum: null,
-    isPlaying: false,
-    isLoading: false,
-    position: 0,
-    error: false,
+    currentNum: null, isPlaying: false, isLoading: false, position: 0, error: false,
   });
 
   useEffect(() => {
+    if (!Audio) return;
     Audio.setAudioModeAsync({
       playsInSilentModeIOS: true,
       staysActiveInBackground: true,
       allowsRecordingIOS: false,
     }).catch(() => {});
-    return () => {
-      soundRef.current?.unloadAsync().catch(() => {});
-    };
+    return () => { soundRef.current?.unloadAsync().catch(() => {}); };
   }, []);
 
   const unload = useCallback(async () => {
@@ -46,9 +49,9 @@ export function useAyahAudio(onEnded?: (globalNum: number) => void): AyahAudioCo
   }, []);
 
   const play = useCallback(async (globalNum: number) => {
+    if (!Audio) { setState((p) => ({ ...p, error: true })); return; }
     await unload();
     setState({ currentNum: globalNum, isPlaying: false, isLoading: true, position: 0, error: false });
-
     try {
       const { sound } = await Audio.Sound.createAsync(
         { uri: `${CDN}/${globalNum}.mp3` },
@@ -57,16 +60,8 @@ export function useAyahAudio(onEnded?: (globalNum: number) => void): AyahAudioCo
           if (!status.isLoaded) return;
           const pos = status.durationMillis && status.durationMillis > 0
             ? status.positionMillis / status.durationMillis : 0;
-          setState((prev) => ({
-            ...prev,
-            isLoading: false,
-            isPlaying: status.isPlaying,
-            position: pos,
-          }));
-          // auto-advance
-          if (status.didJustFinish) {
-            endedNumRef.current = globalNum;
-          }
+          setState((prev) => ({ ...prev, isLoading: false, isPlaying: status.isPlaying, position: pos }));
+          if (status.didJustFinish) endedNumRef.current = globalNum;
         },
       );
       soundRef.current = sound;
@@ -76,7 +71,6 @@ export function useAyahAudio(onEnded?: (globalNum: number) => void): AyahAudioCo
     }
   }, [unload]);
 
-  // fire onEnded outside of the status callback to avoid stale closures
   useEffect(() => {
     if (endedNumRef.current == null) return;
     const num = endedNumRef.current;
@@ -89,11 +83,8 @@ export function useAyahAudio(onEnded?: (globalNum: number) => void): AyahAudioCo
     if (!soundRef.current) return;
     const status = await soundRef.current.getStatusAsync();
     if (!status.isLoaded) return;
-    if (status.isPlaying) {
-      await soundRef.current.pauseAsync();
-    } else {
-      await soundRef.current.playAsync();
-    }
+    if (status.isPlaying) await soundRef.current.pauseAsync();
+    else await soundRef.current.playAsync();
   }, []);
 
   const stop = useCallback(async () => {

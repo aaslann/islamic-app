@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<title>Varyasyon B — Hilal Gecesi</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0e0d;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .frame {
+    width: 390px;
+    height: 844px;
+    background: radial-gradient(ellipse at 50% 15%, #1A3829 0%, #0F2218 35%, #081410 75%, #050A07 100%);
+    border-radius: 48px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 30px 80px rgba(0,0,0,.6);
+  }
+  /* Stars */
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(255,255,255,.6);
+  }
+  .star.s1 { top: 60px;  left: 40px;  width: 2px; height: 2px; opacity: .8; }
+  .star.s2 { top: 100px; left: 320px; width: 3px; height: 3px; opacity: .9; }
+  .star.s3 { top: 160px; left: 80px;  width: 2px; height: 2px; opacity: .6; }
+  .star.s4 { top: 220px; left: 280px; width: 2px; height: 2px; opacity: .7; }
+  .star.s5 { top: 300px; left: 50px;  width: 1.5px; height: 1.5px; opacity: .5; }
+  .star.s6 { top: 80px;  left: 200px; width: 1.5px; height: 1.5px; opacity: .6; }
+  .star.s7 { top: 180px; left: 350px; width: 2px; height: 2px; opacity: .8; }
+  .star.gold { background: #C8A24A; box-shadow: 0 0 8px rgba(200,162,74,.7); }
+  /* Crescent Moon */
+  .moon-wrap {
+    position: absolute;
+    top: 100px; left: 50%;
+    transform: translateX(-50%);
+    width: 130px; height: 130px;
+  }
+  .moon {
+    position: relative;
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F4D67E 0%, #C8A24A 50%, #A07020 100%);
+    box-shadow: 0 0 60px rgba(200,162,74,.4),
+                0 0 100px rgba(200,162,74,.2);
+  }
+  .moon::after {
+    content: '';
+    position: absolute;
+    top: -5px; right: -15px;
+    width: 110px; height: 130px;
+    border-radius: 50%;
+    background: #0F2218;
+  }
+  .moon-glow {
+    position: absolute;
+    top: 0; left: 0;
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    box-shadow: 0 0 80px rgba(200,162,74,.3);
+  }
+  .content {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    padding: 60px 32px 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .bismillah {
+    margin-top: 280px;
+    font-size: 20px;
+    color: #C8A24A;
+    letter-spacing: 1px;
+    direction: rtl;
+    text-align: center;
+  }
+  .tagline-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 26px;
+    margin-bottom: 8px;
+  }
+  .tagline-row .dot {
+    width: 4px; height: 4px;
+    background: #C8A24A;
+    border-radius: 50%;
+  }
+  .tagline-text {
+    font-size: 10px;
+    font-weight: 700;
+    color: #C8A24A;
+    letter-spacing: 3px;
+  }
+  .title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,.55);
+    text-align: center;
+    margin-top: 12px;
+    line-height: 1.6;
+    max-width: 280px;
+  }
+  .features {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .feature {
+    background: rgba(200,162,74,.08);
+    border: 1px solid rgba(200,162,74,.18);
+    color: #C8A24A;
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 99px;
+    font-weight: 600;
+  }
+  .spacer { flex: 1; min-height: 16px; }
+  .btn-stack { width: 100%; }
+  .btn {
+    width: 100%;
+    height: 52px;
+    border-radius: 16px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, #E0BF72 0%, #C8A24A 50%, #A07020 100%);
+    color: #0D1F18;
+    box-shadow: 0 6px 20px rgba(200,162,74,.3);
+  }
+  .btn-outline {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.15);
+  }
+  .row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+  .row .btn { margin-bottom: 0; }
+  .row svg { width: 18px; height: 18px; }
+  .divider-text {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin: 14px 0;
+  }
+  .divider-text::before,
+  .divider-text::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,.08);
+  }
+  .divider-text span {
+    font-size: 10px;
+    color: rgba(255,255,255,.4);
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+  .guest-btn {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,.5);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px;
+  }
+  .guest-btn span {
+    border-bottom: 1px solid rgba(255,255,255,.2);
+    padding-bottom: 2px;
+  }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="star s1"></div>
+    <div class="star s2 gold"></div>
+    <div class="star s3"></div>
+    <div class="star s4"></div>
+    <div class="star s5"></div>
+    <div class="star s6 gold"></div>
+    <div class="star s7"></div>
+
+    <div class="moon-wrap">
+      <div class="moon"></div>
+      <div class="moon-glow"></div>
+    </div>
+
+    <div class="content">
+      <p class="bismillah">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيمِ</p>
+
+      <div class="tagline-row">
+        <div class="dot"></div>
+        <span class="tagline-text">İSLAMİ ASİSTAN</span>
+        <div class="dot"></div>
+      </div>
+      <h1 class="title">Maneviyatına<br/>Yol Arkadaşı</h1>
+      <p class="subtitle">Namaz, Kur'an, zikir ve dualar — hepsi tek uygulamada.</p>
+
+      <div class="features">
+        <span class="feature">🕌 Namaz</span>
+        <span class="feature">📖 Kur'an</span>
+        <span class="feature">📿 Zikir</span>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="btn-stack">
+        <button class="btn btn-gold">Giriş Yap</button>
+        <div class="row">
+          <button class="btn btn-outline">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+          </button>
+          <button class="btn btn-outline">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M17.05 12.04c-.03-3.05 2.49-4.52 2.6-4.59-1.42-2.07-3.62-2.36-4.4-2.38-1.87-.19-3.65 1.1-4.6 1.1-.96 0-2.42-1.08-3.99-1.04-2.05.03-3.95 1.19-5 3.03-2.15 3.71-.55 9.18 1.52 12.19 1.04 1.47 2.25 3.11 3.83 3.05 1.55-.06 2.13-.99 4-.99 1.87 0 2.39.99 4.02.95 1.66-.03 2.7-1.48 3.71-2.97 1.18-1.7 1.66-3.36 1.68-3.44-.04-.02-3.21-1.23-3.24-4.87z"/></svg>
+          </button>
+          <button class="btn btn-outline">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          </button>
+        </div>
+        <div class="divider-text"><span>VEYA</span></div>
+        <button class="guest-btn"><span>Misafir olarak devam et →</span></button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

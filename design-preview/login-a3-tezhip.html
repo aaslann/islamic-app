@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<title>Varyasyon A3 — Tezhip (Osmanlı Illüminasyon)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #050807;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .frame {
+    width: 390px;
+    height: 844px;
+    background:
+      radial-gradient(ellipse at 50% 0%, #142A20 0%, #0C1D14 40%, #060D0A 100%);
+    border-radius: 48px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 30px 80px rgba(0,0,0,.7);
+  }
+
+  /* Outer page border (illuminated manuscript style) */
+  .page-border {
+    position: absolute;
+    top: 28px; left: 22px; right: 22px; bottom: 28px;
+    border: 1.5px solid rgba(200,162,74,0.55);
+    border-radius: 8px;
+    pointer-events: none;
+  }
+  .page-border::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 0.5px solid rgba(200,162,74,0.35);
+    border-radius: 4px;
+  }
+  .page-border::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border: 0.5px solid rgba(200,162,74,0.18);
+    border-radius: 14px;
+  }
+
+  /* Top tezhip ornament — elaborate gold serlevha */
+  .serlevha {
+    position: absolute;
+    top: 48px; left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    height: 90px;
+    z-index: 2;
+  }
+
+  /* Mihrab arch inside tezhip frame */
+  .arch {
+    position: absolute;
+    top: 150px; left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    height: 360px;
+    z-index: 1;
+  }
+
+  /* Corner illuminations */
+  .corner-orn {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    z-index: 3;
+  }
+  .corner-orn.tl { top: 36px; left: 30px; }
+  .corner-orn.tr { top: 36px; right: 30px; transform: scaleX(-1); }
+  .corner-orn.bl { bottom: 36px; left: 30px; transform: scaleY(-1); }
+  .corner-orn.br { bottom: 36px; right: 30px; transform: scale(-1,-1); }
+
+  /* Side ornaments */
+  .side-orn {
+    position: absolute;
+    width: 18px;
+    height: 80px;
+    z-index: 2;
+  }
+  .side-orn.left  { top: 50%; left: 24px; transform: translateY(-50%); }
+  .side-orn.right { top: 50%; right: 24px; transform: translateY(-50%) scaleX(-1); }
+
+  /* Background tile pattern subtle */
+  .bg-pattern {
+    position: absolute;
+    inset: 60px 60px;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><g fill='none' stroke='%23C8A24A' stroke-width='0.5'><circle cx='20' cy='20' r='12'/><circle cx='0' cy='20' r='12'/><circle cx='40' cy='20' r='12'/><circle cx='20' cy='0' r='12'/><circle cx='20' cy='40' r='12'/></g></svg>");
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* Central rosette (şemse) */
+  .rosette {
+    position: absolute;
+    top: 230px; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 130px;
+    height: 130px;
+    z-index: 2;
+  }
+
+  .content {
+    position: relative;
+    z-index: 5;
+    height: 100%;
+    padding: 56px 50px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .bismillah {
+    margin-top: 120px;
+    font-size: 17px;
+    color: #E0BF72;
+    direction: rtl;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 8px rgba(200,162,74,.4);
+    opacity: .9;
+  }
+
+  .title-block {
+    margin-top: 130px;
+    text-align: center;
+  }
+  .label-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .label-row .diamond {
+    width: 5px; height: 5px;
+    background: #C8A24A;
+    transform: rotate(45deg);
+  }
+  .label {
+    font-size: 9px;
+    color: #C8A24A;
+    letter-spacing: 5px;
+    font-weight: 700;
+  }
+  .title {
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #FBE89C 0%, #E0BF72 30%, #C8A24A 60%, #8A6418 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+  }
+  .title-en {
+    font-size: 11px;
+    color: rgba(200,162,74,.65);
+    letter-spacing: 6px;
+    margin-top: 8px;
+    font-weight: 600;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,.5);
+    margin-top: 14px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .ornament-divider {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ornament-divider .line {
+    width: 50px; height: 1px;
+    background: linear-gradient(90deg, transparent, #C8A24A, transparent);
+  }
+  .ornament-divider .center {
+    width: 14px; height: 14px;
+    color: #C8A24A;
+  }
+
+  .spacer { flex: 1; min-height: 8px; }
+
+  .auth-block {
+    width: 100%;
+    background: rgba(200,162,74,0.03);
+    border: 1px solid rgba(200,162,74,0.18);
+    border-radius: 18px;
+    padding: 18px 16px 16px;
+    backdrop-filter: blur(8px);
+    position: relative;
+  }
+  .auth-block::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px dashed rgba(200,162,74,0.1);
+    border-radius: 14px;
+    pointer-events: none;
+  }
+
+  .btn {
+    width: 100%;
+    height: 48px;
+    border-radius: 12px;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    position: relative;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, #F4D67E 0%, #C8A24A 50%, #8A6418 100%);
+    color: #0D1F18;
+    box-shadow: 0 4px 14px rgba(200,162,74,.3),
+                inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .row { display: flex; gap: 8px; }
+  .row .btn { flex: 1; margin-bottom: 0; }
+  .btn-glass {
+    background: rgba(255,255,255,.04);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.1);
+  }
+  .btn-glass svg { width: 16px; height: 16px; }
+
+  .guest-row {
+    margin-top: 12px;
+    text-align: center;
+  }
+  .guest-row a {
+    font-size: 12px;
+    color: rgba(200,162,74,.7);
+    text-decoration: none;
+    font-weight: 600;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <!-- Tile pattern background -->
+    <div class="bg-pattern"></div>
+
+    <!-- Manuscript page borders -->
+    <div class="page-border"></div>
+
+    <!-- Top tezhip / serlevha ornament -->
+    <svg class="serlevha" viewBox="0 0 320 90">
+      <defs>
+        <linearGradient id="goldT" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#FBE89C"/>
+          <stop offset="0.5" stop-color="#C8A24A"/>
+          <stop offset="1" stop-color="#8A6418"/>
+        </linearGradient>
+        <linearGradient id="goldH" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#C8A24A" stop-opacity=".2"/>
+          <stop offset="0.5" stop-color="#C8A24A" stop-opacity=".5"/>
+          <stop offset="1" stop-color="#C8A24A" stop-opacity=".2"/>
+        </linearGradient>
+      </defs>
+
+      <!-- main horizontal band -->
+      <rect x="20" y="35" width="280" height="22" fill="url(#goldH)" rx="2"/>
+      <rect x="20" y="35" width="280" height="22" fill="none" stroke="#C8A24A" stroke-width="1"/>
+
+      <!-- central crown ornament -->
+      <g transform="translate(160,30)">
+        <!-- arch on top -->
+        <path d="M -30,8 Q -30,-22 0,-22 Q 30,-22 30,8 L 30,8 L -30,8 Z"
+              fill="url(#goldT)" stroke="#8A6418" stroke-width="0.8"/>
+        <!-- inner motif -->
+        <circle cx="0" cy="-2" r="6" fill="#0D1F18" stroke="#FBE89C" stroke-width="0.6"/>
+        <circle cx="0" cy="-2" r="2.5" fill="#C8A24A"/>
+        <!-- top tassel -->
+        <line x1="0" y1="-22" x2="0" y2="-32" stroke="#C8A24A" stroke-width="1"/>
+        <circle cx="0" cy="-34" r="2.5" fill="#C8A24A"/>
+        <!-- side petals -->
+        <path d="M -30,8 Q -40,2 -42,-4 Q -36,-2 -30,8 Z" fill="#C8A24A" opacity=".7"/>
+        <path d="M 30,8 Q 40,2 42,-4 Q 36,-2 30,8 Z" fill="#C8A24A" opacity=".7"/>
+      </g>
+
+      <!-- floral repetition on the band -->
+      <g fill="#0D1F18" opacity=".7">
+        <circle cx="50"  cy="46" r="2.5"/>
+        <circle cx="80"  cy="46" r="2"/>
+        <circle cx="110" cy="46" r="2.5"/>
+        <circle cx="210" cy="46" r="2.5"/>
+        <circle cx="240" cy="46" r="2"/>
+        <circle cx="270" cy="46" r="2.5"/>
+      </g>
+
+      <!-- side end ornaments -->
+      <path d="M 20,46 Q 6,46 8,30 Q 16,40 20,46" fill="#C8A24A" opacity=".7"/>
+      <path d="M 20,46 Q 6,46 8,62 Q 16,52 20,46" fill="#C8A24A" opacity=".7"/>
+      <path d="M 300,46 Q 314,46 312,30 Q 304,40 300,46" fill="#C8A24A" opacity=".7"/>
+      <path d="M 300,46 Q 314,46 312,62 Q 304,52 300,46" fill="#C8A24A" opacity=".7"/>
+    </svg>
+
+    <!-- Inner mihrab arch -->
+    <svg class="arch" viewBox="0 0 280 360">
+      <defs>
+        <radialGradient id="archG" cx="0.5" cy="0.6" r="0.6">
+          <stop offset="0" stop-color="#C8A24A" stop-opacity=".18"/>
+          <stop offset="0.5" stop-color="#C8A24A" stop-opacity=".05"/>
+          <stop offset="1" stop-color="#C8A24A" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <!-- outer arch -->
+      <path d="M 10,360 L 10,140 Q 10,10 140,10 Q 270,10 270,140 L 270,360 Z"
+            fill="url(#archG)" stroke="#C8A24A" stroke-width="1.2"/>
+      <!-- middle arch -->
+      <path d="M 30,340 L 30,150 Q 30,30 140,30 Q 250,30 250,150 L 250,340 Z"
+            fill="none" stroke="#C8A24A" stroke-width="0.6" opacity=".7"/>
+      <!-- inner arch -->
+      <path d="M 50,320 L 50,160 Q 50,50 140,50 Q 230,50 230,160 L 230,320 Z"
+            fill="none" stroke="#C8A24A" stroke-width="0.4" opacity=".4" stroke-dasharray="3 3"/>
+
+      <!-- ornamental dots along arch -->
+      <g fill="#C8A24A">
+        <circle cx="140" cy="12" r="2"/>
+        <circle cx="100" cy="18" r="1.5"/>
+        <circle cx="180" cy="18" r="1.5"/>
+        <circle cx="60" cy="40" r="1.5"/>
+        <circle cx="220" cy="40" r="1.5"/>
+      </g>
+    </svg>
+
+    <!-- Central şemse rosette -->
+    <svg class="rosette" viewBox="0 0 130 130">
+      <defs>
+        <radialGradient id="rosG" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#FBE89C"/>
+          <stop offset="0.4" stop-color="#C8A24A"/>
+          <stop offset="1" stop-color="#8A6418"/>
+        </radialGradient>
+      </defs>
+      <g transform="translate(65,65)">
+        <!-- outer 16-petal flower -->
+        <g>
+          <circle r="62" fill="none" stroke="#C8A24A" stroke-width="0.5" opacity=".5"/>
+          <g fill="#C8A24A" opacity=".55">
+            <!-- 16 petals -->
+            <g><ellipse cx="0" cy="-55" rx="5" ry="10"/></g>
+            <g transform="rotate(22.5)"><ellipse cx="0" cy="-55" rx="4" ry="9" opacity=".7"/></g>
+            <g transform="rotate(45)"><ellipse cx="0" cy="-55" rx="5" ry="10"/></g>
+            <g transform="rotate(67.5)"><ellipse cx="0" cy="-55" rx="4" ry="9" opacity=".7"/></g>
+            <g transform="rotate(90)"><ellipse cx="0" cy="-55" rx="5" ry="10"/></g>
+            <g transform="rotate(112.5)"><ellipse cx="0" cy="-55" rx="4" ry="9" opacity=".7"/></g>
+            <g transform="rotate(135)"><ellipse cx="0" cy="-55" rx="5" ry="10"/></g>
+            <g transform="rotate(157.5)"><ellipse cx="0" cy="-55" rx="4" ry="9" opacity=".7"/></g>
+            <g transform="rotate(180)"><ellipse cx="0" cy="-55" rx="5" ry="10"/></g>
+            <g transform="rotate(202.5)"><ellipse cx="0" cy="-55" rx="4" ry="9" opacity=".7"/></g>
+            <g transform="rotate(225)"><ellipse cx="0" cy="-55" rx="5" ry="10"/></g>
+            <g transform="rotate(247.5)"><ellipse cx="0" cy="-55" rx="4" ry="9" opacity=".7"/></g>
+            <g transform="rotate(270)"><ellipse cx="0" cy="-55" rx="5" ry="10"/></g>
+            <g transform="rotate(292.5)"><ellipse cx="0" cy="-55" rx="4" ry="9" opacity=".7"/></g>
+            <g transform="rotate(315)"><ellipse cx="0" cy="-55" rx="5" ry="10"/></g>
+            <g transform="rotate(337.5)"><ellipse cx="0" cy="-55" rx="4" ry="9" opacity=".7"/></g>
+          </g>
+        </g>
+        <!-- middle ring -->
+        <circle r="42" fill="none" stroke="#C8A24A" stroke-width="0.8" opacity=".7"/>
+        <circle r="40" fill="url(#rosG)" opacity=".2"/>
+
+        <!-- 8-point star center -->
+        <polygon points="0,-30 9,-9 30,0 9,9 0,30 -9,9 -30,0 -9,-9"
+                 fill="url(#rosG)" stroke="#FBE89C" stroke-width="0.5"/>
+        <polygon points="0,-22 6,-6 22,0 6,6 0,22 -6,6 -22,0 -6,-6"
+                 fill="none" stroke="#0D1F18" stroke-width="0.5" opacity=".5"/>
+        <circle r="6" fill="#0D1F18" stroke="#FBE89C" stroke-width="0.4"/>
+        <circle r="2" fill="#FBE89C"/>
+      </g>
+    </svg>
+
+    <!-- Corner ornaments -->
+    <svg class="corner-orn tl" viewBox="0 0 70 70">
+      <g fill="none" stroke="#C8A24A" stroke-width="1">
+        <!-- decorative L -->
+        <path d="M 0,0 L 0,42 Q 0,0 42,0 Z" fill="rgba(200,162,74,0.08)"/>
+        <path d="M 8,8 L 8,30 Q 8,8 30,8" stroke-width="0.6" opacity=".7"/>
+        <path d="M 16,16 L 16,22 Q 16,16 22,16" stroke-width="0.4" opacity=".5"/>
+      </g>
+      <!-- decorative dots -->
+      <g fill="#C8A24A">
+        <circle cx="36" cy="36" r="2"/>
+        <circle cx="24" cy="36" r="1"/>
+        <circle cx="36" cy="24" r="1"/>
+      </g>
+      <!-- floral curl -->
+      <path d="M 40,5 Q 50,5 52,15 Q 50,12 48,14" fill="none" stroke="#C8A24A" stroke-width="0.6"/>
+      <path d="M 5,40 Q 5,50 15,52 Q 12,50 14,48" fill="none" stroke="#C8A24A" stroke-width="0.6"/>
+    </svg>
+    <svg class="corner-orn tr" viewBox="0 0 70 70">
+      <g fill="none" stroke="#C8A24A" stroke-width="1">
+        <path d="M 0,0 L 0,42 Q 0,0 42,0 Z" fill="rgba(200,162,74,0.08)"/>
+        <path d="M 8,8 L 8,30 Q 8,8 30,8" stroke-width="0.6" opacity=".7"/>
+        <path d="M 16,16 L 16,22 Q 16,16 22,16" stroke-width="0.4" opacity=".5"/>
+      </g>
+      <g fill="#C8A24A">
+        <circle cx="36" cy="36" r="2"/>
+        <circle cx="24" cy="36" r="1"/>
+        <circle cx="36" cy="24" r="1"/>
+      </g>
+      <path d="M 40,5 Q 50,5 52,15 Q 50,12 48,14" fill="none" stroke="#C8A24A" stroke-width="0.6"/>
+      <path d="M 5,40 Q 5,50 15,52 Q 12,50 14,48" fill="none" stroke="#C8A24A" stroke-width="0.6"/>
+    </svg>
+    <svg class="corner-orn bl" viewBox="0 0 70 70">
+      <g fill="none" stroke="#C8A24A" stroke-width="1">
+        <path d="M 0,0 L 0,42 Q 0,0 42,0 Z" fill="rgba(200,162,74,0.08)"/>
+        <path d="M 8,8 L 8,30 Q 8,8 30,8" stroke-width="0.6" opacity=".7"/>
+      </g>
+      <g fill="#C8A24A">
+        <circle cx="36" cy="36" r="2"/>
+      </g>
+    </svg>
+    <svg class="corner-orn br" viewBox="0 0 70 70">
+      <g fill="none" stroke="#C8A24A" stroke-width="1">
+        <path d="M 0,0 L 0,42 Q 0,0 42,0 Z" fill="rgba(200,162,74,0.08)"/>
+        <path d="M 8,8 L 8,30 Q 8,8 30,8" stroke-width="0.6" opacity=".7"/>
+      </g>
+      <g fill="#C8A24A">
+        <circle cx="36" cy="36" r="2"/>
+      </g>
+    </svg>
+
+    <!-- Content overlay -->
+    <div class="content">
+      <p class="bismillah">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيمِ</p>
+
+      <div class="title-block">
+        <div class="label-row">
+          <div class="diamond"></div>
+          <span class="label">EL-HAMDÜLİLLAH</span>
+          <div class="diamond"></div>
+        </div>
+        <h1 class="title">İslami Asistan</h1>
+        <p class="title-en">YOL · NUR · BEREKET</p>
+        <p class="subtitle">"Allah'a hamdolsun ki kendisine<br/>hamd edenlerden olduk."</p>
+      </div>
+
+      <div class="ornament-divider">
+        <div class="line"></div>
+        <svg class="center" viewBox="0 0 14 14">
+          <polygon points="7,1 8.5,5.5 13,7 8.5,8.5 7,13 5.5,8.5 1,7 5.5,5.5" fill="currentColor"/>
+        </svg>
+        <div class="line"></div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="auth-block">
+        <button class="btn btn-gold">Giriş Yap</button>
+        <div class="row">
+          <button class="btn btn-glass">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+            Google
+          </button>
+          <button class="btn btn-glass">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M17.05 12.04c-.03-3.05 2.49-4.52 2.6-4.59-1.42-2.07-3.62-2.36-4.4-2.38-1.87-.19-3.65 1.1-4.6 1.1-.96 0-2.42-1.08-3.99-1.04-2.05.03-3.95 1.19-5 3.03-2.15 3.71-.55 9.18 1.52 12.19 1.04 1.47 2.25 3.11 3.83 3.05 1.55-.06 2.13-.99 4-.99 1.87 0 2.39.99 4.02.95 1.66-.03 2.7-1.48 3.71-2.97z"/></svg>
+            Apple
+          </button>
+        </div>
+        <div class="guest-row">
+          <a href="#">— Misafir olarak devam et —</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
