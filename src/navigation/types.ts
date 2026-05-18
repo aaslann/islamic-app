@@ -1,21 +1,24 @@
 export type RootStackParamList = {
+  MainTabs: undefined;
+  // Tab screens — navigated via nested navigator lookup
   Home: undefined;
   PrayerTimes: undefined;
-  PrayerGuide: undefined;
-  Qibla: undefined;
   QuranSurahList: undefined;
-  QuranSurahDetail: { surahId: number; surahName: string };
-  Duas: undefined;
   ZikrCounter: undefined;
-  PrayerLog: undefined;
-  FavoriteAyahs: undefined;
   Settings: undefined;
-  RisaleNur: undefined;
+  // Detail screens in the root stack
+  PrayerGuide: undefined;
+  PrayerLog: undefined;
+  Qibla: undefined;
+  QuranSurahDetail: { surahId: number; surahName: string };
+  FavoriteAyahs: undefined;
   ElmaliliTafsir: undefined;
-  Analytics: undefined;
-  Goals: undefined;
+  Duas: undefined;
   IslamicCalendar: undefined;
   MosqueFinder: undefined;
+  Analytics: undefined;
+  Goals: undefined;
+  RisaleNur: undefined;
   RamadanTracker: undefined;
   PrayerProgress: undefined;
 };

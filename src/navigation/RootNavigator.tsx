@@ -4,23 +4,19 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTheme } from '../core/theme/ThemeContext';
 import type { RootStackParamList } from './types';
 
-import HomeScreen from '../features/home/screens/HomeScreen';
-import PrayerTimesScreen from '../features/prayer/screens/PrayerTimesScreen';
+import BottomTabNavigator from './BottomTabNavigator';
 import PrayerGuideScreen from '../features/prayer/screens/PrayerGuideScreen';
 import PrayerLogScreen from '../features/prayer/screens/PrayerLogScreen';
 import QiblaScreen from '../features/qibla/screens/QiblaScreen';
-import QuranSurahListScreen from '../features/quran/screens/QuranSurahListScreen';
 import QuranSurahDetailScreen from '../features/quran/screens/QuranSurahDetailScreen';
 import FavoriteAyahsScreen from '../features/quran/screens/FavoriteAyahsScreen';
 import ElmaliliTafsirScreen from '../features/quran/screens/ElmaliliTafsirScreen';
 import DuasScreen from '../features/dua/screens/DuasScreen';
-import ZikrCounterScreen from '../features/zikr/screens/ZikrCounterScreen';
 import IslamicCalendarScreen from '../features/calendar/screens/IslamicCalendarScreen';
 import MosqueFinderScreen from '../features/mosque/screens/MosqueFinderScreen';
 import AnalyticsScreen from '../features/analytics/screens/AnalyticsScreen';
 import GoalsScreen from '../features/goals/screens/GoalsScreen';
 import RisaleNurScreen from '../features/risale/screens/RisaleNurScreen';
-import SettingsScreen from '../features/settings/screens/SettingsScreen';
 import RamadanTrackerScreen from '../features/ramadan/screens/RamadanTrackerScreen';
 import PrayerProgressScreen from '../features/progress/screens/PrayerProgressScreen';
 
@@ -33,7 +29,6 @@ export default function RootNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Home"
         screenOptions={{
           headerStyle: { backgroundColor: c.navBar },
           headerTintColor: c.white,
@@ -42,25 +37,21 @@ export default function RootNavigator() {
           contentStyle: { backgroundColor: c.background },
         }}
       >
-        <Stack.Screen name="Home"           component={HomeScreen}            options={{ title: 'İslami Asistan' }} />
-        <Stack.Screen name="PrayerTimes"    component={PrayerTimesScreen}     options={{ title: 'Namaz Vakitleri' }} />
-        <Stack.Screen name="PrayerGuide"    component={PrayerGuideScreen}     options={{ title: 'Namaz Kılavuzu' }} />
-        <Stack.Screen name="PrayerLog"      component={PrayerLogScreen}       options={{ title: 'Namaz Hatıra Defteri' }} />
-        <Stack.Screen name="Qibla"          component={QiblaScreen}           options={{ title: 'Kıble Yönü' }} />
-        <Stack.Screen name="QuranSurahList" component={QuranSurahListScreen}  options={{ title: "Kur'an-ı Kerim" }} />
+        <Stack.Screen name="MainTabs"        component={BottomTabNavigator}    options={{ headerShown: false }} />
+        <Stack.Screen name="PrayerGuide"     component={PrayerGuideScreen}     options={{ title: 'Namaz Kılavuzu' }} />
+        <Stack.Screen name="PrayerLog"       component={PrayerLogScreen}       options={{ title: 'Namaz Hatıra Defteri' }} />
+        <Stack.Screen name="Qibla"           component={QiblaScreen}           options={{ title: 'Kıble Yönü' }} />
         <Stack.Screen name="QuranSurahDetail" component={QuranSurahDetailScreen} options={({ route }) => ({ title: route.params.surahName })} />
-        <Stack.Screen name="FavoriteAyahs" component={FavoriteAyahsScreen}   options={{ title: 'Favori Ayetlerim' }} />
-        <Stack.Screen name="ElmaliliTafsir" component={ElmaliliTafsirScreen}  options={{ title: 'Elmalılı Tefsiri' }} />
-        <Stack.Screen name="Duas"           component={DuasScreen}            options={{ title: 'Günlük Dualar' }} />
-        <Stack.Screen name="ZikrCounter"    component={ZikrCounterScreen}     options={{ title: 'Zikir Sayacı' }} />
+        <Stack.Screen name="FavoriteAyahs"   component={FavoriteAyahsScreen}   options={{ title: 'Favori Ayetlerim' }} />
+        <Stack.Screen name="ElmaliliTafsir"  component={ElmaliliTafsirScreen}  options={{ title: 'Elmalılı Tefsiri' }} />
+        <Stack.Screen name="Duas"            component={DuasScreen}            options={{ title: 'Günlük Dualar' }} />
         <Stack.Screen name="IslamicCalendar" component={IslamicCalendarScreen} options={{ title: 'İslami Takvim' }} />
-        <Stack.Screen name="MosqueFinder"   component={MosqueFinderScreen}    options={{ title: 'Cami Bulucu' }} />
-        <Stack.Screen name="Analytics"      component={AnalyticsScreen}       options={{ title: 'Manevî Analiz' }} />
-        <Stack.Screen name="Goals"          component={GoalsScreen}           options={{ title: 'Hedeflerim' }} />
-        <Stack.Screen name="RisaleNur"      component={RisaleNurScreen}       options={{ title: 'Risale-i Nur' }} />
-        <Stack.Screen name="Settings"       component={SettingsScreen}        options={{ title: 'Ayarlar' }} />
-        <Stack.Screen name="RamadanTracker" component={RamadanTrackerScreen}  options={{ title: 'Ramazan Takibi' }} />
-        <Stack.Screen name="PrayerProgress" component={PrayerProgressScreen}  options={{ title: 'Namaz İlerlemesi' }} />
+        <Stack.Screen name="MosqueFinder"    component={MosqueFinderScreen}    options={{ title: 'Cami Bulucu' }} />
+        <Stack.Screen name="Analytics"       component={AnalyticsScreen}       options={{ title: 'Manevî Analiz' }} />
+        <Stack.Screen name="Goals"           component={GoalsScreen}           options={{ title: 'Hedeflerim' }} />
+        <Stack.Screen name="RisaleNur"       component={RisaleNurScreen}       options={{ title: 'Risale-i Nur' }} />
+        <Stack.Screen name="RamadanTracker"  component={RamadanTrackerScreen}  options={{ title: 'Ramazan Takibi' }} />
+        <Stack.Screen name="PrayerProgress"  component={PrayerProgressScreen}  options={{ title: 'Namaz İlerlemesi' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
