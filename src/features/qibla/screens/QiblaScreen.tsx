@@ -24,7 +24,9 @@ function computeQiblaBearing(lat: number, lon: number) {
 
 function computeHeading(data: { x: number; y: number } | null) {
   if (!data) return null;
-  return (toDeg(Math.atan2(data.y, data.x)) + 360) % 360;
+  // atan2(-x, y): device flat, y-axis = top of phone, x-axis = right side
+  // When top points North: x≈0, y>0 → 0°; East: x<0, y≈0 → 90°
+  return (toDeg(Math.atan2(-data.x, data.y)) + 360) % 360;
 }
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
