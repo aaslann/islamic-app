@@ -138,9 +138,8 @@ async function _playAdhanInner(target: Muezzin): Promise<PlayResult> {
 }
 
 export async function playAdhan(muezzin?: Muezzin): Promise<PlayResult> {
-  console.warn('[adhan] playAdhan called, Audio loaded:', Audio !== null);
+  console.warn('[adhan] playAdhan called, Audio loaded:', Audio !== null, 'platform:', Platform.OS);
   if (!Audio) return { ok: false, error: 'expo-av modülü yüklenemedi (Audio=null). Dev build gerekebilir.' };
-  if (Platform.OS === 'web') return { ok: false, error: 'Web platformunda ezan oynatılamaz.' };
 
   await stopAdhan();
   await ensureAudioMode();
