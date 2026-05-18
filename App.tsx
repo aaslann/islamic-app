@@ -6,19 +6,23 @@ import { useFonts, Amiri_400Regular, Amiri_700Bold } from '@expo-google-fonts/am
 import { ThemeProvider, useTheme } from './src/core/theme/ThemeContext';
 import RootNavigator from './src/navigation/RootNavigator';
 import OnboardingScreen, { ONBOARDING_KEY } from './src/features/onboarding/screens/OnboardingScreen';
+import LoginScreen, { LOGIN_KEY } from './src/features/auth/screens/LoginScreen';
 import { palette } from './src/core/theme/tokens';
 
 function AppShell() {
   const { theme, isDark } = useTheme();
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
-    AsyncStorage.getItem(ONBOARDING_KEY).then((val) => {
-      setOnboarded(val === 'true');
+    AsyncStorage.multiGet([ONBOARDING_KEY, LOGIN_KEY]).then((entries) => {
+      const map = Object.fromEntries(entries);
+      setOnboarded(map[ONBOARDING_KEY] === 'true');
+      setLoggedIn(map[LOGIN_KEY] === 'true');
     });
   }, []);
 
-  if (onboarded === null) {
+  if (onboarded === null || loggedIn === null) {
     return (
       <View style={styles.splash}>
         <ActivityIndicator size="large" color={palette.gold500} />
@@ -31,6 +35,20 @@ function AppShell() {
       <>
         <StatusBar style="light" />
         <OnboardingScreen onComplete={() => setOnboarded(true)} />
+      </>
+    );
+  }
+
+  if (!loggedIn) {
+    return (
+      <>
+        <StatusBar style="light" />
+        <LoginScreen
+          onComplete={() => {
+            AsyncStorage.setItem(LOGIN_KEY, 'true').catch(() => {});
+            setLoggedIn(true);
+          }}
+        />
       </>
     );
   }

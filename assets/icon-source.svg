@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0F2218"/>
+      <stop offset="0.6" stop-color="#1A3829"/>
+      <stop offset="1" stop-color="#0A1A12"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FBE89C"/>
+      <stop offset="0.5" stop-color="#C8A24A"/>
+      <stop offset="1" stop-color="#8A6418"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FBE89C" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#FBE89C" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+  <!-- Glow halo -->
+  <circle cx="512" cy="512" r="450" fill="url(#glow)"/>
+
+  <!-- 8-point star: two overlapping squares -->
+  <g transform="translate(512, 512)">
+    <polygon points="0,-390 100,-100 390,0 100,100 0,390 -100,100 -390,0 -100,-100"
+             fill="url(#gold)"
+             stroke="#FBE89C"
+             stroke-width="8"/>
+    <polygon points="0,-220 60,-60 220,0 60,60 0,220 -60,60 -220,0 -60,-60"
+             fill="none"
+             stroke="rgba(13,31,24,0.5)"
+             stroke-width="6"/>
+    <circle cx="0" cy="0" r="40" fill="#FBE89C"/>
+  </g>
+</svg>

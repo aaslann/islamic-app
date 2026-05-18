@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<title>Varyasyon A4 — Şems Yıldızı (Girih)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #050807;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .frame {
+    width: 390px;
+    height: 844px;
+    background:
+      radial-gradient(ellipse at 50% 25%, #102218 0%, #0A1610 50%, #050A08 100%);
+    border-radius: 48px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 30px 80px rgba(0,0,0,.7);
+  }
+
+  /* Tessellated background — subtle girih tile pattern */
+  .tessellation {
+    position: absolute;
+    inset: 0;
+    opacity: .08;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><g fill='none' stroke='%23C8A24A' stroke-width='0.6'><polygon points='60,5 75,30 60,55 45,30'/><polygon points='5,60 30,75 55,60 30,45'/><polygon points='60,65 75,90 60,115 45,90'/><polygon points='65,60 90,75 115,60 90,45'/><line x1='60' y1='5' x2='60' y2='55'/><line x1='5' y1='60' x2='55' y2='60'/><line x1='60' y1='65' x2='60' y2='115'/><line x1='65' y1='60' x2='115' y2='60'/></g></svg>");
+    background-size: 120px 120px;
+    pointer-events: none;
+  }
+
+  /* Diagonal scanlight */
+  .scanlight {
+    position: absolute;
+    top: -100px; left: -100px;
+    right: -100px; bottom: -100px;
+    background: radial-gradient(ellipse at 30% 20%,
+      rgba(200,162,74,0.18) 0%,
+      rgba(200,162,74,0.04) 30%,
+      transparent 55%);
+    pointer-events: none;
+  }
+
+  /* Main mihrab arch frame — rounded top */
+  .arch-frame {
+    position: absolute;
+    top: 60px; left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    height: 440px;
+    border-radius: 160px 160px 0 0;
+    border: 1.5px solid rgba(200,162,74,0.4);
+    border-bottom: none;
+    background: radial-gradient(ellipse at 50% 50%,
+      rgba(200,162,74,0.05) 0%,
+      transparent 60%);
+  }
+  .arch-frame::before {
+    content: '';
+    position: absolute;
+    top: -8px; left: -8px;
+    right: -8px;
+    height: calc(100% + 8px);
+    border-radius: 168px 168px 0 0;
+    border: 0.5px solid rgba(200,162,74,0.18);
+    border-bottom: none;
+  }
+
+  /* Massive central Şems girih star */
+  .sems {
+    position: absolute;
+    top: 140px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    height: 280px;
+    z-index: 2;
+    animation: rotate 80s linear infinite;
+  }
+  @keyframes rotate {
+    to { transform: translateX(-50%) rotate(360deg); }
+  }
+  /* Counter-rotating inner star */
+  .sems-inner {
+    position: absolute;
+    top: 215px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 130px;
+    height: 130px;
+    z-index: 3;
+    animation: rotate-rev 40s linear infinite;
+  }
+  @keyframes rotate-rev {
+    to { transform: translate(-50%, -50%) rotate(-360deg); }
+  }
+  /* Glowing core */
+  .core-glow {
+    position: absolute;
+    top: 215px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+      rgba(200,162,74,0.25) 0%,
+      rgba(200,162,74,0.08) 30%,
+      transparent 65%);
+    z-index: 1;
+    animation: breathe 4s ease-in-out infinite alternate;
+  }
+  @keyframes breathe {
+    from { opacity: .65; transform: translate(-50%, -50%) scale(0.92); }
+    to   { opacity: 1;    transform: translate(-50%, -50%) scale(1.08); }
+  }
+
+  /* Center monogram dot */
+  .core-dot {
+    position: absolute;
+    top: 215px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #FBE89C 0%, #C8A24A 60%, #8A6418 100%);
+    box-shadow: 0 0 24px rgba(251,232,156,.8);
+    z-index: 4;
+  }
+
+  /* Floating geometric satellites around the star */
+  .satellite {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    opacity: .5;
+    z-index: 2;
+  }
+  .satellite.s1 { top: 80px;  left: 50px;  animation: float 6s ease-in-out infinite alternate; }
+  .satellite.s2 { top: 90px;  right: 50px; animation: float 7s ease-in-out infinite alternate; }
+  .satellite.s3 { top: 250px; left: 28px;  animation: float 8s ease-in-out infinite alternate; }
+  .satellite.s4 { top: 250px; right: 28px; animation: float 5s ease-in-out infinite alternate; }
+  @keyframes float {
+    from { transform: translateY(0) rotate(0deg); }
+    to   { transform: translateY(-10px) rotate(15deg); }
+  }
+
+  /* Bottom decorative line ornament */
+  .bottom-ornament {
+    position: absolute;
+    bottom: 360px; left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 30px;
+    z-index: 2;
+  }
+
+  .content {
+    position: relative;
+    z-index: 5;
+    height: 100%;
+    padding: 50px 32px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Top header — minimal */
+  .top-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px;
+  }
+  .brand-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .brand-tag .dot {
+    width: 6px; height: 6px;
+    background: #C8A24A;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(200,162,74,.8);
+  }
+  .brand-tag span {
+    font-size: 9px;
+    color: #C8A24A;
+    letter-spacing: 3px;
+    font-weight: 700;
+  }
+  .lang-pill {
+    font-size: 9px;
+    color: rgba(255,255,255,.4);
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 99px;
+    font-weight: 600;
+  }
+
+  .bismillah {
+    margin-top: 380px;
+    font-size: 17px;
+    color: #E0BF72;
+    direction: rtl;
+    text-shadow: 0 0 12px rgba(200,162,74,.5);
+    opacity: .9;
+  }
+
+  .title-block {
+    margin-top: 22px;
+    text-align: center;
+  }
+  .title {
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1.2px;
+    color: #fff;
+    text-shadow: 0 4px 30px rgba(200,162,74,.25);
+  }
+  .title-arabic {
+    font-size: 14px;
+    color: #C8A24A;
+    margin-top: 4px;
+    direction: rtl;
+    letter-spacing: 1px;
+    opacity: .85;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,.55);
+    margin-top: 14px;
+    line-height: 1.6;
+    max-width: 280px;
+  }
+
+  .spacer { flex: 1; min-height: 12px; }
+
+  .auth-block { width: 100%; }
+  .btn {
+    width: 100%;
+    height: 52px;
+    border-radius: 16px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, #F4D67E 0%, #C8A24A 50%, #8A6418 100%);
+    color: #0D1F18;
+    box-shadow: 0 8px 28px rgba(200,162,74,.4),
+                inset 0 1px 1px rgba(255,255,255,.4);
+  }
+  .btn-gold::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+    animation: shine 3s ease-in-out infinite;
+  }
+  @keyframes shine {
+    0% { left: -100%; }
+    60%, 100% { left: 100%; }
+  }
+
+  .row { display: flex; gap: 10px; }
+  .row .btn { flex: 1; margin-bottom: 0; }
+  .btn-glass {
+    background: rgba(255,255,255,.04);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.1);
+    backdrop-filter: blur(10px);
+  }
+  .btn-glass svg { width: 18px; height: 18px; }
+
+  .divider-or {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .divider-or::before, .divider-or::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,162,74,.3), transparent);
+  }
+  .divider-or span {
+    font-size: 10px;
+    color: rgba(200,162,74,.6);
+    letter-spacing: 3px;
+    font-weight: 700;
+  }
+
+  .guest {
+    text-align: center;
+    padding: 4px;
+  }
+  .guest a {
+    color: rgba(255,255,255,.55);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .guest a span {
+    border-bottom: 1px solid rgba(200,162,74,.3);
+    padding-bottom: 2px;
+  }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="tessellation"></div>
+    <div class="scanlight"></div>
+    <div class="arch-frame"></div>
+
+    <!-- Central şems yıldızı — 12-point complex girih -->
+    <svg class="sems" viewBox="-140 -140 280 280">
+      <defs>
+        <linearGradient id="goldS" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#FBE89C" stop-opacity=".95"/>
+          <stop offset="0.5" stop-color="#C8A24A" stop-opacity=".85"/>
+          <stop offset="1" stop-color="#8A6418" stop-opacity=".7"/>
+        </linearGradient>
+        <linearGradient id="goldFaint" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#C8A24A" stop-opacity=".5"/>
+          <stop offset="1" stop-color="#C8A24A" stop-opacity=".15"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Outermost decorative ring with 24 ticks -->
+      <g stroke="#C8A24A" stroke-width="0.4" opacity=".5">
+        <circle r="135" fill="none"/>
+        <circle r="130" fill="none"/>
+      </g>
+      <g stroke="#C8A24A" stroke-width="0.8" opacity=".6">
+        <line x1="0" y1="-135" x2="0" y2="-130"/>
+        <g transform="rotate(15)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(30)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(45)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(60)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(75)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(90)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(105)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(120)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(135)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(150)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(165)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(180)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(195)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(210)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(225)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(240)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(255)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(270)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(285)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(300)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(315)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(330)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+        <g transform="rotate(345)"><line x1="0" y1="-135" x2="0" y2="-130"/></g>
+      </g>
+
+      <!-- 12-point star pattern -->
+      <g fill="none" stroke="#C8A24A" stroke-width="0.7" opacity=".75">
+        <!-- Outer 12-point polygon -->
+        <polygon points="0,-120 60,-104 104,-60 120,0 104,60 60,104 0,120 -60,104 -104,60 -120,0 -104,-60 -60,-104"/>
+        <!-- Two overlapping hexagons forming 12-point star -->
+        <polygon points="0,-110 95,-55 95,55 0,110 -95,55 -95,-55"/>
+        <polygon points="-95,-55 95,-55 0,110" stroke-width="0.5" opacity=".7"/>
+        <polygon points="-95,55 95,55 0,-110" stroke-width="0.5" opacity=".7"/>
+      </g>
+
+      <!-- Middle hexagram pattern -->
+      <g fill="none" stroke="#C8A24A" stroke-width="0.6" opacity=".85">
+        <polygon points="-78,-45 78,-45 0,90" />
+        <polygon points="-78,45 78,45 0,-90" />
+        <circle r="88"/>
+        <circle r="72"/>
+      </g>
+
+      <!-- Connecting lines (girih structure) -->
+      <g fill="none" stroke="#C8A24A" stroke-width="0.5" opacity=".55">
+        <line x1="-60" y1="-104" x2="60" y2="104"/>
+        <line x1="60" y1="-104" x2="-60" y2="104"/>
+        <line x1="-104" y1="-60" x2="104" y2="60"/>
+        <line x1="104" y1="-60" x2="-104" y2="60"/>
+        <line x1="0" y1="-120" x2="0" y2="120"/>
+        <line x1="-120" y1="0" x2="120" y2="0"/>
+      </g>
+
+      <!-- Filled gold accents on key vertices -->
+      <g fill="url(#goldS)" opacity=".8">
+        <circle cx="0" cy="-120" r="3"/>
+        <circle cx="60" cy="-104" r="2.5"/>
+        <circle cx="104" cy="-60" r="3"/>
+        <circle cx="120" cy="0" r="2.5"/>
+        <circle cx="104" cy="60" r="3"/>
+        <circle cx="60" cy="104" r="2.5"/>
+        <circle cx="0" cy="120" r="3"/>
+        <circle cx="-60" cy="104" r="2.5"/>
+        <circle cx="-104" cy="60" r="3"/>
+        <circle cx="-120" cy="0" r="2.5"/>
+        <circle cx="-104" cy="-60" r="3"/>
+        <circle cx="-60" cy="-104" r="2.5"/>
+      </g>
+    </svg>
+
+    <!-- Inner counter-rotating 8-point star -->
+    <svg class="sems-inner" viewBox="-65 -65 130 130">
+      <defs>
+        <radialGradient id="innerG" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#FBE89C" stop-opacity=".95"/>
+          <stop offset="0.6" stop-color="#C8A24A" stop-opacity=".7"/>
+          <stop offset="1" stop-color="#8A6418" stop-opacity=".4"/>
+        </radialGradient>
+      </defs>
+      <!-- 8-point star -->
+      <g fill="url(#innerG)" stroke="#FBE89C" stroke-width="0.5">
+        <polygon points="0,-55 12,-12 55,0 12,12 0,55 -12,12 -55,0 -12,-12"/>
+      </g>
+      <!-- inner detail -->
+      <g fill="none" stroke="#0D1F18" stroke-width="0.5" opacity=".4">
+        <polygon points="0,-40 9,-9 40,0 9,9 0,40 -9,9 -40,0 -9,-9"/>
+        <circle r="30"/>
+      </g>
+      <!-- petals between star points -->
+      <g fill="#C8A24A" opacity=".7">
+        <g transform="rotate(22.5)"><circle cx="0" cy="-44" r="2"/></g>
+        <g transform="rotate(67.5)"><circle cx="0" cy="-44" r="2"/></g>
+        <g transform="rotate(112.5)"><circle cx="0" cy="-44" r="2"/></g>
+        <g transform="rotate(157.5)"><circle cx="0" cy="-44" r="2"/></g>
+        <g transform="rotate(202.5)"><circle cx="0" cy="-44" r="2"/></g>
+        <g transform="rotate(247.5)"><circle cx="0" cy="-44" r="2"/></g>
+        <g transform="rotate(292.5)"><circle cx="0" cy="-44" r="2"/></g>
+        <g transform="rotate(337.5)"><circle cx="0" cy="-44" r="2"/></g>
+      </g>
+    </svg>
+
+    <div class="core-glow"></div>
+    <div class="core-dot"></div>
+
+    <!-- Floating satellite hexagons -->
+    <svg class="satellite s1" viewBox="0 0 36 36">
+      <polygon points="18,3 31,11 31,25 18,33 5,25 5,11" fill="none" stroke="#C8A24A" stroke-width="1"/>
+      <polygon points="18,9 27,14 27,22 18,27 9,22 9,14" fill="rgba(200,162,74,.2)"/>
+    </svg>
+    <svg class="satellite s2" viewBox="0 0 36 36">
+      <polygon points="18,3 31,11 31,25 18,33 5,25 5,11" fill="none" stroke="#C8A24A" stroke-width="1"/>
+      <polygon points="18,9 27,14 27,22 18,27 9,22 9,14" fill="rgba(200,162,74,.2)"/>
+    </svg>
+    <svg class="satellite s3" viewBox="0 0 36 36">
+      <polygon points="18,3 31,11 31,25 18,33 5,25 5,11" fill="none" stroke="#C8A24A" stroke-width="1"/>
+      <polygon points="18,9 27,14 27,22 18,27 9,22 9,14" fill="rgba(200,162,74,.2)"/>
+    </svg>
+    <svg class="satellite s4" viewBox="0 0 36 36">
+      <polygon points="18,3 31,11 31,25 18,33 5,25 5,11" fill="none" stroke="#C8A24A" stroke-width="1"/>
+      <polygon points="18,9 27,14 27,22 18,27 9,22 9,14" fill="rgba(200,162,74,.2)"/>
+    </svg>
+
+    <!-- Bottom decorative ornament -->
+    <svg class="bottom-ornament" viewBox="0 0 300 30">
+      <g stroke="#C8A24A" stroke-width="0.8" fill="none" opacity=".55">
+        <line x1="10" y1="15" x2="120" y2="15"/>
+        <line x1="180" y1="15" x2="290" y2="15"/>
+        <polygon points="150,5 158,15 150,25 142,15" fill="#C8A24A" opacity=".9"/>
+        <circle cx="120" cy="15" r="3"/>
+        <circle cx="180" cy="15" r="3"/>
+      </g>
+    </svg>
+
+    <!-- Content overlay -->
+    <div class="content">
+      <div class="top-row">
+        <div class="brand-tag">
+          <div class="dot"></div>
+          <span>İSLAMİ ASİSTAN</span>
+        </div>
+        <div class="lang-pill">TR</div>
+      </div>
+
+      <p class="bismillah">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيمِ</p>
+
+      <div class="title-block">
+        <h1 class="title">Manevi Yolculuk</h1>
+        <p class="title-arabic">رحلة روحية</p>
+        <p class="subtitle">İbadetini takip et, Kur'an'la huzur bul,<br/>her gün biraz daha aydınlan.</p>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="auth-block">
+        <button class="btn btn-gold">Giriş Yap</button>
+        <div class="row">
+          <button class="btn btn-glass">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+            Google
+          </button>
+          <button class="btn btn-glass">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M17.05 12.04c-.03-3.05 2.49-4.52 2.6-4.59-1.42-2.07-3.62-2.36-4.4-2.38-1.87-.19-3.65 1.1-4.6 1.1-.96 0-2.42-1.08-3.99-1.04-2.05.03-3.95 1.19-5 3.03-2.15 3.71-.55 9.18 1.52 12.19 1.04 1.47 2.25 3.11 3.83 3.05 1.55-.06 2.13-.99 4-.99 1.87 0 2.39.99 4.02.95 1.66-.03 2.7-1.48 3.71-2.97z"/></svg>
+            Apple
+          </button>
+        </div>
+        <div class="divider-or"><span>✦  VEYA  ✦</span></div>
+        <div class="guest"><a href="#"><span>Misafir olarak devam et →</span></a></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

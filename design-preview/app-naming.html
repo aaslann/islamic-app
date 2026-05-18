@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<title>İsim & İkon Önerileri</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: linear-gradient(135deg, #1a1f1d 0%, #0a0e0d 100%);
+    min-height: 100vh;
+    padding: 40px 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #fff;
+  }
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #FBE89C 0%, #C8A24A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .lead {
+    text-align: center;
+    color: rgba(255,255,255,.5);
+    margin-bottom: 40px;
+    font-size: 14px;
+  }
+
+  /* Phone wallpaper grid */
+  .phones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+    max-width: 1400px;
+    margin: 0 auto 60px;
+  }
+
+  .phone-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(200,162,74,0.18);
+    border-radius: 28px;
+    padding: 24px 20px;
+    position: relative;
+  }
+  .phone-card.recommended {
+    border-color: rgba(200,162,74,0.5);
+    background: rgba(200,162,74,0.04);
+  }
+  .recommended-badge {
+    position: absolute;
+    top: -10px; left: 20px;
+    background: linear-gradient(135deg, #FBE89C 0%, #C8A24A 100%);
+    color: #0D1F18;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 99px;
+    letter-spacing: 1px;
+  }
+
+  .name-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .app-name {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .app-name-ar {
+    font-size: 18px;
+    color: #C8A24A;
+    direction: rtl;
+  }
+  .app-meaning {
+    font-size: 12px;
+    color: rgba(255,255,255,.5);
+    font-style: italic;
+    margin-bottom: 18px;
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 240px;
+    height: 480px;
+    margin: 0 auto;
+    background: linear-gradient(180deg, #1a3829 0%, #0f2218 50%, #0d1f18 100%);
+    border-radius: 30px;
+    border: 2px solid #2a2a2a;
+    padding: 36px 18px 14px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  }
+  /* Notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 80px; height: 16px;
+    background: #0a0a0a;
+    border-radius: 0 0 12px 12px;
+  }
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding: 0 8px;
+  }
+  /* Wallpaper Islamic pattern */
+  .phone::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: .04;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'><g fill='none' stroke='%23C8A24A' stroke-width='0.5'><polygon points='30,5 55,30 30,55 5,30'/><polygon points='30,15 45,30 30,45 15,30'/></g></svg>");
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+  /* App grid */
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .app-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .app-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  }
+  .app-label {
+    font-size: 8px;
+    color: #fff;
+    font-weight: 600;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,.6);
+    max-width: 50px;
+  }
+  /* Generic surrounding app icons */
+  .ai-mail   { background: linear-gradient(180deg, #4f97ff, #1e7ee8); }
+  .ai-photo  { background: linear-gradient(180deg, #ffb84d, #d97706); }
+  .ai-music  { background: linear-gradient(180deg, #ff6b9d, #d63a5f); }
+  .ai-msg    { background: linear-gradient(180deg, #5dd86d, #2ea642); }
+  .ai-cam    { background: #1c1c1c; border: 1px solid #444; }
+  .ai-maps   { background: linear-gradient(180deg, #f0f0f0, #d4d4d4); }
+  .ai-notes  { background: linear-gradient(180deg, #fff, #f0f0c0); }
+  .ai-clock  { background: #1c1c1c; border: 2px solid #fff; position: relative; }
+  .ai-clock::after { content: ''; position: absolute; top: 50%; left: 50%; width: 2px; height: 14px; background: #fff; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(20deg); }
+  .ai-cal    { background: #fff; color: #ff3b30; font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+  .ai-set    { background: linear-gradient(180deg, #c0c0c0, #707070); }
+  .ai-store  { background: linear-gradient(180deg, #4f97ff, #0066d6); color: #fff; font-weight: 800; font-size: 22px; display: flex; align-items: center; justify-content: center; }
+  .ai-emoji-cam { color: #fff; font-size: 22px; }
+  .ai-emoji-set { color: #fff; font-size: 18px; }
+  .ai-emoji-maps { color: #4285f4; font-size: 22px; font-weight: 800; }
+
+  /* Our app icon — highlighted */
+  .ai-ours {
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-ours-pulse::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border: 2px solid rgba(200,162,74,.8);
+    border-radius: 14px;
+    animation: pulse-ring 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes pulse-ring {
+    0%, 100% { opacity: 0; transform: scale(1.1); }
+    50%      { opacity: 1; transform: scale(1); }
+  }
+
+  /* ICON DESIGNS */
+  /* NUR — 8-point star */
+  .icon-nur {
+    background: linear-gradient(135deg, #0F2218 0%, #1A3829 60%, #0A1A12 100%);
+    position: relative;
+  }
+  .icon-nur svg { width: 80%; height: 80%; }
+
+  /* SEKINE — Hilal moon */
+  .icon-sekine {
+    background: linear-gradient(135deg, #1A3829 0%, #0F2218 50%, #061008 100%);
+    position: relative;
+  }
+  .icon-sekine svg { width: 75%; height: 75%; }
+
+  /* VIRD — Tesbih ring */
+  .icon-vird {
+    background: linear-gradient(135deg, #0D2024 0%, #14292E 60%, #0A1A1F 100%);
+    position: relative;
+  }
+  .icon-vird svg { width: 78%; height: 78%; }
+
+  /* HIDAYET — Star + arrow */
+  .icon-hidayet {
+    background: linear-gradient(135deg, #18301F 0%, #0E2418 100%);
+    position: relative;
+  }
+  .icon-hidayet svg { width: 75%; height: 75%; }
+
+  /* MIHRAB — Arch silhouette */
+  .icon-mihrab {
+    background: linear-gradient(135deg, #0F2218 0%, #050C09 100%);
+    position: relative;
+  }
+  .icon-mihrab svg { width: 75%; height: 75%; }
+
+  /* Detail comparison row */
+  .detail-section {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-top: 40px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .section-title {
+    text-align: center;
+    font-size: 18px;
+    color: #C8A24A;
+    letter-spacing: 3px;
+    font-weight: 700;
+    margin-bottom: 30px;
+  }
+  .size-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-bottom: 50px;
+  }
+  .size-card {
+    text-align: center;
+  }
+  .size-card .ai-ours {
+    border-radius: 22%;
+  }
+  .size-label {
+    font-size: 10px;
+    color: rgba(255,255,255,.4);
+    margin-top: 8px;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .size-1024 { width: 180px; height: 180px; }
+  .size-180 { width: 120px; height: 120px; border-radius: 24px !important; }
+  .size-120 { width: 88px; height: 88px; border-radius: 18px !important; }
+  .size-60 { width: 56px; height: 56px; border-radius: 12px !important; }
+
+  /* Splash screen */
+  .splash {
+    width: 240px;
+    height: 480px;
+    margin: 0 auto;
+    background:
+      radial-gradient(ellipse at 50% 35%, #1A3225 0%, #0F2218 40%, #060D0A 100%);
+    border-radius: 30px;
+    border: 2px solid #2a2a2a;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  }
+  .splash::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 80px; height: 16px;
+    background: #0a0a0a;
+    border-radius: 0 0 12px 12px;
+  }
+  .splash-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 22%;
+    overflow: hidden;
+    animation: float-icon 3s ease-in-out infinite alternate;
+  }
+  @keyframes float-icon {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-6px); }
+  }
+  .splash-name {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #FBE89C 0%, #C8A24A 70%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+  }
+  .splash-tag {
+    margin-top: 4px;
+    font-size: 9px;
+    color: rgba(200,162,74,.7);
+    letter-spacing: 4px;
+    font-weight: 700;
+  }
+  .splash-bismi {
+    position: absolute;
+    bottom: 30px;
+    font-size: 12px;
+    color: rgba(200,162,74,.5);
+    direction: rtl;
+  }
+
+  /* Notification preview */
+  .notif {
+    max-width: 320px;
+    margin: 0 auto;
+    background: rgba(35, 38, 42, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 18px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .notif-icon {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .notif-body { flex: 1; }
+  .notif-row {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: rgba(255,255,255,.6);
+    margin-bottom: 2px;
+  }
+  .notif-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .notif-text { font-size: 12px; color: rgba(255,255,255,.75); line-height: 1.3; }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .compare-col h3 {
+    text-align: center;
+    font-size: 12px;
+    color: #C8A24A;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+  <h1>İsim & İkon Önerileri</h1>
+  <p class="lead">Telefon ana ekranında nasıl görüneceğin önizlemesi · A4 tasarımıyla uyumlu</p>
+
+  <!-- PHONE GRID with each name's icon -->
+  <div class="phones">
+
+    <!-- NUR -->
+    <div class="phone-card recommended">
+      <div class="recommended-badge">✦ TAVSİYE</div>
+      <div class="name-row">
+        <span class="app-name">Nur</span>
+        <span class="app-name-ar">نور</span>
+      </div>
+      <p class="app-meaning">"Işık · Aydınlanma"</p>
+
+      <div class="phone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>● ● ●</span>
+        </div>
+        <div class="app-grid">
+          <div class="app-item"><div class="app-icon ai-msg ai-emoji-cam">💬</div><div class="app-label">Mesaj</div></div>
+          <div class="app-item"><div class="app-icon ai-photo ai-emoji-cam">📷</div><div class="app-label">Fotoğraf</div></div>
+          <div class="app-item"><div class="app-icon ai-music ai-emoji-cam">🎵</div><div class="app-label">Müzik</div></div>
+          <div class="app-item"><div class="app-icon ai-mail ai-emoji-cam">✉</div><div class="app-label">Mail</div></div>
+
+          <div class="app-item"><div class="app-icon ai-maps ai-emoji-maps">G</div><div class="app-label">Harita</div></div>
+          <div class="app-item"><div class="app-icon ai-cal">17</div><div class="app-label">Takvim</div></div>
+          <div class="app-item">
+            <div class="app-icon ai-ours ai-ours-pulse icon-nur">
+              <svg viewBox="-50 -50 100 100">
+                <defs>
+                  <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#FBE89C"/>
+                    <stop offset="0.5" stop-color="#C8A24A"/>
+                    <stop offset="1" stop-color="#8A6418"/>
+                  </linearGradient>
+                  <radialGradient id="glow1" cx="0.5" cy="0.5" r="0.5">
+                    <stop offset="0" stop-color="#FBE89C" stop-opacity="0.6"/>
+                    <stop offset="1" stop-color="#FBE89C" stop-opacity="0"/>
+                  </radialGradient>
+                </defs>
+                <circle r="45" fill="url(#glow1)"/>
+                <polygon points="0,-38 10,-10 38,0 10,10 0,38 -10,10 -38,0 -10,-10" fill="url(#g1)" stroke="#FBE89C" stroke-width="1"/>
+                <polygon points="0,-22 6,-6 22,0 6,6 0,22 -6,6 -22,0 -6,-6" fill="none" stroke="rgba(13,31,24,.5)" stroke-width="0.8"/>
+                <circle r="4" fill="#FBE89C"/>
+              </svg>
+            </div>
+            <div class="app-label" style="color:#FBE89C;font-weight:800">Nur</div>
+          </div>
+          <div class="app-item"><div class="app-icon ai-clock"></div><div class="app-label">Saat</div></div>
+
+          <div class="app-item"><div class="app-icon ai-notes ai-emoji-cam">📝</div><div class="app-label">Notlar</div></div>
+          <div class="app-item"><div class="app-icon ai-set ai-emoji-set">⚙</div><div class="app-label">Ayarlar</div></div>
+          <div class="app-item"><div class="app-icon ai-store">A</div><div class="app-label">Store</div></div>
+          <div class="app-item"><div class="app-icon ai-cam ai-emoji-cam">📞</div><div class="app-label">Telefon</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEKINE -->
+    <div class="phone-card">
+      <div class="name-row">
+        <span class="app-name">Sekine</span>
+        <span class="app-name-ar">سكينة</span>
+      </div>
+      <p class="app-meaning">"Manevi sukunet · İlahi huzur"</p>
+
+      <div class="phone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>● ● ●</span>
+        </div>
+        <div class="app-grid">
+          <div class="app-item"><div class="app-icon ai-msg ai-emoji-cam">💬</div><div class="app-label">Mesaj</div></div>
+          <div class="app-item"><div class="app-icon ai-photo ai-emoji-cam">📷</div><div class="app-label">Fotoğraf</div></div>
+          <div class="app-item"><div class="app-icon ai-music ai-emoji-cam">🎵</div><div class="app-label">Müzik</div></div>
+          <div class="app-item"><div class="app-icon ai-mail ai-emoji-cam">✉</div><div class="app-label">Mail</div></div>
+
+          <div class="app-item"><div class="app-icon ai-maps ai-emoji-maps">G</div><div class="app-label">Harita</div></div>
+          <div class="app-item"><div class="app-icon ai-cal">17</div><div class="app-label">Takvim</div></div>
+          <div class="app-item">
+            <div class="app-icon ai-ours ai-ours-pulse icon-sekine">
+              <svg viewBox="-50 -50 100 100">
+                <defs>
+                  <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#FBE89C"/>
+                    <stop offset="1" stop-color="#A07020"/>
+                  </linearGradient>
+                </defs>
+                <!-- Crescent moon -->
+                <path d="M -8,-28 A 30 30 0 1 0 -8,28 A 22 22 0 1 1 -8,-28 Z" fill="url(#g2)" stroke="#FBE89C" stroke-width="0.6"/>
+                <!-- Small star -->
+                <polygon points="18,-8 22,0 30,2 22,4 18,12 14,4 6,2 14,0" fill="#FBE89C"/>
+              </svg>
+            </div>
+            <div class="app-label" style="color:#FBE89C;font-weight:800">Sekine</div>
+          </div>
+          <div class="app-item"><div class="app-icon ai-clock"></div><div class="app-label">Saat</div></div>
+
+          <div class="app-item"><div class="app-icon ai-notes ai-emoji-cam">📝</div><div class="app-label">Notlar</div></div>
+          <div class="app-item"><div class="app-icon ai-set ai-emoji-set">⚙</div><div class="app-label">Ayarlar</div></div>
+          <div class="app-item"><div class="app-icon ai-store">A</div><div class="app-label">Store</div></div>
+          <div class="app-item"><div class="app-icon ai-cam ai-emoji-cam">📞</div><div class="app-label">Telefon</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIRD -->
+    <div class="phone-card">
+      <div class="name-row">
+        <span class="app-name">Vird</span>
+        <span class="app-name-ar">ورد</span>
+      </div>
+      <p class="app-meaning">"Düzenli zikir · Günlük ibadet"</p>
+
+      <div class="phone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>● ● ●</span>
+        </div>
+        <div class="app-grid">
+          <div class="app-item"><div class="app-icon ai-msg ai-emoji-cam">💬</div><div class="app-label">Mesaj</div></div>
+          <div class="app-item"><div class="app-icon ai-photo ai-emoji-cam">📷</div><div class="app-label">Fotoğraf</div></div>
+          <div class="app-item"><div class="app-icon ai-music ai-emoji-cam">🎵</div><div class="app-label">Müzik</div></div>
+          <div class="app-item"><div class="app-icon ai-mail ai-emoji-cam">✉</div><div class="app-label">Mail</div></div>
+
+          <div class="app-item"><div class="app-icon ai-maps ai-emoji-maps">G</div><div class="app-label">Harita</div></div>
+          <div class="app-item"><div class="app-icon ai-cal">17</div><div class="app-label">Takvim</div></div>
+          <div class="app-item">
+            <div class="app-icon ai-ours ai-ours-pulse icon-vird">
+              <svg viewBox="-50 -50 100 100">
+                <defs>
+                  <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#FBE89C"/>
+                    <stop offset="1" stop-color="#A07020"/>
+                  </linearGradient>
+                </defs>
+                <!-- Tesbih beads circle -->
+                <g fill="url(#g3)">
+                  <g transform="rotate(0)"><circle cx="0" cy="-30" r="5"/></g>
+                  <g transform="rotate(36)"><circle cx="0" cy="-30" r="5"/></g>
+                  <g transform="rotate(72)"><circle cx="0" cy="-30" r="5"/></g>
+                  <g transform="rotate(108)"><circle cx="0" cy="-30" r="5"/></g>
+                  <g transform="rotate(144)"><circle cx="0" cy="-30" r="5"/></g>
+                  <g transform="rotate(180)"><circle cx="0" cy="-30" r="5"/></g>
+                  <g transform="rotate(216)"><circle cx="0" cy="-30" r="5"/></g>
+                  <g transform="rotate(252)"><circle cx="0" cy="-30" r="5"/></g>
+                  <g transform="rotate(288)"><circle cx="0" cy="-30" r="5"/></g>
+                  <g transform="rotate(324)"><circle cx="0" cy="-30" r="5"/></g>
+                </g>
+                <circle r="30" fill="none" stroke="rgba(200,162,74,.4)" stroke-width="0.5"/>
+                <text x="0" y="6" text-anchor="middle" fill="#FBE89C" font-size="14" font-weight="900">٣٣</text>
+              </svg>
+            </div>
+            <div class="app-label" style="color:#FBE89C;font-weight:800">Vird</div>
+          </div>
+          <div class="app-item"><div class="app-icon ai-clock"></div><div class="app-label">Saat</div></div>
+
+          <div class="app-item"><div class="app-icon ai-notes ai-emoji-cam">📝</div><div class="app-label">Notlar</div></div>
+          <div class="app-item"><div class="app-icon ai-set ai-emoji-set">⚙</div><div class="app-label">Ayarlar</div></div>
+          <div class="app-item"><div class="app-icon ai-store">A</div><div class="app-label">Store</div></div>
+          <div class="app-item"><div class="app-icon ai-cam ai-emoji-cam">📞</div><div class="app-label">Telefon</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HIDAYET -->
+    <div class="phone-card">
+      <div class="name-row">
+        <span class="app-name">Hidayet</span>
+        <span class="app-name-ar">هداية</span>
+      </div>
+      <p class="app-meaning">"Doğru yola iletme · Rehberlik"</p>
+
+      <div class="phone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>● ● ●</span>
+        </div>
+        <div class="app-grid">
+          <div class="app-item"><div class="app-icon ai-msg ai-emoji-cam">💬</div><div class="app-label">Mesaj</div></div>
+          <div class="app-item"><div class="app-icon ai-photo ai-emoji-cam">📷</div><div class="app-label">Fotoğraf</div></div>
+          <div class="app-item"><div class="app-icon ai-music ai-emoji-cam">🎵</div><div class="app-label">Müzik</div></div>
+          <div class="app-item"><div class="app-icon ai-mail ai-emoji-cam">✉</div><div class="app-label">Mail</div></div>
+
+          <div class="app-item"><div class="app-icon ai-maps ai-emoji-maps">G</div><div class="app-label">Harita</div></div>
+          <div class="app-item"><div class="app-icon ai-cal">17</div><div class="app-label">Takvim</div></div>
+          <div class="app-item">
+            <div class="app-icon ai-ours ai-ours-pulse icon-hidayet">
+              <svg viewBox="-50 -50 100 100">
+                <defs>
+                  <linearGradient id="g4" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#FBE89C"/>
+                    <stop offset="1" stop-color="#A07020"/>
+                  </linearGradient>
+                </defs>
+                <!-- 8-point compass star -->
+                <polygon points="0,-40 8,-8 40,0 8,8 0,40 -8,8 -40,0 -8,-8" fill="url(#g4)" stroke="#FBE89C" stroke-width="0.8"/>
+                <!-- compass needle pointing up -->
+                <polygon points="0,-36 4,0 0,-2 -4,0" fill="#0D1F18" opacity=".7"/>
+                <!-- inner ring -->
+                <circle r="14" fill="none" stroke="rgba(13,31,24,.5)" stroke-width="0.8"/>
+                <circle r="3" fill="#0D1F18"/>
+              </svg>
+            </div>
+            <div class="app-label" style="color:#FBE89C;font-weight:800">Hidayet</div>
+          </div>
+          <div class="app-item"><div class="app-icon ai-clock"></div><div class="app-label">Saat</div></div>
+
+          <div class="app-item"><div class="app-icon ai-notes ai-emoji-cam">📝</div><div class="app-label">Notlar</div></div>
+          <div class="app-item"><div class="app-icon ai-set ai-emoji-set">⚙</div><div class="app-label">Ayarlar</div></div>
+          <div class="app-item"><div class="app-icon ai-store">A</div><div class="app-label">Store</div></div>
+          <div class="app-item"><div class="app-icon ai-cam ai-emoji-cam">📞</div><div class="app-label">Telefon</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIHRAB -->
+    <div class="phone-card">
+      <div class="name-row">
+        <span class="app-name">Mihrab</span>
+        <span class="app-name-ar">محراب</span>
+      </div>
+      <p class="app-meaning">"Kıble nişi · A4 tasarımıyla uyumlu"</p>
+
+      <div class="phone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>● ● ●</span>
+        </div>
+        <div class="app-grid">
+          <div class="app-item"><div class="app-icon ai-msg ai-emoji-cam">💬</div><div class="app-label">Mesaj</div></div>
+          <div class="app-item"><div class="app-icon ai-photo ai-emoji-cam">📷</div><div class="app-label">Fotoğraf</div></div>
+          <div class="app-item"><div class="app-icon ai-music ai-emoji-cam">🎵</div><div class="app-label">Müzik</div></div>
+          <div class="app-item"><div class="app-icon ai-mail ai-emoji-cam">✉</div><div class="app-label">Mail</div></div>
+
+          <div class="app-item"><div class="app-icon ai-maps ai-emoji-maps">G</div><div class="app-label">Harita</div></div>
+          <div class="app-item"><div class="app-icon ai-cal">17</div><div class="app-label">Takvim</div></div>
+          <div class="app-item">
+            <div class="app-icon ai-ours ai-ours-pulse icon-mihrab">
+              <svg viewBox="-50 -50 100 100">
+                <defs>
+                  <linearGradient id="g5" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#FBE89C" stop-opacity="0.95"/>
+                    <stop offset="1" stop-color="#8A6418" stop-opacity="0.6"/>
+                  </linearGradient>
+                </defs>
+                <!-- Mihrab arch silhouette -->
+                <path d="M -28,40 L -28,-5 Q -28,-38 0,-38 Q 28,-38 28,-5 L 28,40 Z" fill="url(#g5)" stroke="#FBE89C" stroke-width="0.8"/>
+                <!-- inner arch -->
+                <path d="M -18,40 L -18,0 Q -18,-26 0,-26 Q 18,-26 18,0 L 18,40 Z" fill="#0D1F18" stroke="#FBE89C" stroke-width="0.4" opacity=".8"/>
+                <!-- small star inside -->
+                <polygon points="0,-8 3,0 0,8 -3,0" fill="#FBE89C"/>
+                <circle cx="0" cy="0" r="2" fill="#FBE89C"/>
+              </svg>
+            </div>
+            <div class="app-label" style="color:#FBE89C;font-weight:800">Mihrab</div>
+          </div>
+          <div class="app-item"><div class="app-icon ai-clock"></div><div class="app-label">Saat</div></div>
+
+          <div class="app-item"><div class="app-icon ai-notes ai-emoji-cam">📝</div><div class="app-label">Notlar</div></div>
+          <div class="app-item"><div class="app-icon ai-set ai-emoji-set">⚙</div><div class="app-label">Ayarlar</div></div>
+          <div class="app-item"><div class="app-icon ai-store">A</div><div class="app-label">Store</div></div>
+          <div class="app-item"><div class="app-icon ai-cam ai-emoji-cam">📞</div><div class="app-label">Telefon</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DETAIL: NUR icon at different sizes + splash + notification -->
+  <div class="detail-section">
+    <p class="section-title">✦  NUR — İKON DETAYLARI  ✦</p>
+
+    <!-- Icon at different sizes -->
+    <div class="size-row">
+      <div class="size-card">
+        <div class="app-icon ai-ours icon-nur size-1024">
+          <svg viewBox="-50 -50 100 100">
+            <defs>
+              <linearGradient id="gn1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#FBE89C"/>
+                <stop offset="0.5" stop-color="#C8A24A"/>
+                <stop offset="1" stop-color="#8A6418"/>
+              </linearGradient>
+              <radialGradient id="ng1" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0" stop-color="#FBE89C" stop-opacity="0.5"/>
+                <stop offset="1" stop-color="#FBE89C" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle r="45" fill="url(#ng1)"/>
+            <polygon points="0,-38 10,-10 38,0 10,10 0,38 -10,10 -38,0 -10,-10" fill="url(#gn1)" stroke="#FBE89C" stroke-width="1"/>
+            <polygon points="0,-22 6,-6 22,0 6,6 0,22 -6,6 -22,0 -6,-6" fill="none" stroke="rgba(13,31,24,.5)" stroke-width="0.8"/>
+            <circle r="4" fill="#FBE89C"/>
+          </svg>
+        </div>
+        <p class="size-label">1024 × 1024<br/>App Store</p>
+      </div>
+      <div class="size-card">
+        <div class="app-icon ai-ours icon-nur size-180">
+          <svg viewBox="-50 -50 100 100">
+            <use href="#"/>
+            <circle r="45" fill="url(#ng1)"/>
+            <polygon points="0,-38 10,-10 38,0 10,10 0,38 -10,10 -38,0 -10,-10" fill="url(#gn1)" stroke="#FBE89C" stroke-width="1"/>
+            <polygon points="0,-22 6,-6 22,0 6,6 0,22 -6,6 -22,0 -6,-6" fill="none" stroke="rgba(13,31,24,.5)" stroke-width="0.8"/>
+            <circle r="4" fill="#FBE89C"/>
+          </svg>
+        </div>
+        <p class="size-label">180 × 180<br/>iPhone Home</p>
+      </div>
+      <div class="size-card">
+        <div class="app-icon ai-ours icon-nur size-120">
+          <svg viewBox="-50 -50 100 100">
+            <circle r="45" fill="url(#ng1)"/>
+            <polygon points="0,-38 10,-10 38,0 10,10 0,38 -10,10 -38,0 -10,-10" fill="url(#gn1)" stroke="#FBE89C" stroke-width="1"/>
+            <polygon points="0,-22 6,-6 22,0 6,6 0,22 -6,6 -22,0 -6,-6" fill="none" stroke="rgba(13,31,24,.5)" stroke-width="0.8"/>
+            <circle r="4" fill="#FBE89C"/>
+          </svg>
+        </div>
+        <p class="size-label">120 × 120<br/>iPad / Settings</p>
+      </div>
+      <div class="size-card">
+        <div class="app-icon ai-ours icon-nur size-60">
+          <svg viewBox="-50 -50 100 100">
+            <circle r="45" fill="url(#ng1)"/>
+            <polygon points="0,-38 10,-10 38,0 10,10 0,38 -10,10 -38,0 -10,-10" fill="url(#gn1)" stroke="#FBE89C" stroke-width="1"/>
+            <polygon points="0,-22 6,-6 22,0 6,6 0,22 -6,6 -22,0 -6,-6" fill="none" stroke="rgba(13,31,24,.5)" stroke-width="0.8"/>
+            <circle r="4" fill="#FBE89C"/>
+          </svg>
+        </div>
+        <p class="size-label">60 × 60<br/>Bildirim</p>
+      </div>
+    </div>
+
+    <!-- Splash + Notification side by side -->
+    <div class="compare-row">
+      <div class="compare-col">
+        <h3>SPLASH (AÇILIŞ EKRANI)</h3>
+        <div class="splash">
+          <div class="splash-icon icon-nur" style="display:flex;align-items:center;justify-content:center">
+            <svg viewBox="-50 -50 100 100">
+              <defs>
+                <linearGradient id="gsp" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#FBE89C"/>
+                  <stop offset="0.5" stop-color="#C8A24A"/>
+                  <stop offset="1" stop-color="#8A6418"/>
+                </linearGradient>
+                <radialGradient id="gspG" cx="0.5" cy="0.5" r="0.5">
+                  <stop offset="0" stop-color="#FBE89C" stop-opacity="0.5"/>
+                  <stop offset="1" stop-color="#FBE89C" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <circle r="45" fill="url(#gspG)"/>
+              <polygon points="0,-38 10,-10 38,0 10,10 0,38 -10,10 -38,0 -10,-10" fill="url(#gsp)" stroke="#FBE89C" stroke-width="1"/>
+              <circle r="4" fill="#FBE89C"/>
+            </svg>
+          </div>
+          <div class="splash-name">Nur</div>
+          <div class="splash-tag">İSLAMİ ASİSTAN</div>
+          <div class="splash-bismi">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيمِ</div>
+        </div>
+      </div>
+      <div class="compare-col">
+        <h3>BİLDİRİM ÖNİZLEME</h3>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="notif">
+            <div class="notif-icon icon-nur" style="display:flex;align-items:center;justify-content:center">
+              <svg viewBox="-50 -50 100 100">
+                <polygon points="0,-38 10,-10 38,0 10,10 0,38 -10,10 -38,0 -10,-10" fill="url(#gn1)" stroke="#FBE89C" stroke-width="1"/>
+                <circle r="4" fill="#FBE89C"/>
+              </svg>
+            </div>
+            <div class="notif-body">
+              <div class="notif-row"><span>NUR</span><span>şimdi</span></div>
+              <div class="notif-title">Öğle Namazı Vakti 🕌</div>
+              <div class="notif-text">Bugün öğle namazı 12:45'te. "Allah'ın selamı üzerinize olsun."</div>
+            </div>
+          </div>
+          <div class="notif">
+            <div class="notif-icon icon-nur" style="display:flex;align-items:center;justify-content:center">
+              <svg viewBox="-50 -50 100 100">
+                <polygon points="0,-38 10,-10 38,0 10,10 0,38 -10,10 -38,0 -10,-10" fill="url(#gn1)" stroke="#FBE89C" stroke-width="1"/>
+                <circle r="4" fill="#FBE89C"/>
+              </svg>
+            </div>
+            <div class="notif-body">
+              <div class="notif-row"><span>NUR</span><span>2 dk önce</span></div>
+              <div class="notif-title">Günlük Ayet ✦</div>
+              <div class="notif-text">"Şüphesiz Allah sabredenlerle beraberdir." — Bakara 153</div>
+            </div>
+          </div>
+          <div class="notif">
+            <div class="notif-icon icon-nur" style="display:flex;align-items:center;justify-content:center">
+              <svg viewBox="-50 -50 100 100">
+                <polygon points="0,-38 10,-10 38,0 10,10 0,38 -10,10 -38,0 -10,-10" fill="url(#gn1)" stroke="#FBE89C" stroke-width="1"/>
+                <circle r="4" fill="#FBE89C"/>
+              </svg>
+            </div>
+            <div class="notif-body">
+              <div class="notif-row"><span>NUR</span><span>1 saat önce</span></div>
+              <div class="notif-title">Zikir Hedefin 📿</div>
+              <div class="notif-text">Bugünkü 100'lük zikir hedefinin %70'ini tamamladın. Devam!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
