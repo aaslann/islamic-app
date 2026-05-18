@@ -86,6 +86,7 @@ export default function SettingsScreen() {
   const [adhanOn, setAdhanOn] = useState(false);
   const [muezzin, setMuezzin] = useState<Muezzin>(MUEZZIN_OPTIONS[0]);
   const [previewing, setPreviewing] = useState<string | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSettings().then((s) => { setSettings(s); setIsLoaded(true); });
@@ -105,22 +106,25 @@ export default function SettingsScreen() {
   };
 
   const onPreview = async (m: Muezzin) => {
+    setPreviewError(null);
     if (previewing === m.id) {
       await stopAdhan();
       setPreviewing(null);
       return;
     }
     setPreviewing(`loading-${m.id}`);
-    const result = await previewAdhan(m, 15);
-    if (result.ok) {
-      setPreviewing(m.id);
-      setTimeout(() => setPreviewing((cur) => (cur === m.id ? null : cur)), 15000);
-    } else {
+    try {
+      const result = await previewAdhan(m, 15);
+      if (result.ok) {
+        setPreviewing(m.id);
+        setTimeout(() => setPreviewing((cur) => (cur === m.id ? null : cur)), 15000);
+      } else {
+        setPreviewing(null);
+        setPreviewError(`${m.label}: ${result.error}`);
+      }
+    } catch (e: any) {
       setPreviewing(null);
-      Alert.alert(
-        'Ezan çalınamadı',
-        `${m.label}\n\nSebep: ${result.error}\n\nİnternet bağlantını kontrol et veya başka bir müezzin dene.`,
-      );
+      setPreviewError(`Beklenmeyen hata: ${e?.message ?? 'bilinmiyor'}`);
     }
   };
 
@@ -294,6 +298,11 @@ export default function SettingsScreen() {
                     </View>
                   );
                 })}
+                {previewError && (
+                  <View style={{ marginTop: spacing.xs, padding: spacing.sm, backgroundColor: '#7F1D1D33', borderRadius: radii.sm }}>
+                    <Text style={{ fontSize: 12, color: '#FCA5A5', lineHeight: 16 }}>⚠ {previewError}</Text>
+                  </View>
+                )}
               </View>
             </View>
           )}

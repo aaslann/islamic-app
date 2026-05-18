@@ -101,27 +101,19 @@ async function ensureAudioMode() {
 
 export type PlayResult = { ok: true } | { ok: false; error: string };
 
-export async function playAdhan(muezzin?: Muezzin): Promise<PlayResult> {
-  if (!Audio) return { ok: false, error: 'expo-av yüklü değil. Önce npx expo install expo-av çalıştır.' };
-  if (Platform.OS === 'web') return { ok: false, error: 'Web platformunda ezan oynatılamaz.' };
-
-  await stopAdhan();
-  await ensureAudioMode();
-
-  const target = muezzin ?? (await getSelectedMuezzin());
-
+async function _playAdhanInner(target: Muezzin): Promise<PlayResult> {
   try {
-    // Load with shouldPlay:false so we can check status before starting
-    const { sound, status } = await Audio.Sound.createAsync(
+    console.warn('[adhan] createAsync start:', target.id, target.url.slice(0, 60));
+    const { sound, status } = await Audio!.Sound.createAsync(
       { uri: target.url },
       { shouldPlay: false, volume: 1.0 },
     );
+    console.warn('[adhan] createAsync done, isLoaded:', status.isLoaded);
 
-    // Surface load errors that createAsync doesn't throw for
     if (!status.isLoaded) {
       const err = (status as any).error as string | undefined;
       sound.unloadAsync().catch(() => {});
-      return { ok: false, error: err ?? 'Ses dosyası yüklenemedi. İnternet bağlantını kontrol et.' };
+      return { ok: false, error: `Yükleme hatası: ${err ?? 'bilinmiyor'}` };
     }
 
     soundInstance = sound;
@@ -136,12 +128,34 @@ export async function playAdhan(muezzin?: Muezzin): Promise<PlayResult> {
       }
     });
 
-    // Explicit playAsync — more reliable than shouldPlay:true in createAsync options
     await sound.playAsync();
+    console.warn('[adhan] playAsync ok');
     return { ok: true };
   } catch (e: any) {
+    console.warn('[adhan] error:', e?.message ?? e);
     return { ok: false, error: e?.message ?? 'Ses oynatılamadı. İnternet bağlantını kontrol et.' };
   }
+}
+
+export async function playAdhan(muezzin?: Muezzin): Promise<PlayResult> {
+  console.warn('[adhan] playAdhan called, Audio loaded:', Audio !== null);
+  if (!Audio) return { ok: false, error: 'expo-av modülü yüklenemedi (Audio=null). Dev build gerekebilir.' };
+  if (Platform.OS === 'web') return { ok: false, error: 'Web platformunda ezan oynatılamaz.' };
+
+  await stopAdhan();
+  await ensureAudioMode();
+
+  const target = muezzin ?? (await getSelectedMuezzin());
+
+  // Race the actual load against a 20-second timeout
+  const timeout: Promise<PlayResult> = new Promise((resolve) =>
+    setTimeout(
+      () => resolve({ ok: false, error: 'Zaman aşımı (20s) — ses yüklenemedi. Bağlantını kontrol et.' }),
+      20_000,
+    ),
+  );
+
+  return Promise.race([_playAdhanInner(target), timeout]);
 }
 
 export async function stopAdhan(): Promise<void> {
