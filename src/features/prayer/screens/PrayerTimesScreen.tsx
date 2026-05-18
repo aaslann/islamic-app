@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import {
   PRAYER_SCHEDULE_KEY,
   scheduleDailyPrayerNotifications,
@@ -10,7 +9,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
-import { PrimaryButton } from '../../../shared/components/PrimaryButton';
 import { useTheme } from '../../../core/theme/ThemeContext';
 import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 
@@ -164,17 +162,6 @@ export default function PrayerTimesScreen() {
   }, []);
   useEffect(() => { const id = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(id); }, []);
 
-  const scheduleNotifications = async () => {
-    if (!notificationsEnabled) { setErrorMessage('Bildirimler Ayarlar ekranında kapalı.'); return; }
-    try {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') { setErrorMessage('Bildirim izni verilmedi.'); return; }
-      await scheduleDailyPrayerNotifications(
-        times.map((item) => ({ id: item.id, label: item.label, time: item.time }))
-      );
-      setErrorMessage(null);
-    } catch { setErrorMessage('Bildirimler planlanırken bir hata oluştu.'); }
-  };
 
   const { activePrayer, timesWithNext } = useMemo(() => {
     if (!times.length) return { activePrayer: null as ActivePrayer | null, timesWithNext: [] as PrayerTime[] };
@@ -281,12 +268,16 @@ export default function PrayerTimesScreen() {
           </View>
         )}
 
-        {/* Notification button */}
+        {/* Notification status */}
         {state === 'success' && (
-          <PrimaryButton label="🔔 Bildirimleri Planla" onPress={scheduleNotifications} disabled={!notificationsEnabled} />
-        )}
-        {!notificationsEnabled && state === 'success' && (
-          <Text style={[t.caption, { color: c.textSecondary, textAlign: 'center', marginTop: spacing.xs }]}>Namaz bildirimlerini Ayarlar ekranından açabilirsin.</Text>
+          <View style={[styles.notifStatus, { backgroundColor: notificationsEnabled ? `${palette.green500}18` : `${palette.gold500}12`, borderColor: notificationsEnabled ? `${palette.green500}35` : `${palette.gold500}30` }]}>
+            <Text style={{ fontSize: 14 }}>{notificationsEnabled ? '🔔' : '🔕'}</Text>
+            <Text style={[t.caption, { color: notificationsEnabled ? palette.green300 : c.textSecondary, flex: 1, marginLeft: spacing.sm }]}>
+              {notificationsEnabled
+                ? 'Namaz bildirimleri aktif — her gün otomatik planlanır'
+                : 'Bildirimler kapalı · Ayarlar\'dan açabilirsin'}
+            </Text>
+          </View>
         )}
         <View style={{ height: spacing.xxl }} />
       </ScrollView>
@@ -309,4 +300,5 @@ const styles = StyleSheet.create({
   prayerRowDivider: { borderBottomWidth: 0 },
   prayerDot:        { width: 8, height: 8, borderRadius: 4, marginRight: spacing.md },
   summaryCard:      { borderRadius: radii.xl, padding: spacing.lg, borderWidth: StyleSheet.hairlineWidth, ...shadows.card },
+  notifStatus:      { flexDirection: 'row', alignItems: 'center', borderRadius: radii.lg, borderWidth: StyleSheet.hairlineWidth, padding: spacing.md },
 });
