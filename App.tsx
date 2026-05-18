@@ -9,6 +9,8 @@ import OnboardingScreen, { ONBOARDING_KEY } from './src/features/onboarding/scre
 import LoginScreen, { LOGIN_KEY } from './src/features/auth/screens/LoginScreen';
 import { useAdhanOnPrayer } from './src/core/audio/useAdhanOnPrayer';
 import { palette } from './src/core/theme/tokens';
+import { ErrorBoundary } from './src/shared/components/ErrorBoundary';
+import { OfflineBanner } from './src/shared/components/OfflineBanner';
 
 function AppShell() {
   const { theme, isDark } = useTheme();
@@ -59,6 +61,7 @@ function AppShell() {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.colors.navBar }]}>
       <StatusBar style={isDark ? 'light' : 'light'} />
+      <OfflineBanner />
       <RootNavigator />
     </SafeAreaView>
   );
@@ -76,9 +79,11 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider>
-      <AppShell />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AppShell />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

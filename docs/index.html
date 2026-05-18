@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>İslami Asistan – Gizlilik Politikası</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0D1F18;
+      color: #EDF5F2;
+      line-height: 1.7;
+      padding: 0 16px 60px;
+    }
+    header {
+      background: linear-gradient(135deg, #1A6648, #0F3D2E);
+      padding: 48px 24px 32px;
+      text-align: center;
+      margin: 0 -16px 40px;
+    }
+    header h1 { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+    header p  { font-size: 14px; color: rgba(255,255,255,0.55); margin-top: 8px; }
+    .gold { color: #C8A24A; }
+    .container { max-width: 680px; margin: 0 auto; }
+    h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #C8A24A;
+      margin: 32px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(200,162,74,0.2);
+    }
+    p, li { font-size: 15px; color: rgba(237,245,242,0.75); }
+    ul { padding-left: 20px; margin-top: 8px; }
+    li { margin-bottom: 6px; }
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 12px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(200,162,74,0.15);
+      color: #C8A24A;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+    footer {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.3);
+      margin-top: 60px;
+    }
+    a { color: #C8A24A; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌙 İslami Asistan</h1>
+    <p>Gizlilik Politikası &amp; Kullanım Koşulları</p>
+  </header>
+
+  <div class="container">
+
+    <div class="card">
+      <span class="badge">Son Güncelleme: Mayıs 2026</span>
+      <p>
+        Bu gizlilik politikası, <strong class="gold">İslami Asistan</strong> mobil uygulamasının
+        hangi verileri topladığını, nasıl kullandığını ve koruduğunu açıklamaktadır.
+        Uygulamayı kullanarak bu politikayı kabul etmiş sayılırsınız.
+      </p>
+    </div>
+
+    <h2>1. Toplanan Veriler</h2>
+    <p>İslami Asistan, kullanıcı gizliliğini ön planda tutar. Toplanan veriler yalnızca uygulama işlevselliği için kullanılır:</p>
+    <ul>
+      <li><strong>Konum Bilgisi:</strong> Namaz vakitlerini hesaplamak amacıyla yalnızca uygulama açıkken ön plan konumunuz alınır. Konum verileri sunucularımıza gönderilmez; yalnızca cihazınızda işlenir ve aladhan.com API'sine anonim olarak iletilir.</li>
+      <li><strong>Uygulama Tercihleri:</strong> Tema, yazı boyutu, seçilen müezzin ve bildirim ayarları yalnızca cihazınızın yerel depolama alanında (AsyncStorage) saklanır.</li>
+      <li><strong>İbadet Takibi:</strong> Namaz kaydı, hatim takibi, zikir sayaçları ve iyilik defteri verileri cihazınızda yerel olarak tutulur. Bu veriler hiçbir sunucuya gönderilmez.</li>
+    </ul>
+
+    <h2>2. Paylaşılmayan Veriler</h2>
+    <div class="card">
+      <p>Uygulama şu verileri <strong>toplamaz veya paylaşmaz</strong>:</p>
+      <ul>
+        <li>Kişisel kimlik bilgileri (isim, e-posta, telefon numarası)</li>
+        <li>Ödeme veya finansal bilgiler</li>
+        <li>Cihaz kimliği veya reklam tanımlayıcıları</li>
+        <li>Üçüncü taraf analitik veya reklam SDK'ları</li>
+      </ul>
+    </div>
+
+    <h2>3. Üçüncü Taraf Hizmetler</h2>
+    <p>Uygulama aşağıdaki harici hizmetleri kullanmaktadır:</p>
+    <ul>
+      <li><strong>aladhan.com</strong> – Namaz vakitleri API'si. Yalnızca enlem/boylam gönderilir; kişisel veri iletilmez.</li>
+      <li><strong>alquran.cloud</strong> – Kur'an-ı Kerim metni ve ses API'si. Herkese açık, kimlik doğrulama gerektirmez.</li>
+      <li><strong>OpenStreetMap / Overpass API</strong> – Yakın camiler için. Koordinat verisi gönderilir; kişisel veri iletilmez.</li>
+      <li><strong>Wikimedia Commons / archive.org</strong> – Ezan sesi MP3 dosyaları. Yalnızca ses dosyası indirilir.</li>
+      <li><strong>expo-notifications</strong> – Yerel bildirimler cihaz üzerinde planlanır; uzak sunucu gerektirmez.</li>
+    </ul>
+
+    <h2>4. İzinler</h2>
+    <ul>
+      <li><strong>Konum (Yalnızca Kullanım Sırasında):</strong> Namaz vakitleri ve kıble hesaplaması için.</li>
+      <li><strong>Bildirimler:</strong> Namaz vakti hatırlatmaları için. İstediğiniz zaman sistem ayarlarından kapatabilirsiniz.</li>
+      <li><strong>Arka Plan Ses:</strong> Ezan sesinin bildirimle birlikte çalması için. Yalnızca ezan özelliği etkinken aktiftir.</li>
+    </ul>
+
+    <h2>5. Veri Güvenliği</h2>
+    <p>
+      Tüm uygulama verileri cihazınızın yerel depolama alanında şifreli olarak saklanır.
+      Sunucularımıza hiçbir kişisel veri aktarılmaz. İnternet bağlantısı yalnızca
+      namaz vakitlerini, Kur'an metnini ve ezan seslerini indirmek için kullanılır.
+    </p>
+
+    <h2>6. Çocukların Gizliliği</h2>
+    <p>
+      İslami Asistan, 13 yaş altı çocuklara yönelik veri toplamaz.
+      Uygulamada hesap oluşturma veya kişisel veri girişi gerektiren herhangi bir özellik bulunmamaktadır.
+    </p>
+
+    <h2>7. Değişiklikler</h2>
+    <p>
+      Bu politika gerektiğinde güncellenebilir. Önemli değişiklikler uygulama içi bildirimle
+      duyurulacaktır. Güncel politikaya her zaman bu sayfadan ulaşabilirsiniz.
+    </p>
+
+    <h2>8. İletişim</h2>
+    <p>
+      Gizlilik politikasına ilişkin sorularınız için:<br />
+      <a href="https://github.com/aaslann/islami-asistan/issues">GitHub Issues</a> üzerinden
+      bize ulaşabilirsiniz.
+    </p>
+
+    <footer>
+      <p>© 2026 İslami Asistan · Tüm hakları saklıdır</p>
+      <p style="margin-top:8px;">
+        <a href="https://github.com/aaslann/islami-asistan">GitHub</a>
+      </p>
+    </footer>
+
+  </div>
+</body>
+</html>

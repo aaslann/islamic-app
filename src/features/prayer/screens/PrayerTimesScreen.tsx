@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { scheduleDailyPrayerNotifications } from '../../../core/notifications/prayerNotifications';
+import {
+  PRAYER_SCHEDULE_KEY,
+  scheduleDailyPrayerNotifications,
+  scheduleFromCache,
+} from '../../../core/notifications/prayerNotifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -121,6 +125,21 @@ export default function PrayerTimesScreen() {
       setTimes(fetchedTimes); setLocationInfo(info); setDateInfo(fd ?? null); setCoords(fc ?? null);
       setState('success');
       try { await AsyncStorage.setItem(LAST_LOCATION_KEY, JSON.stringify({ coords: fc, locationInfo: info, timestamp: new Date().toISOString() } satisfies CachedLocation)); } catch {}
+
+      // Persist prayer schedule (excluding Sunrise) so Settings toggle can use it
+      const scheduleItems = fetchedTimes
+        .filter((p) => p.id !== 'Sunrise')
+        .map((p) => ({ id: p.id, label: p.label, time: p.time }));
+      try { await AsyncStorage.setItem(PRAYER_SCHEDULE_KEY, JSON.stringify(scheduleItems)); } catch {}
+
+      // Auto-schedule if the user already has notifications enabled in settings
+      try {
+        const settingsRaw = await AsyncStorage.getItem('app-settings-v2');
+        if (settingsRaw) {
+          const s = JSON.parse(settingsRaw);
+          if (s.enablePrayerNotifications) await scheduleFromCache();
+        }
+      } catch {}
     } catch (err) {
       const code = err instanceof Error ? err.message : 'error';
       if ((code === 'location-timeout' || code === 'location-disabled') && cached) {

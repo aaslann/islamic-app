@@ -15,6 +15,10 @@ import {
   setSelectedMuezzin,
   stopAdhan,
 } from '../../../core/audio/adhanPlayer';
+import {
+  cancelAllPrayerNotifications,
+  scheduleFromCache,
+} from '../../../core/notifications/prayerNotifications';
 
 type FontScale = 'small' | 'medium' | 'large';
 type CalcMethod = 'diyanet' | 'mwl' | 'isna' | 'karachi';
@@ -210,7 +214,14 @@ export default function SettingsScreen() {
             >
               <Switch
                 value={settings.enablePrayerNotifications}
-                onValueChange={(v) => update({ enablePrayerNotifications: v })}
+                onValueChange={(v) => {
+                  update({ enablePrayerNotifications: v });
+                  if (v) {
+                    scheduleFromCache().catch(() => {});
+                  } else {
+                    cancelAllPrayerNotifications().catch(() => {});
+                  }
+                }}
                 trackColor={{ false: c.border, true: c.primary }}
                 thumbColor={c.white}
                 disabled={!isLoaded}
