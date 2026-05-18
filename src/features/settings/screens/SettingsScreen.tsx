@@ -5,6 +5,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../../core/theme/ThemeContext';
 import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
+import {
+  MUEZZIN_OPTIONS,
+  type Muezzin,
+  getSelectedMuezzin,
+  isAdhanEnabled,
+  previewAdhan,
+  setAdhanEnabled,
+  setSelectedMuezzin,
+  stopAdhan,
+} from '../../../core/audio/adhanPlayer';
 
 type FontScale = 'small' | 'medium' | 'large';
 type CalcMethod = 'diyanet' | 'mwl' | 'isna' | 'karachi';
@@ -73,10 +83,37 @@ export default function SettingsScreen() {
     calcMethod: 'diyanet',
   });
   const [isLoaded, setIsLoaded] = useState(false);
+  const [adhanOn, setAdhanOn] = useState(false);
+  const [muezzin, setMuezzin] = useState<Muezzin>(MUEZZIN_OPTIONS[0]);
+  const [previewing, setPreviewing] = useState<string | null>(null);
 
   useEffect(() => {
     loadSettings().then((s) => { setSettings(s); setIsLoaded(true); });
+    isAdhanEnabled().then(setAdhanOn);
+    getSelectedMuezzin().then(setMuezzin);
   }, []);
+
+  const toggleAdhan = (v: boolean) => {
+    setAdhanOn(v);
+    setAdhanEnabled(v).catch(() => {});
+    if (!v) stopAdhan().catch(() => {});
+  };
+
+  const selectMuezzin = (m: Muezzin) => {
+    setMuezzin(m);
+    setSelectedMuezzin(m.id).catch(() => {});
+  };
+
+  const onPreview = async (m: Muezzin) => {
+    if (previewing === m.id) {
+      await stopAdhan();
+      setPreviewing(null);
+      return;
+    }
+    setPreviewing(m.id);
+    await previewAdhan(m, 15);
+    setTimeout(() => setPreviewing((cur) => (cur === m.id ? null : cur)), 15000);
+  };
 
   const update = (patch: Partial<SettingsState>) => {
     const next = { ...settings, ...patch };
@@ -167,6 +204,81 @@ export default function SettingsScreen() {
               />
             </SettingRow>
           </View>
+        </View>
+
+        {/* ── Ezan Sesi ── */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: palette.gold500 }]}>📣  Ezan Sesi</Text>
+
+          <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
+            <SettingRow
+              emoji="🕋"
+              title="Namaz Vaktinde Ezan Çal"
+              subtitle="Bildirim geldiğinde gerçek ezan sesi başlasın"
+            >
+              <Switch
+                value={adhanOn}
+                onValueChange={toggleAdhan}
+                trackColor={{ false: c.border, true: c.primary }}
+                thumbColor={c.white}
+              />
+            </SettingRow>
+          </View>
+
+          {adhanOn && (
+            <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.border, marginTop: spacing.sm }]}>
+              <View style={{ padding: spacing.md }}>
+                <Text style={{ fontSize: 13, color: c.textSecondary, marginBottom: spacing.sm }}>
+                  Müezzin seç ve önizle:
+                </Text>
+                {MUEZZIN_OPTIONS.map((m) => {
+                  const isActive = muezzin.id === m.id;
+                  const isPlaying = previewing === m.id;
+                  return (
+                    <View
+                      key={m.id}
+                      style={[
+                        styles.muezzinRow,
+                        {
+                          borderColor: isActive ? c.primary : c.border,
+                          backgroundColor: isActive ? c.primarySoft : 'transparent',
+                        },
+                      ]}
+                    >
+                      <Pressable
+                        onPress={() => selectMuezzin(m)}
+                        style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                      >
+                        <View style={[styles.radioOuter, { borderColor: isActive ? c.primary : c.border }]}>
+                          {isActive && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
+                        </View>
+                        <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                          <Text style={{ fontSize: 14, fontWeight: '700', color: c.text }}>{m.label}</Text>
+                          <Text style={{ fontSize: 11, color: c.textSecondary, marginTop: 1 }}>{m.region}</Text>
+                        </View>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => onPreview(m)}
+                        hitSlop={8}
+                        style={[
+                          styles.previewBtn,
+                          { backgroundColor: isPlaying ? '#FCA5A5' : `${palette.gold500}25` },
+                        ]}
+                      >
+                        <Text style={{
+                          fontSize: 12,
+                          fontWeight: '800',
+                          color: isPlaying ? '#7F1D1D' : palette.gold500,
+                        }}>
+                          {isPlaying ? '◼ Durdur' : '▶ Dinle'}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
         </View>
 
         {/* ── Hesaplama Yöntemi ── */}
@@ -281,4 +393,6 @@ const styles = StyleSheet.create({
   aboutRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   divider:     { height: StyleSheet.hairlineWidth },
   linkRow:     { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: spacing.md },
+  muezzinRow:  { flexDirection: 'row', alignItems: 'center', padding: spacing.sm, borderRadius: radii.md, borderWidth: 1.5, marginBottom: spacing.xs, gap: spacing.sm },
+  previewBtn:  { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 99 },
 });

@@ -7,12 +7,15 @@ import { ThemeProvider, useTheme } from './src/core/theme/ThemeContext';
 import RootNavigator from './src/navigation/RootNavigator';
 import OnboardingScreen, { ONBOARDING_KEY } from './src/features/onboarding/screens/OnboardingScreen';
 import LoginScreen, { LOGIN_KEY } from './src/features/auth/screens/LoginScreen';
+import { useAdhanOnPrayer } from './src/core/audio/useAdhanOnPrayer';
 import { palette } from './src/core/theme/tokens';
 
 function AppShell() {
   const { theme, isDark } = useTheme();
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+
+  useAdhanOnPrayer();
 
   useEffect(() => {
     AsyncStorage.multiGet([ONBOARDING_KEY, LOGIN_KEY]).then((entries) => {

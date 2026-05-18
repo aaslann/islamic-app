@@ -10,6 +10,9 @@ import type { RootStackParamList } from '../../../navigation/types';
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
 import { useTheme } from '../../../core/theme/ThemeContext';
 import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
+import FridayBanner from '../../friday/components/FridayBanner';
+import { HADITHS } from '../../hadith/data/hadiths';
+import { ESMA_NAMES } from '../../esmaulhusna/data/names';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 type PrayerId = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
@@ -77,9 +80,11 @@ const SECTIONS: { label: string; items: SectionItem[] }[] = [
   {
     label: "Kur'an & İbadet",
     items: [
-      { icon: 'infinite-outline',  iconColors: ['#A07020', '#C8A24A'], label: 'Zikir Sayacı',     subtitle: 'Günlük hedefler ve istatistik', route: 'ZikrCounter'   },
-      { icon: 'hand-left-outline', iconColors: ['#B88A35', '#D4AA60'], label: 'Günlük Dualar',    subtitle: 'Sabah, akşam duaları',          route: 'Duas'          },
-      { icon: 'star-outline',      iconColors: ['#CA9840', '#E0BF72'], label: 'Favori Ayetlerim', subtitle: 'Yıldızladığın ayetler',         route: 'FavoriteAyahs' },
+      { icon: 'infinite-outline',  iconColors: ['#A07020', '#C8A24A'], label: 'Zikir Sayacı',       subtitle: 'Günlük hedefler ve istatistik', route: 'ZikrCounter'    },
+      { icon: 'hand-left-outline', iconColors: ['#B88A35', '#D4AA60'], label: 'Günlük Dualar',      subtitle: 'Sabah, akşam duaları',          route: 'Duas'           },
+      { icon: 'sparkles-outline',  iconColors: ['#A07020', '#FBE89C'], label: 'Esmâ-ül Hüsnâ',      subtitle: 'Allah\'ın 99 ismi',             route: 'EsmaulHusnaList' },
+      { icon: 'chatbox-outline',   iconColors: ['#6D28D9', '#A78BFA'], label: '40 Hadis',           subtitle: 'İmam Nevevî derlemesi',         route: 'HadithList'     },
+      { icon: 'star-outline',      iconColors: ['#CA9840', '#E0BF72'], label: 'Favori Ayetlerim',   subtitle: 'Yıldızladığın ayetler',         route: 'FavoriteAyahs'  },
     ],
   },
   {
@@ -88,6 +93,8 @@ const SECTIONS: { label: string; items: SectionItem[] }[] = [
       { icon: 'trending-up-outline',         iconColors: ['#C2400C', '#F97316'], label: 'Namaz İlerlemesi', subtitle: 'Seri takibi ve grafik',      route: 'PrayerProgress' },
       { icon: 'bar-chart-outline',           iconColors: ['#D05A0A', '#FB923C'], label: 'Manevî Analiz',    subtitle: 'Haftalık istatistikler',     route: 'Analytics'      },
       { icon: 'flag-outline',                iconColors: ['#B45309', '#F59E0B'], label: 'Hedeflerim',       subtitle: 'Günlük ibadet hedefleri',    route: 'Goals'          },
+      { icon: 'heart-outline',               iconColors: ['#BE123C', '#F43F5E'], label: 'İyilik Defteri',   subtitle: 'Günlük sadaka ve iyilikler', route: 'GoodDeeds'      },
+      { icon: 'book-outline',                iconColors: ['#15803D', '#22C55E'], label: 'Hatim Takibi',     subtitle: 'Kur\'an okuma planı',       route: 'HatimTracker'   },
       { icon: 'moon-outline',                iconColors: ['#6D28D9', '#8B5CF6'], label: 'Ramazan Takibi',   subtitle: 'Oruç, teravih, Kur\'an',    route: 'RamadanTracker' },
     ],
   },
@@ -183,6 +190,8 @@ export default function HomeScreen({ navigation }: Props) {
   const hijriDate = useMemo(getHijriDate, []);
   const verse     = useMemo(getDailyVerse, []);
   const miladDate = useMemo(getMiladDate, []);
+  const todayHadith = useMemo(() => HADITHS[new Date().getDate() % HADITHS.length], []);
+  const todayEsma   = useMemo(() => ESMA_NAMES[new Date().getDate() % ESMA_NAMES.length], []);
 
   const [dayLog, setDayLog] = useState<DayLog>({
     fajr: 'none', dhuhr: 'none', asr: 'none', maghrib: 'none', isha: 'none',
@@ -268,6 +277,9 @@ export default function HomeScreen({ navigation }: Props) {
           </Pressable>
         </LinearGradient>
 
+        {/* ─── CUMA BANNER (sadece Cuma günü) ─── */}
+        <FridayBanner />
+
         {/* ─── GÜNÜN AYETİ ─── */}
         <View style={[styles.verseOuter, { backgroundColor: c.surface, borderColor: `${palette.gold500}30` }]}>
           <LinearGradient
@@ -285,6 +297,50 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
           </View>
         </View>
+
+        {/* ─── GÜNÜN HADİSİ ─── */}
+        <Pressable
+          onPress={() => navigate('HadithList')}
+          style={({ pressed }) => [
+            styles.dailyCard,
+            { backgroundColor: c.surface, borderColor: `${palette.gold500}30` },
+            pressed && { opacity: 0.85 },
+          ]}
+        >
+          <View style={styles.dailyHeader}>
+            <Ionicons name="chatbox" size={14} color={palette.gold500} />
+            <Text style={[styles.dailyHeaderText, { color: palette.gold500 }]}>GÜNÜN HADİSİ</Text>
+            <View style={{ flex: 1 }} />
+            <Text style={[styles.dailyTopic, { color: palette.gold400 }]}>{todayHadith.topic}</Text>
+          </View>
+          <Text style={[styles.dailyBody, { color: c.text }]} numberOfLines={3}>
+            "{todayHadith.text}"
+          </Text>
+          <View style={[styles.dailyFooter, { borderTopColor: `${palette.gold500}22` }]}>
+            <Text style={[styles.dailyNarrator, { color: c.textSecondary }]}>— {todayHadith.narrator}</Text>
+            <Ionicons name="chevron-forward" size={14} color={palette.gold400} />
+          </View>
+        </Pressable>
+
+        {/* ─── GÜNÜN ESMASI ─── */}
+        <Pressable
+          onPress={() => navigate('EsmaulHusnaList')}
+          style={({ pressed }) => [
+            styles.esmaCard,
+            { backgroundColor: c.surface, borderColor: `${palette.gold500}40` },
+            pressed && { opacity: 0.85 },
+          ]}
+        >
+          <View style={styles.esmaLeft}>
+            <Text style={[styles.dailyHeaderText, { color: palette.gold500 }]}>GÜNÜN ESMASI</Text>
+            <Text style={[styles.esmaLatin, { color: c.text }]}>{todayEsma.latin}</Text>
+            <Text style={[styles.esmaMeaning, { color: c.textSecondary }]}>"{todayEsma.meaning}"</Text>
+            <View style={styles.esmaPill}>
+              <Text style={styles.esmaPillText}>{todayEsma.no} / 99</Text>
+            </View>
+          </View>
+          <Text style={styles.esmaArabic}>{todayEsma.arabic}</Text>
+        </Pressable>
 
         {/* ─── HIZLI ERİŞİM ─── */}
         <View style={styles.quickSection}>
@@ -352,6 +408,52 @@ const styles = StyleSheet.create({
   verseTranslation: { fontSize: 14, fontStyle: 'italic', textAlign: 'center', lineHeight: 22, marginBottom: spacing.md },
   verseRefPill:     { paddingHorizontal: spacing.md, paddingVertical: 4, borderRadius: radii.full, borderWidth: 1 },
   verseRefText:     { fontSize: 11, fontWeight: '700' },
+
+  dailyCard: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    padding: spacing.md,
+    ...shadows.card,
+  },
+  dailyHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: spacing.sm },
+  dailyHeaderText: { fontSize: 10, fontWeight: '800', letterSpacing: 1.8 },
+  dailyTopic: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  dailyBody: { fontSize: 13, lineHeight: 20, fontStyle: 'italic' },
+  dailyFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+  },
+  dailyNarrator: { fontSize: 11, fontWeight: '600' },
+
+  esmaCard: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    padding: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    ...shadows.card,
+  },
+  esmaLeft: { flex: 1, gap: 4 },
+  esmaLatin: { fontSize: 20, fontWeight: '900', letterSpacing: -0.3 },
+  esmaMeaning: { fontSize: 12, fontStyle: 'italic' },
+  esmaPill: {
+    alignSelf: 'flex-start',
+    marginTop: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    backgroundColor: 'rgba(200,162,74,0.15)',
+    borderRadius: 99,
+  },
+  esmaPillText: { fontSize: 10, fontWeight: '800', color: palette.gold400, letterSpacing: 1 },
+  esmaArabic: { fontSize: 40, color: palette.gold400, fontWeight: '600', marginLeft: spacing.sm },
 
   quickSection:      { marginTop: spacing.lg, paddingHorizontal: spacing.lg },
   quickSectionLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: spacing.sm },

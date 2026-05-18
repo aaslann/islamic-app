@@ -21,4 +21,10 @@ export type RootStackParamList = {
   RisaleNur: undefined;
   RamadanTracker: undefined;
   PrayerProgress: undefined;
+  EsmaulHusnaList: undefined;
+  EsmaulHusnaDetail: { no: number };
+  HadithList: undefined;
+  HadithDetail: { id: number };
+  GoodDeeds: undefined;
+  HatimTracker: undefined;
 };

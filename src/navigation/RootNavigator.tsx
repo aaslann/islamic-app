@@ -19,6 +19,12 @@ import GoalsScreen from '../features/goals/screens/GoalsScreen';
 import RisaleNurScreen from '../features/risale/screens/RisaleNurScreen';
 import RamadanTrackerScreen from '../features/ramadan/screens/RamadanTrackerScreen';
 import PrayerProgressScreen from '../features/progress/screens/PrayerProgressScreen';
+import EsmaulHusnaListScreen from '../features/esmaulhusna/screens/EsmaulHusnaListScreen';
+import EsmaulHusnaDetailScreen from '../features/esmaulhusna/screens/EsmaulHusnaDetailScreen';
+import HadithListScreen from '../features/hadith/screens/HadithListScreen';
+import HadithDetailScreen from '../features/hadith/screens/HadithDetailScreen';
+import GoodDeedsScreen from '../features/gooddeeds/screens/GoodDeedsScreen';
+import HatimTrackerScreen from '../features/hatim/screens/HatimTrackerScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -52,6 +58,12 @@ export default function RootNavigator() {
         <Stack.Screen name="RisaleNur"       component={RisaleNurScreen}       options={{ title: 'Risale-i Nur' }} />
         <Stack.Screen name="RamadanTracker"  component={RamadanTrackerScreen}  options={{ title: 'Ramazan Takibi' }} />
         <Stack.Screen name="PrayerProgress"  component={PrayerProgressScreen}  options={{ title: 'Namaz İlerlemesi' }} />
+        <Stack.Screen name="EsmaulHusnaList" component={EsmaulHusnaListScreen} options={{ title: 'Esmâül Hüsnâ' }} />
+        <Stack.Screen name="EsmaulHusnaDetail" component={EsmaulHusnaDetailScreen} options={{ title: 'Esmâ' }} />
+        <Stack.Screen name="HadithList"      component={HadithListScreen}      options={{ title: '40 Hadis' }} />
+        <Stack.Screen name="HadithDetail"    component={HadithDetailScreen}    options={{ title: 'Hadis' }} />
+        <Stack.Screen name="GoodDeeds"       component={GoodDeedsScreen}       options={{ title: 'İyilik Defteri' }} />
+        <Stack.Screen name="HatimTracker"    component={HatimTrackerScreen}    options={{ title: 'Hatim Takibi' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
