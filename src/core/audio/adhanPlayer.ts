@@ -20,7 +20,8 @@ export type Muezzin = {
   url: string;
 };
 
-// Doğrulanmış MP3 kaynaklar (Wikimedia Commons + archive.org)
+// Verified MP3 sources (Wikimedia Commons + archive.org)
+// Wikimedia: direct HTTP 200, audio/mpeg. archive.org: 302→CDN, audio/mpeg — AVPlayer/ExoPlayer follow redirects.
 export const MUEZZIN_OPTIONS: Muezzin[] = [
   {
     id: 'aaqib',
@@ -35,10 +36,10 @@ export const MUEZZIN_OPTIONS: Muezzin[] = [
     url: 'https://upload.wikimedia.org/wikipedia/commons/2/27/Call_to_prayer_by_Sabah_Fakhry.mp3',
   },
   {
-    id: 'esam',
-    label: 'Şeyh Esam Khan',
-    region: 'Sade · Mahzun okuyuş',
-    url: 'https://archive.org/download/ABeautifulAzanSheikhEsamKhan/mp3',
+    id: 'zahrani',
+    label: 'Mansour Zahrani',
+    region: 'Mekke · Sabah ezan tarzı',
+    url: 'https://archive.org/download/adhan_fajr_mansour_zahrani/adhan_fajr_mansour_zahrani.mp3',
   },
   {
     id: 'sawt',
@@ -93,9 +94,8 @@ async function ensureAudioMode() {
       playThroughEarpieceAndroid: false,
     });
     audioModeSet = true;
-  } catch (e) {
-    // Audio mode setup failed, but try playback anyway
-    if (__DEV__) console.warn('[adhan] setAudioModeAsync failed:', e);
+  } catch {
+    // non-fatal — continue with default audio mode
   }
 }
 
@@ -111,26 +111,36 @@ export async function playAdhan(muezzin?: Muezzin): Promise<PlayResult> {
   const target = muezzin ?? (await getSelectedMuezzin());
 
   try {
-    const { sound } = await Audio.Sound.createAsync(
+    // Load with shouldPlay:false so we can check status before starting
+    const { sound, status } = await Audio.Sound.createAsync(
       { uri: target.url },
-      { shouldPlay: true, volume: 1.0 },
+      { shouldPlay: false, volume: 1.0 },
     );
+
+    // Surface load errors that createAsync doesn't throw for
+    if (!status.isLoaded) {
+      const err = (status as any).error as string | undefined;
+      sound.unloadAsync().catch(() => {});
+      return { ok: false, error: err ?? 'Ses dosyası yüklenemedi. İnternet bağlantını kontrol et.' };
+    }
+
     soundInstance = sound;
-    sound.setOnPlaybackStatusUpdate((status) => {
-      if (!status.isLoaded) {
-        const err = (status as any).error;
-        if (err && __DEV__) console.warn('[adhan] playback error:', err);
+    sound.setOnPlaybackStatusUpdate((s) => {
+      if (!s.isLoaded) {
+        if (soundInstance === sound) soundInstance = null;
         return;
       }
-      if (status.didJustFinish) {
+      if (s.didJustFinish) {
         sound.unloadAsync().catch(() => {});
         if (soundInstance === sound) soundInstance = null;
       }
     });
+
+    // Explicit playAsync — more reliable than shouldPlay:true in createAsync options
+    await sound.playAsync();
     return { ok: true };
   } catch (e: any) {
-    if (__DEV__) console.warn('[adhan] createAsync failed:', e?.message ?? e);
-    return { ok: false, error: e?.message ?? 'Bilinmeyen hata. İnternet bağlantını kontrol et.' };
+    return { ok: false, error: e?.message ?? 'Ses oynatılamadı. İnternet bağlantını kontrol et.' };
   }
 }
 
@@ -138,12 +148,8 @@ export async function stopAdhan(): Promise<void> {
   const s = soundInstance;
   soundInstance = null;
   if (s) {
-    try {
-      await s.stopAsync();
-    } catch {}
-    try {
-      await s.unloadAsync();
-    } catch {}
+    try { await s.stopAsync(); } catch {}
+    try { await s.unloadAsync(); } catch {}
   }
 }
 
