@@ -95,11 +95,20 @@ export default function MosqueFinderScreen() {
   }, [fridayDhuhr]);
 
   const openInMaps = (m: Mosque) => {
-    const label = encodeURIComponent(m.name);
-    const url = Platform.OS === 'ios'
-      ? `http://maps.apple.com/?ll=${m.lat},${m.lon}&q=${label}`
-      : `geo:${m.lat},${m.lon}?q=${label}`;
-    Linking.openURL(url);
+    const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lon}`;
+    if (Platform.OS === 'ios') {
+      // Apple Maps yol tarifi; açılamazsa Google Maps web'e düş
+      const appleUrl = `maps://app?daddr=${m.lat},${m.lon}`;
+      Linking.canOpenURL(appleUrl).then((ok) =>
+        Linking.openURL(ok ? appleUrl : webUrl)
+      ).catch(() => Linking.openURL(webUrl));
+    } else {
+      // Google Maps navigasyon; uygulama yoksa web'e düş
+      const googleNavUrl = `google.navigation:q=${m.lat},${m.lon}`;
+      Linking.canOpenURL(googleNavUrl).then((ok) =>
+        Linking.openURL(ok ? googleNavUrl : webUrl)
+      ).catch(() => Linking.openURL(webUrl));
+    }
   };
 
   return (
