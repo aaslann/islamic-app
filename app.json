@@ -59,7 +59,6 @@
     },
 
     "plugins": [
-      "expo-font",
       [
         "expo-notifications",
         {
@@ -75,7 +74,6 @@
           "locationWhenInUsePermission": "Namaz vakitleri için konumunuza ihtiyaç var."
         }
       ],
-      "expo-av"
     ],
 
     "extra": {
