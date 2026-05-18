@@ -20,32 +20,25 @@ export type Muezzin = {
   url: string;
 };
 
-// Verified MP3 sources (Wikimedia Commons + archive.org)
-// Wikimedia: direct HTTP 200, audio/mpeg. archive.org: 302→CDN, audio/mpeg — AVPlayer/ExoPlayer follow redirects.
+// LICENSE-VERIFIED sources only:
+//   Sabah Fakhry  — Wikimedia Commons, Public Domain (PD)
+//   Aaqib Azeez   — Wikimedia Commons, CC BY-SA 4.0 (attribution required; we stream from
+//                   Wikimedia servers so no redistribution; in-app credit in SettingsScreen)
+//
+// REMOVED (no explicit license on archive.org = all rights reserved by default):
+//   Mansour Zahrani, Sawt-ı Ezan / Nasser Al-Qattami
 export const MUEZZIN_OPTIONS: Muezzin[] = [
-  {
-    id: 'aaqib',
-    label: 'Aaqib Azeez',
-    region: 'Klasik · Geleneksel okuyuş',
-    url: 'https://upload.wikimedia.org/wikipedia/commons/7/7d/The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3',
-  },
   {
     id: 'sabah',
     label: 'Sabah Fakhry',
-    region: 'Suriye · Şam tarzı',
+    region: 'Suriye · Şam tarzı · Kamu malı',
     url: 'https://upload.wikimedia.org/wikipedia/commons/2/27/Call_to_prayer_by_Sabah_Fakhry.mp3',
   },
   {
-    id: 'zahrani',
-    label: 'Mansour Zahrani',
-    region: 'Mekke · Sabah ezan tarzı',
-    url: 'https://archive.org/download/adhan_fajr_mansour_zahrani/adhan_fajr_mansour_zahrani.mp3',
-  },
-  {
-    id: 'sawt',
-    label: 'Sawt-ı Ezan',
-    region: 'Klasik Arap tarzı',
-    url: 'https://archive.org/download/SawtAzan/new2.mp3',
+    id: 'aaqib',
+    label: 'Aaqib Azeez',
+    region: 'Klasik · CC BY-SA 4.0',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/7/7d/The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3',
   },
 ];
 

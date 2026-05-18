@@ -383,7 +383,17 @@ export default function SettingsScreen() {
               <View style={[styles.divider, { backgroundColor: c.border }]} />
               <View style={styles.aboutRow}>
                 <Text style={{ fontSize: 13, color: c.textSecondary }}>Cami Verisi</Text>
-                <Text style={{ fontSize: 13, color: c.textSecondary }}>OpenStreetMap</Text>
+                <Text style={{ fontSize: 13, color: c.textSecondary }}>OpenStreetMap (ODbL)</Text>
+              </View>
+              <View style={[styles.divider, { backgroundColor: c.border }]} />
+              <View style={styles.aboutRow}>
+                <Text style={{ fontSize: 13, color: c.textSecondary }}>Ezan · Sabah Fakhry</Text>
+                <Text style={{ fontSize: 13, color: c.textSecondary }}>Kamu Malı (PD)</Text>
+              </View>
+              <View style={[styles.divider, { backgroundColor: c.border }]} />
+              <View style={styles.aboutRow}>
+                <Text style={{ fontSize: 13, color: c.textSecondary }}>Ezan · Aaqib Azeez</Text>
+                <Text style={{ fontSize: 13, color: c.textSecondary }}>CC BY-SA 4.0 · Wikimedia</Text>
               </View>
             </View>
           </View>
