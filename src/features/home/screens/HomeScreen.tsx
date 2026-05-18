@@ -17,7 +17,11 @@ type DayLog = Record<PrayerId, PrayerStatus>;
 type LogState = Record<string, DayLog>;
 
 const PRAYER_LOG_KEY = 'prayer-log-v1';
+
 const PRAYER_IDS: PrayerId[] = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+const PRAYER_LABELS: Record<PrayerId, string> = {
+  fajr: 'Sabah', dhuhr: 'Öğle', asr: 'İkindi', maghrib: 'Akşam', isha: 'Yatsı',
+};
 
 const DAILY_VERSES = [
   { arabic: 'إِنَّ مَعَ الْعُسْرِ يُسْرًا', translation: 'Şüphesiz güçlükle birlikte kolaylık vardır.', ref: 'İnşirah 94:6' },
@@ -27,35 +31,83 @@ const DAILY_VERSES = [
   { arabic: 'إِنَّ اللَّهَ مَعَ الصَّابِرِينَ', translation: 'Şüphesiz Allah sabredenlerle beraberdir.', ref: 'Bakara 2:153' },
   { arabic: 'وَلَذِكْرُ اللَّهِ أَكْبَرُ', translation: 'Allah\'ı anmak elbette en büyük ibadettir.', ref: 'Ankebût 29:45' },
   { arabic: 'فَاذْكُرُونِي أَذْكُرْكُمْ', translation: 'Beni zikredin, ben de sizi zikredeyim.', ref: 'Bakara 2:152' },
-  { arabic: 'وَقُل رَّبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا', translation: 'Rabbim! Küçüklüğümde beni terbiye ettikleri gibi sen de onlara merhamet et.', ref: 'İsrâ 17:24' },
+  { arabic: 'وَقُل رَّبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا', translation: 'Rabbim! Beni yetiştirdikleri gibi onlara merhamet et.', ref: 'İsrâ 17:24' },
   { arabic: 'إِنَّمَا الْمُؤْمِنُونَ إِخْوَةٌ', translation: 'Mü\'minler ancak kardeştir.', ref: 'Hucurât 49:10' },
   { arabic: 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا', translation: 'Kim Allah\'tan korkarsa Allah ona bir çıkış yolu açar.', ref: 'Talâk 65:2' },
-  { arabic: 'اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ', translation: 'Allah, kendisinden başka ilah olmayandır; O diridir, her şeyi ayakta tutandır.', ref: 'Bakara 2:255 (Âyetü\'l-Kürsî)' },
+  { arabic: 'اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ', translation: 'Allah\'tan başka ilah yoktur; O diridir, her şeyi ayakta tutandır.', ref: 'Bakara 2:255' },
   { arabic: 'قُلْ هُوَ اللَّهُ أَحَدٌ', translation: 'De ki: O Allah birdir.', ref: 'İhlâs 112:1' },
   { arabic: 'وَبِالْوَالِدَيْنِ إِحْسَانًا', translation: 'Ana-babaya iyilik edin.', ref: 'Bakara 2:83' },
   { arabic: 'إِنَّ اللَّهَ يُحِبُّ الْمُحْسِنِينَ', translation: 'Şüphesiz Allah güzel davrananları sever.', ref: 'Bakara 2:195' },
 ];
 
-const QUICK_ITEMS: { emoji: string; label: string; route: keyof RootStackParamList; gradient: [string, string] }[] = [
-  { emoji: '🕌', label: 'Namaz Vakitleri', route: 'PrayerTimes', gradient: ['#0F3D2E', '#1A7A56'] },
-  { emoji: '📖', label: "Kur'an-ı Kerim", route: 'QuranSurahList', gradient: ['#1E3A5F', '#2563EB'] },
-  { emoji: '📿', label: 'Zikir Sayacı', route: 'ZikrCounter', gradient: ['#78350F', '#C8A24A'] },
-  { emoji: '🤲', label: 'Günlük Dualar', route: 'Duas', gradient: ['#3B0764', '#7C3AED'] },
+const QUICK_ITEMS: { emoji: string; label: string; sub: string; route: keyof RootStackParamList; colors: [string, string] }[] = [
+  { emoji: '🕌', label: 'Namaz Vakitleri', sub: 'Bugünkü vakitler', route: 'PrayerTimes', colors: ['#0A2B1E', '#1A7A56'] },
+  { emoji: '📖', label: "Kur'an-ı Kerim", sub: '114 sure', route: 'QuranSurahList', colors: ['#0F2749', '#1D4ED8'] },
+  { emoji: '📿', label: 'Zikir Sayacı', sub: 'Hedef takibi', route: 'ZikrCounter', colors: ['#431407', '#C8A24A'] },
+  { emoji: '🤲', label: 'Günlük Dualar', sub: 'Sabah & akşam', route: 'Duas', colors: ['#2E1065', '#7C3AED'] },
 ];
 
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 5)  return 'Hayırlı geceler';
-  if (hour < 12) return 'Hayırlı sabahlar';
-  if (hour < 18) return 'Hayırlı günler';
+type SectionItem = { emoji: string; label: string; subtitle: string; route: keyof RootStackParamList; color: string };
+const SECTIONS: { label: string; items: SectionItem[] }[] = [
+  {
+    label: 'Namaz',
+    items: [
+      { emoji: '🕐', label: 'Namaz Vakitleri',      subtitle: 'Konuma göre otomatik hesaplama', route: 'PrayerTimes',  color: '#1A7A56' },
+      { emoji: '📓', label: 'Namaz Defteri',         subtitle: 'Kılınan vakitleri işaretle',     route: 'PrayerLog',    color: '#2D8A70' },
+      { emoji: '📋', label: 'Namaz Kılavuzu',        subtitle: 'Adım adım rehber',               route: 'PrayerGuide',  color: '#4AA88C' },
+      { emoji: '🧭', label: 'Kıble Yönü',            subtitle: 'Gerçek zamanlı pusula',          route: 'Qibla',        color: '#8ECEC0' },
+    ],
+  },
+  {
+    label: "Kur'an & İbadet",
+    items: [
+      { emoji: '📿', label: 'Zikir Sayacı',     subtitle: 'Günlük hedefler ve istatistik', route: 'ZikrCounter',   color: palette.gold500 },
+      { emoji: '🤲', label: 'Günlük Dualar',    subtitle: 'Sabah, akşam duaları',          route: 'Duas',          color: palette.gold400 },
+      { emoji: '⭐', label: 'Favori Ayetlerim', subtitle: 'Yıldızladığın ayetler',         route: 'FavoriteAyahs', color: palette.gold300 },
+    ],
+  },
+  {
+    label: 'Takip & Analiz',
+    items: [
+      { emoji: '🔥', label: 'Namaz İlerlemesi', subtitle: 'Seri takibi ve grafik',      route: 'PrayerProgress', color: '#F97316' },
+      { emoji: '📈', label: 'Manevî Analiz',    subtitle: 'Haftalık istatistikler',     route: 'Analytics',      color: '#FB923C' },
+      { emoji: '🎯', label: 'Hedeflerim',       subtitle: 'Günlük ibadet hedefleri',    route: 'Goals',          color: '#F59E0B' },
+      { emoji: '🌙', label: 'Ramazan Takibi',   subtitle: 'Oruç, teravih, Kur\'an',    route: 'RamadanTracker', color: '#8B5CF6' },
+    ],
+  },
+  {
+    label: 'Keşfet',
+    items: [
+      { emoji: '📅', label: 'İslami Takvim', subtitle: 'Kandiller ve mübarek günler', route: 'IslamicCalendar', color: '#0EA5E9' },
+      { emoji: '📍', label: 'Cami Bulucu',   subtitle: '5 km içindeki camiler',       route: 'MosqueFinder',   color: '#06B6D4' },
+    ],
+  },
+  {
+    label: 'Okuma & Kaynak',
+    items: [
+      { emoji: '📚', label: 'Risale-i Nur Külliyatı', subtitle: 'Bediüzzaman Said Nursî', route: 'RisaleNur',      color: '#6366F1' },
+      { emoji: '🔖', label: 'Elmalılı Tefsiri',        subtitle: 'Hak Dini Kur\'an Dili', route: 'ElmaliliTafsir', color: '#8B5CF6' },
+    ],
+  },
+  {
+    label: 'Ayarlar',
+    items: [
+      { emoji: '⚙️', label: 'Uygulama Ayarları', subtitle: 'Tema, bildirimler, yöntem', route: 'Settings', color: palette.gray500 },
+    ],
+  },
+];
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 5)  return 'Hayırlı geceler';
+  if (h < 12) return 'Hayırlı sabahlar';
+  if (h < 18) return 'Hayırlı günler';
   return 'Hayırlı akşamlar';
 }
 
-function getHijriDate(): string {
+function getHijriDate() {
   try {
-    return new Intl.DateTimeFormat('tr-TR-u-ca-islamic', {
-      day: 'numeric', month: 'long', year: 'numeric',
-    }).format(new Date());
+    return new Intl.DateTimeFormat('tr-TR-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
   } catch { return ''; }
 }
 
@@ -65,220 +117,237 @@ function getDailyVerse() {
   return DAILY_VERSES[day % DAILY_VERSES.length];
 }
 
-type C = import('../../../core/theme/themes').AppTheme['colors'];
-type T = import('../../../core/theme/themes').AppTheme['text'];
-
-function SectionHeader({ label, c }: { label: string; c: C }) {
-  return (
-    <View style={styles.sectionHeader}>
-      <Text style={{ fontSize: 14, fontWeight: '700', color: c.text, letterSpacing: 0.2 }}>{label}</Text>
-      <View style={[styles.sectionLine, { backgroundColor: c.border }]} />
-    </View>
-  );
+function getMiladDate() {
+  return new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function NavRow({
-  emoji, title, subtitle, accent, onPress, c, t,
-}: { emoji: string; title: string; subtitle: string; accent: string; onPress: () => void; c: C; t: T }) {
+type C = import('../../../core/theme/themes').AppTheme['colors'];
+
+function SectionGroup({ label, items, onPress, c }: { label: string; items: SectionItem[]; onPress: (r: keyof RootStackParamList) => void; c: C }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.navRow,
-        { backgroundColor: c.surface, borderColor: c.border },
-        pressed && { backgroundColor: c.primarySoft },
-      ]}
-    >
-      <View style={[styles.navAccent, { backgroundColor: accent }]} />
-      <Text style={styles.navEmoji}>{emoji}</Text>
-      <View style={{ flex: 1 }}>
-        <Text style={[t.bodyBold, { color: c.text, fontSize: 15 }]}>{title}</Text>
-        <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 1 }}>{subtitle}</Text>
+    <View style={styles.group}>
+      <Text style={[styles.groupLabel, { color: c.textSecondary }]}>{label.toUpperCase()}</Text>
+      <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+        {items.map((item, idx) => (
+          <React.Fragment key={item.route}>
+            {idx > 0 && <View style={[styles.divider, { backgroundColor: c.border }]} />}
+            <Pressable
+              onPress={() => onPress(item.route)}
+              style={({ pressed }) => [styles.rowItem, pressed && { backgroundColor: c.primarySoft }]}
+            >
+              <View style={[styles.iconBox, { backgroundColor: item.color }]}>
+                <Text style={{ fontSize: 16 }}>{item.emoji}</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text style={{ fontSize: 15, fontWeight: '600', color: c.text }}>{item.label}</Text>
+                <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 1 }}>{item.subtitle}</Text>
+              </View>
+              <Text style={{ fontSize: 20, color: c.textSecondary, marginRight: 4 }}>›</Text>
+            </Pressable>
+          </React.Fragment>
+        ))}
       </View>
-      <Text style={{ fontSize: 20, color: c.textSecondary, marginRight: spacing.sm }}>›</Text>
-    </Pressable>
+    </View>
   );
 }
 
 export default function HomeScreen({ navigation }: Props) {
   const { theme } = useTheme();
   const c = theme.colors;
-  const t = theme.text;
 
-  const [prayedToday, setPrayedToday] = useState(0);
   const hijriDate = useMemo(getHijriDate, []);
-  const verse = useMemo(getDailyVerse, []);
+  const verse     = useMemo(getDailyVerse, []);
+  const miladDate = useMemo(getMiladDate, []);
+
+  const [dayLog, setDayLog] = useState<DayLog>({ fajr: 'none', dhuhr: 'none', asr: 'none', maghrib: 'none', isha: 'none' });
 
   useFocusEffect(
     useCallback(() => {
       AsyncStorage.getItem(PRAYER_LOG_KEY).then((raw) => {
-        if (!raw) { setPrayedToday(0); return; }
+        if (!raw) return;
         const log = JSON.parse(raw) as LogState;
         const key = new Date().toISOString().slice(0, 10);
-        const day = log[key];
-        setPrayedToday(day ? PRAYER_IDS.filter((id) => day[id] === 'prayed').length : 0);
-      }).catch(() => setPrayedToday(0));
+        if (log[key]) setDayLog(log[key]);
+      }).catch(() => {});
     }, []),
   );
+
+  const prayedCount = PRAYER_IDS.filter((id) => dayLog[id] === 'prayed').length;
+
+  const navigate = (route: keyof RootStackParamList) => navigation.navigate(route as never);
 
   return (
     <IslamicBackground>
       <StatusBar style="light" />
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Hero ── */}
+        {/* ─── HERO ─── */}
         <LinearGradient
           colors={[c.heroGradientStart, c.heroGradientEnd]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.hero}
         >
-          <View style={styles.heroTop}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.heroGreeting}>{getGreeting().toUpperCase()}</Text>
-              <Text style={styles.heroTitle}>İslami Asistan</Text>
-              {hijriDate !== '' && (
-                <Text style={styles.heroHijri}>🌙  {hijriDate}</Text>
-              )}
+          {/* Bismillah */}
+          <Text style={styles.bismillah}>بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيمِ</Text>
+
+          {/* Tarih + selamlama */}
+          <View style={styles.heroDateRow}>
+            <View style={[styles.datePill, { backgroundColor: 'rgba(200,162,74,0.15)', borderColor: 'rgba(200,162,74,0.3)' }]}>
+              <Text style={styles.datePillText}>🌙 {hijriDate}</Text>
             </View>
-            <Text style={{ fontSize: 48 }}>🕌</Text>
           </View>
 
-          {/* Today's prayer mini-bar */}
-          <Pressable
-            onPress={() => navigation.navigate('PrayerLog')}
-            style={styles.prayerBar}
-          >
-            <View style={{ flex: 1 }}>
-              <Text style={styles.prayerBarLabel}>BUGÜNKÜ NAMAZ</Text>
-              <Text style={styles.prayerBarValue}>{prayedToday}/5 vakit kılındı</Text>
+          <Text style={styles.heroGreeting}>{getGreeting()}</Text>
+          <Text style={styles.heroTitle}>İslami Asistan</Text>
+          <Text style={styles.heroMilad}>{miladDate}</Text>
+
+          {/* Namaz durumu */}
+          <Pressable onPress={() => navigate('PrayerLog')} style={styles.prayerCard}>
+            <View style={styles.prayerCardTop}>
+              <Text style={styles.prayerCardLabel}>BUGÜNKÜ NAMAZ</Text>
+              <View style={[styles.prayerCountBadge, {
+                backgroundColor: prayedCount === 5 ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.1)',
+              }]}>
+                <Text style={[styles.prayerCountText, {
+                  color: prayedCount === 5 ? '#4ADE80' : prayedCount > 0 ? palette.gold400 : 'rgba(255,255,255,0.5)',
+                }]}>
+                  {prayedCount}/5
+                </Text>
+              </View>
             </View>
             <View style={styles.prayerDots}>
-              {PRAYER_IDS.map((_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.prayerDot,
-                    { backgroundColor: i < prayedToday ? palette.gold400 : 'rgba(255,255,255,0.2)' },
-                  ]}
-                />
-              ))}
+              {PRAYER_IDS.map((id) => {
+                const status = dayLog[id];
+                const isMark   = status === 'prayed';
+                const isQada   = status === 'qada';
+                return (
+                  <View key={id} style={styles.prayerDotCol}>
+                    <View style={[
+                      styles.prayerDotCircle,
+                      isMark && { backgroundColor: '#4ADE80', borderColor: '#4ADE80' },
+                      isQada && { backgroundColor: 'rgba(251,146,60,0.3)', borderColor: '#FB923C' },
+                      !isMark && !isQada && { backgroundColor: 'transparent', borderColor: 'rgba(255,255,255,0.2)' },
+                    ]}>
+                      {isMark && <Text style={{ fontSize: 10, color: '#fff' }}>✓</Text>}
+                      {isQada && <Text style={{ fontSize: 8, color: '#FB923C' }}>↻</Text>}
+                    </View>
+                    <Text style={styles.prayerDotLabel}>{PRAYER_LABELS[id]}</Text>
+                  </View>
+                );
+              })}
             </View>
           </Pressable>
         </LinearGradient>
 
-        {/* ── Verse of the Day ── */}
-        <View style={[styles.verseCard, { backgroundColor: c.surface, borderColor: `${palette.gold500}40` }]}>
-          <View style={styles.verseHeader}>
-            <Text style={[styles.verseLabel, { color: palette.gold500 }]}>✦  GÜNÜN AYETİ</Text>
+        {/* ─── GÜNÜN AYETİ ─── */}
+        <View style={[styles.verseOuter, { backgroundColor: c.surface, borderColor: `${palette.gold500}35` }]}>
+          {/* Gold top bar */}
+          <LinearGradient
+            colors={[`${palette.gold500}00`, palette.gold500, `${palette.gold500}00`]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.verseTopBar}
+          />
+          <View style={styles.verseInner}>
+            <Text style={[styles.verseTag, { color: palette.gold500 }]}>✦  GÜNÜN AYETİ  ✦</Text>
+            <Text style={[styles.verseArabic, { color: c.text }]}>{verse.arabic}</Text>
+            <View style={[styles.verseDivider, { backgroundColor: `${palette.gold500}25` }]} />
+            <Text style={[styles.verseTranslation, { color: c.textSecondary }]}>"{verse.translation}"</Text>
+            <View style={[styles.verseRefPill, { backgroundColor: `${palette.gold500}15`, borderColor: `${palette.gold500}30` }]}>
+              <Text style={[styles.verseRefText, { color: palette.gold500 }]}>{verse.ref}</Text>
+            </View>
           </View>
-          <Text style={[styles.verseArabic, { color: c.text }]}>{verse.arabic}</Text>
-          <Text style={[styles.verseTranslation, { color: c.textSecondary }]}>{verse.translation}</Text>
-          <Text style={[styles.verseRef, { color: palette.gold500 }]}>— {verse.ref}</Text>
         </View>
 
-        {/* ── Hızlı Erişim ── */}
-        <View style={styles.section}>
-          <SectionHeader label="⚡  Hızlı Erişim" c={c} />
+        {/* ─── HIZLI ERİŞİM ─── */}
+        <View style={styles.quickSection}>
+          <Text style={[styles.quickSectionLabel, { color: c.textSecondary }]}>HIZLI ERİŞİM</Text>
           <View style={styles.quickGrid}>
             {QUICK_ITEMS.map((item) => (
               <Pressable
                 key={item.route}
-                onPress={() => navigation.navigate(item.route as never)}
-                style={({ pressed }) => [styles.quickCard, pressed && { opacity: 0.82 }]}
+                onPress={() => navigate(item.route)}
+                style={({ pressed }) => [styles.quickCard, pressed && { opacity: 0.80 }]}
               >
-                <LinearGradient
-                  colors={item.gradient}
-                  style={styles.quickCardGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <Text style={{ fontSize: 32 }}>{item.emoji}</Text>
-                  <Text style={styles.quickCardLabel}>{item.label}</Text>
+                <LinearGradient colors={item.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.quickGradient}>
+                  {/* Decorative circle */}
+                  <View style={styles.quickCircleDeco} />
+                  <Text style={{ fontSize: 34, marginBottom: spacing.xs }}>{item.emoji}</Text>
+                  <Text style={styles.quickLabel}>{item.label}</Text>
+                  <Text style={styles.quickSub}>{item.sub}</Text>
                 </LinearGradient>
               </Pressable>
             ))}
           </View>
         </View>
 
-        {/* ── Namaz ── */}
-        <View style={styles.section}>
-          <SectionHeader label="🕌  Namaz" c={c} />
-          <NavRow emoji="🕐" title="Namaz Vakitleri"       subtitle="Konuma göre otomatik hesaplama" accent={palette.green600} onPress={() => navigation.navigate('PrayerTimes')}  c={c} t={t} />
-          <NavRow emoji="📓" title="Namaz Hatıra Defteri"  subtitle="Kıldığın vakitleri işaretle"    accent={palette.green500} onPress={() => navigation.navigate('PrayerLog')}    c={c} t={t} />
-          <NavRow emoji="📋" title="Namaz Kılavuzu"        subtitle="Vakit vakit adım adım rehber"   accent={palette.green400} onPress={() => navigation.navigate('PrayerGuide')}  c={c} t={t} />
-          <NavRow emoji="🧭" title="Kıble Yönü"            subtitle="Gerçek zamanlı pusula"          accent={palette.green300} onPress={() => navigation.navigate('Qibla')}        c={c} t={t} />
-        </View>
-
-        {/* ── Kur'an & İbadet ── */}
-        <View style={styles.section}>
-          <SectionHeader label="📖  Kur'an & İbadet" c={c} />
-          <NavRow emoji="📿" title="Zikir Sayacı"     subtitle="Özelleştirilebilir hedefler ve istatistik" accent={palette.gold500} onPress={() => navigation.navigate('ZikrCounter')}    c={c} t={t} />
-          <NavRow emoji="🤲" title="Günlük Dualar"    subtitle="Sabah, akşam ve günlük hayat duaları"     accent={palette.gold400} onPress={() => navigation.navigate('Duas')}           c={c} t={t} />
-          <NavRow emoji="⭐" title="Favori Ayetlerim" subtitle="Yıldızladığın ayetler ve notlar"           accent={palette.gold300} onPress={() => navigation.navigate('FavoriteAyahs')}  c={c} t={t} />
-        </View>
-
-        {/* ── Takip & Analiz ── */}
-        <View style={styles.section}>
-          <SectionHeader label="📊  Takip & Analiz" c={c} />
-          <NavRow emoji="🔥" title="Namaz İlerlemesi" subtitle="Seri takibi, haftalık grafik, heatmap" accent="#F97316" onPress={() => navigation.navigate('PrayerProgress')} c={c} t={t} />
-          <NavRow emoji="📈" title="Manevî Analiz"    subtitle="Son 7 günün istatistikleri ve özeti"   accent="#FB923C" onPress={() => navigation.navigate('Analytics')}       c={c} t={t} />
-          <NavRow emoji="🎯" title="Hedeflerim"       subtitle="Günlük namaz, zikir, Kur'an hedefleri" accent="#F59E0B" onPress={() => navigation.navigate('Goals')}           c={c} t={t} />
-          <NavRow emoji="🌙" title="Ramazan Takibi"   subtitle="Oruç, teravih, Kur'an sayfası"        accent="#8B5CF6" onPress={() => navigation.navigate('RamadanTracker')}  c={c} t={t} />
-        </View>
-
-        {/* ── Keşfet ── */}
-        <View style={styles.section}>
-          <SectionHeader label="🌍  Keşfet" c={c} />
-          <NavRow emoji="📅" title="İslami Takvim" subtitle="Hicrî tarih, kandiller ve mübarek günler" accent="#0EA5E9" onPress={() => navigation.navigate('IslamicCalendar')} c={c} t={t} />
-          <NavRow emoji="📍" title="Cami Bulucu"   subtitle="5 km içindeki camiler ve Cuma vakti"    accent="#06B6D4" onPress={() => navigation.navigate('MosqueFinder')}    c={c} t={t} />
-        </View>
-
-        {/* ── Okuma & Kaynak ── */}
-        <View style={styles.section}>
-          <SectionHeader label="📚  Okuma & Kaynak" c={c} />
-          <NavRow emoji="📚" title="Risale-i Nur Külliyatı" subtitle="Bediüzzaman Said Nursî'nin temel eserleri" accent="#6366F1" onPress={() => navigation.navigate('RisaleNur')}      c={c} t={t} />
-          <NavRow emoji="🔖" title="Elmalılı Tefsiri"       subtitle="Hak Dini Kur'an Dili — 9 cilt"           accent="#8B5CF6" onPress={() => navigation.navigate('ElmaliliTafsir')} c={c} t={t} />
-        </View>
-
-        {/* ── Ayarlar ── */}
-        <View style={[styles.section, { marginBottom: 0 }]}>
-          <SectionHeader label="⚙️  Ayarlar" c={c} />
-          <NavRow emoji="⚙️" title="Uygulama Ayarları" subtitle="Tema, bildirimler, hesaplama yöntemi" accent={palette.gray500} onPress={() => navigation.navigate('Settings')} c={c} t={t} />
-        </View>
+        {/* ─── BÖLÜMLER ─── */}
+        {SECTIONS.map((section) => (
+          <SectionGroup
+            key={section.label}
+            label={section.label}
+            items={section.items}
+            onPress={navigate}
+            c={c}
+          />
+        ))}
       </ScrollView>
     </IslamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  hero:              { paddingTop: 56, paddingBottom: spacing.md, paddingHorizontal: spacing.lg },
-  heroTop:           { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md },
-  heroGreeting:      { fontSize: 11, fontWeight: '700', color: palette.gold400, letterSpacing: 1.5, marginBottom: 4 },
-  heroTitle:         { fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: -0.5 },
-  heroHijri:         { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 4 },
-  prayerBar:         { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderRadius: radii.lg, padding: spacing.md },
-  prayerBarLabel:    { fontSize: 10, color: 'rgba(255,255,255,0.55)', fontWeight: '700', letterSpacing: 0.8 },
-  prayerBarValue:    { fontSize: 16, color: '#fff', fontWeight: '700', marginTop: 2 },
-  prayerDots:        { flexDirection: 'row', gap: 6 },
-  prayerDot:         { width: 11, height: 11, borderRadius: 6 },
-  verseCard:         { marginHorizontal: spacing.lg, marginTop: spacing.md, padding: spacing.md, borderRadius: radii.xl, borderWidth: 1, ...shadows.card },
-  verseHeader:       { marginBottom: spacing.sm },
-  verseLabel:        { fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
-  verseArabic:       { fontSize: 20, fontFamily: 'Amiri_400Regular', textAlign: 'right', lineHeight: 34, marginBottom: spacing.sm },
-  verseTranslation:  { fontSize: 14, lineHeight: 20, fontStyle: 'italic' },
-  verseRef:          { fontSize: 11, fontWeight: '700', marginTop: spacing.xs },
-  section:           { paddingHorizontal: spacing.lg, marginTop: spacing.lg },
-  sectionHeader:     { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
-  sectionLine:       { flex: 1, height: StyleSheet.hairlineWidth },
-  quickGrid:         { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  quickCard:         { width: '47.5%', borderRadius: radii.lg, overflow: 'hidden', ...shadows.card },
-  quickCardGradient: { padding: spacing.md, minHeight: 110, justifyContent: 'flex-end' },
-  quickCardLabel:    { fontSize: 13, fontWeight: '700', color: '#fff', marginTop: spacing.sm, lineHeight: 17 },
-  navRow:            { flexDirection: 'row', alignItems: 'center', borderRadius: radii.lg, marginBottom: spacing.sm, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden', minHeight: 62, ...shadows.card },
-  navAccent:         { width: 4, alignSelf: 'stretch' },
-  navEmoji:          { fontSize: 22, marginHorizontal: spacing.md },
+  /* ── Hero ── */
+  hero:             { paddingTop: 60, paddingBottom: spacing.lg, paddingHorizontal: spacing.lg },
+  bismillah:        { fontSize: 18, color: 'rgba(200,162,74,0.75)', textAlign: 'center', marginBottom: spacing.md, letterSpacing: 1 },
+  heroDateRow:      { marginBottom: spacing.md },
+  datePill:         { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: 5, borderRadius: radii.full, borderWidth: 1 },
+  datePillText:     { fontSize: 12, color: palette.gold400, fontWeight: '600' },
+  heroGreeting:     { fontSize: 13, fontWeight: '700', color: 'rgba(255,255,255,0.55)', letterSpacing: 0.5, marginBottom: 2 },
+  heroTitle:        { fontSize: 32, fontWeight: '900', color: '#fff', letterSpacing: -0.8, marginBottom: 2 },
+  heroMilad:        { fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: spacing.lg },
+
+  /* Prayer card inside hero */
+  prayerCard:       { backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: radii.xl, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', padding: spacing.md },
+  prayerCardTop:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
+  prayerCardLabel:  { fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.45)', letterSpacing: 1.2 },
+  prayerCountBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: radii.full },
+  prayerCountText:  { fontSize: 13, fontWeight: '800' },
+  prayerDots:       { flexDirection: 'row', justifyContent: 'space-between' },
+  prayerDotCol:     { alignItems: 'center', gap: 5 },
+  prayerDotCircle:  { width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  prayerDotLabel:   { fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: '500' },
+
+  /* ── Verse ── */
+  verseOuter:       { marginHorizontal: spacing.lg, marginTop: spacing.md, borderRadius: radii.xl, borderWidth: 1, overflow: 'hidden', ...shadows.card },
+  verseTopBar:      { height: 2 },
+  verseInner:       { padding: spacing.lg, alignItems: 'center' },
+  verseTag:         { fontSize: 10, fontWeight: '800', letterSpacing: 2, marginBottom: spacing.md },
+  verseArabic:      { fontSize: 22, textAlign: 'center', lineHeight: 38, marginBottom: spacing.md, color: '#fff' },
+  verseDivider:     { width: 48, height: 1, marginBottom: spacing.md },
+  verseTranslation: { fontSize: 14, fontStyle: 'italic', textAlign: 'center', lineHeight: 22, marginBottom: spacing.md },
+  verseRefPill:     { paddingHorizontal: spacing.md, paddingVertical: 4, borderRadius: radii.full, borderWidth: 1 },
+  verseRefText:     { fontSize: 11, fontWeight: '700' },
+
+  /* ── Quick access ── */
+  quickSection:     { marginTop: spacing.lg, paddingHorizontal: spacing.lg },
+  quickSectionLabel:{ fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: spacing.sm },
+  quickGrid:        { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  quickCard:        { width: '47.5%', borderRadius: radii.xl, overflow: 'hidden', ...shadows.strong },
+  quickGradient:    { padding: spacing.md, paddingTop: spacing.lg, minHeight: 130, justifyContent: 'flex-end', overflow: 'hidden' },
+  quickCircleDeco:  { position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.05)' },
+  quickLabel:       { fontSize: 13, fontWeight: '800', color: '#fff', lineHeight: 17 },
+  quickSub:         { fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 2 },
+
+  /* ── Section groups ── */
+  group:       { paddingHorizontal: spacing.lg, marginTop: spacing.lg },
+  groupLabel:  { fontSize: 11, fontWeight: '700', letterSpacing: 1.2, marginBottom: spacing.xs, paddingLeft: 4 },
+  groupCard:   { borderRadius: radii.xl, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden', ...shadows.card },
+  divider:     { height: StyleSheet.hairlineWidth, marginLeft: 68 },
+  rowItem:     { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: spacing.md, minHeight: 60 },
+  iconBox:     { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
 });
