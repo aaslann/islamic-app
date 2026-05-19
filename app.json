@@ -3,6 +3,7 @@
     "name": "İslami Asistan",
     "slug": "islami-asistan",
     "version": "1.0.0",
+    "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -35,8 +36,6 @@
     "android": {
       "package": "com.islamiasistan.app",
       "versionCode": 2,
-      "compileSdkVersion": 35,
-      "targetSdkVersion": 35,
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
