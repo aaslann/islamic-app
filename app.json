@@ -60,15 +60,6 @@
 
     "plugins": [
       [
-        "expo-splash-screen",
-        {
-          "image": "./assets/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#0D1F18"
-        }
-      ],
-      [
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
