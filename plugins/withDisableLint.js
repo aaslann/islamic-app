@@ -1,7 +1,7 @@
 // Disables lint vital release builds, which crashes in Expo SDK 55 due to
 // "Unexpected failure during lint analysis of ReactStylesDiffMapBackingFieldAccessor.java"
 // caused by AGP/lint trying to analyze generated source files before they exist.
-const { withAppBuildGradle, withProjectBuildGradle } = require('@expo/config-plugins');
+const { withAppBuildGradle, withProjectBuildGradle, withMainActivity, withMainApplication } = require('@expo/config-plugins');
 
 const APP_BUILD_LINT_BLOCK = `  lint {
     checkReleaseBuilds false
@@ -51,8 +51,36 @@ function withProjectBuildGradleDisableLint(config) {
   });
 }
 
+function withFixMainActivityPackage(config) {
+  return withMainActivity(config, (cfg) => {
+    const pkg = cfg.android && cfg.android.package;
+    if (pkg) {
+      cfg.modResults.contents = cfg.modResults.contents.replace(
+        /^package\s+[\w.]+/m,
+        `package ${pkg}`
+      );
+    }
+    return cfg;
+  });
+}
+
+function withFixMainApplicationPackage(config) {
+  return withMainApplication(config, (cfg) => {
+    const pkg = cfg.android && cfg.android.package;
+    if (pkg) {
+      cfg.modResults.contents = cfg.modResults.contents.replace(
+        /^package\s+[\w.]+/m,
+        `package ${pkg}`
+      );
+    }
+    return cfg;
+  });
+}
+
 module.exports = function withDisableLint(config) {
   config = withAppBuildGradleDisableLint(config);
   config = withProjectBuildGradleDisableLint(config);
+  config = withFixMainActivityPackage(config);
+  config = withFixMainApplicationPackage(config);
   return config;
 };
