@@ -6,73 +6,50 @@ import { useTheme } from '../../../core/theme/ThemeContext';
 import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
 
+type SpecialDayType = 'kandil' | 'uc_aylar' | 'asure' | 'ramazan' | 'yilbasi' | 'bayram';
+
 type SpecialDay = {
   id: string;
-  date: string;
+  date: string;          // YYYY-MM-DD, local-calendar date (no timezone)
   title: string;
   description: string;
-  type: 'kandil' | 'uc_aylar' | 'asure' | 'ramazan' | 'yilbasi';
+  type: SpecialDayType;
 };
 type ReligiousDaysByYear = Record<string, SpecialDay[]>;
 type SpecialDayWithDate = SpecialDay & { dateObj: Date };
 
-const MONTH_MAP_TR: Record<string, number> = {
-  OCAK:1,ŞUBAT:2,SUBAT:2,MART:3,'NİSAN':4,NISAN:4,MAYIS:5,'HAZİRAN':6,HAZIRAN:6,
-  TEMMUZ:7,'AĞUSTOS':8,AGUSTOS:8,'EYLÜL':9,EYLUL:9,'EKİM':10,EKIM:10,KASIM:11,ARALIK:12,
-};
-
-const TYPE_CONFIG: Record<SpecialDay['type'], { emoji: string; label: string; color: string }> = {
-  kandil:   { emoji: '🕯️',  label: 'Kandil',    color: '#F59E0B' },
-  uc_aylar: { emoji: '🌙',  label: 'Üç Aylar',  color: '#8B5CF6' },
-  asure:    { emoji: '🫙',  label: 'Aşure',     color: '#0EA5E9' },
-  ramazan:  { emoji: '🌙',  label: 'Ramazan',   color: '#22C55E' },
+const TYPE_CONFIG: Record<SpecialDayType, { emoji: string; label: string; color: string }> = {
+  kandil:   { emoji: '🕯️',  label: 'Kandil',     color: '#F59E0B' },
+  uc_aylar: { emoji: '🌙',  label: 'Üç Aylar',   color: '#8B5CF6' },
+  asure:    { emoji: '🫙',  label: 'Aşure',      color: '#0EA5E9' },
+  ramazan:  { emoji: '🌙',  label: 'Ramazan',    color: '#22C55E' },
   yilbasi:  { emoji: '📅',  label: 'Hicrî Yılbaşı', color: palette.gold500 },
+  bayram:   { emoji: '🎉',  label: 'Bayram',     color: '#EF4444' },
 };
 
 const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 const TR_DAYS   = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 
-function inferType(title: string): SpecialDay['type'] {
-  const u = title.toUpperCase();
-  if (u.includes('ÜÇ AYLAR')) return 'uc_aylar';
-  if (u.includes('AŞURE')) return 'asure';
-  if (u.includes('YILBAŞI')) return 'yilbasi';
-  if (u.includes('RAMAZAN BAŞLANGICI')) return 'ramazan';
-  return 'kandil';
+// Timezone-safe: parse 'YYYY-MM-DD' as a local calendar date (not UTC).
+function parseLocalISO(iso: string): Date {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1);
 }
 
-async function fetchRemote(year: string): Promise<SpecialDayWithDate[]> {
-  const url = `https://vakithesaplama.diyanet.gov.tr/dinigunler.php?yil=${year}`;
-  const res = await fetch(url);
-  const text = await res.text();
-  const result: SpecialDayWithDate[] = [];
-  for (const rawLine of text.split('\n')) {
-    const line = rawLine.trim();
-    if (!line.includes('|')) continue;
-    const relevant = ['KANDİL','KANDİLİ','BAŞLANGICI','AŞURE GÜNÜ','HİCRİ YILBAŞI'].some((k) => line.includes(k));
-    if (!relevant) continue;
-    const parts = line.split('|').map((p) => p.trim());
-    if (parts.length < 8) continue;
-    const monthYear = parts[5];
-    const titleRaw = parts[7];
-    const match = monthYear.match(/([A-ZÇĞİÖŞÜ]+)\s*-?(\d{4})/i);
-    if (!match) continue;
-    const monthNum = MONTH_MAP_TR[match[1].toUpperCase().replace('.', '')];
-    const yearNum = parseInt(match[2], 10);
-    const dayNum = parseInt(parts[4], 10);
-    if (!monthNum || !dayNum || !yearNum) continue;
-    const dateObj = new Date(yearNum, monthNum - 1, dayNum);
-    result.push({
-      id: `${titleRaw.replace(/\s+/g, '-').toLowerCase()}-${yearNum}`,
-      date: dateObj.toISOString().slice(0, 10),
-      title: titleRaw.trim(),
-      description: '',
-      type: inferType(titleRaw),
-      dateObj,
-    });
-  }
-  result.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
-  return result;
+// Timezone-safe: format a local Date as 'YYYY-MM-DD'.
+function formatLocalISO(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function startOfDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function daysBetween(from: Date, to: Date): number {
+  return Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / 86400000);
 }
 
 function buildCalendarCells(year: number, month: number): (Date | null)[] {
@@ -85,42 +62,57 @@ function buildCalendarCells(year: number, month: number): (Date | null)[] {
   return cells;
 }
 
+// Load events from a window of years (previous, current, next) so the
+// "upcoming" list is never empty and the calendar can highlight events
+// that span year boundaries.
+function loadEventsForWindow(centerYear: number): SpecialDayWithDate[] {
+  const all = religiousDays as ReligiousDaysByYear;
+  const years = [centerYear - 1, centerYear, centerYear + 1];
+  const out: SpecialDayWithDate[] = [];
+  for (const y of years) {
+    const list = all[String(y)] ?? [];
+    for (const e of list) {
+      out.push({ ...e, dateObj: parseLocalISO(e.date) });
+    }
+  }
+  // Dedupe by id (year boundaries can list same event twice across files)
+  const seen = new Set<string>();
+  const deduped = out.filter((e) => (seen.has(e.id) ? false : (seen.add(e.id), true)));
+  deduped.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
+  return deduped;
+}
+
 export default function IslamicCalendarScreen() {
   const { theme } = useTheme();
   const c = theme.colors;
   const t = theme.text;
 
   const today = useMemo(() => new Date(), []);
-  const todayKey = today.toISOString().slice(0, 10);
-  const currentYear = String(today.getFullYear());
+  const todayKey = formatLocalISO(today);
 
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [calYear, setCalYear]   = useState(today.getFullYear());
   const [events, setEvents]     = useState<SpecialDayWithDate[]>([]);
 
+  // Hijri date via Intl (works on iOS/Android via Hermes intl polyfill / native)
   const hijriString = useMemo(() => {
     try {
-      return new Intl.DateTimeFormat('tr-TR-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(today);
+      return new Intl.DateTimeFormat('tr-TR-u-ca-islamic', {
+        day: 'numeric', month: 'long', year: 'numeric',
+      }).format(today);
     } catch { return ''; }
   }, [today]);
 
+  // Load a 3-year window centered on the visible calendar year.
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const remote = await fetchRemote(currentYear);
-        if (!cancelled && remote.length > 0) { setEvents(remote); return; }
-      } catch {}
-      const all = religiousDays as ReligiousDaysByYear;
-      const list = (all[currentYear] ?? []).map((e) => ({ ...e, dateObj: new Date(e.date) }));
-      list.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
-      if (!cancelled) setEvents(list);
-    })();
-    return () => { cancelled = true; };
-  }, [currentYear]);
+    setEvents(loadEventsForWindow(calYear));
+  }, [calYear]);
 
-  // Event date keys set for O(1) lookup
-  const eventDateKeys = useMemo(() => new Set(events.map((e) => e.date)), [events]);
+  const eventByDateKey = useMemo(() => {
+    const map = new Map<string, SpecialDayWithDate>();
+    for (const e of events) map.set(e.date, e);
+    return map;
+  }, [events]);
 
   const calCells = useMemo(() => buildCalendarCells(calYear, calMonth), [calYear, calMonth]);
 
@@ -132,14 +124,27 @@ export default function IslamicCalendarScreen() {
     if (calMonth === 11) { setCalMonth(0); setCalYear((y) => y + 1); }
     else setCalMonth((m) => m + 1);
   };
+  const jumpToToday = () => {
+    setCalMonth(today.getMonth());
+    setCalYear(today.getFullYear());
+  };
 
-  const upcomingEvents = events.filter((e) => {
-    const diff = e.dateObj.getTime() - today.getTime();
-    return diff >= -86400000 * 3; // show from 3 days ago
-  }).slice(0, 8);
+  // Upcoming events: from today forward, take up to 8.
+  const upcomingEvents = useMemo(() => {
+    return events
+      .filter((e) => daysBetween(today, e.dateObj) >= 0)
+      .slice(0, 8);
+  }, [events, today]);
 
-  const nextRamadan = events.find((e) => e.type === 'ramazan' && e.dateObj >= today);
-  const ramadanDays = nextRamadan ? Math.ceil((nextRamadan.dateObj.getTime() - today.getTime()) / 86400000) : null;
+  // Hero countdown: nearest upcoming event of any type.
+  const nextEvent = upcomingEvents[0] ?? null;
+  const nextEventDays = nextEvent ? daysBetween(today, nextEvent.dateObj) : null;
+
+  // Ramadan-specific countdown (only when not currently in Ramadan).
+  const nextRamadan = useMemo(() => {
+    return events.find((e) => e.type === 'ramazan' && daysBetween(today, e.dateObj) >= 0);
+  }, [events, today]);
+  const ramadanDays = nextRamadan ? daysBetween(today, nextRamadan.dateObj) : null;
 
   return (
     <IslamicBackground>
@@ -151,13 +156,22 @@ export default function IslamicCalendarScreen() {
           <Text style={styles.heroTitle}>
             {today.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}
           </Text>
-          {hijriString !== '' && (
+          {!!hijriString && (
             <Text style={styles.heroHijri}>🌙  Hicrî: {hijriString}</Text>
+          )}
+          {nextEvent && nextEventDays !== null && (
+            <Text style={styles.heroNext}>
+              {nextEventDays === 0
+                ? `${TYPE_CONFIG[nextEvent.type].emoji} Bugün: ${nextEvent.title}`
+                : nextEventDays === 1
+                  ? `${TYPE_CONFIG[nextEvent.type].emoji} Yarın: ${nextEvent.title}`
+                  : `${TYPE_CONFIG[nextEvent.type].emoji} ${nextEvent.title}'a ${nextEventDays} gün`}
+            </Text>
           )}
         </LinearGradient>
 
-        {/* Ramadan countdown */}
-        {ramadanDays !== null && ramadanDays > 0 && (
+        {/* Ramadan countdown — only show if not the same as nextEvent */}
+        {ramadanDays !== null && ramadanDays > 0 && nextRamadan?.id !== nextEvent?.id && (
           <View style={[styles.ramadanCard, { backgroundColor: c.surface, borderColor: `${palette.green500}30` }]}>
             <Text style={{ fontSize: 28 }}>🌙</Text>
             <View style={{ flex: 1, marginLeft: spacing.md }}>
@@ -165,9 +179,12 @@ export default function IslamicCalendarScreen() {
               <Text style={{ fontSize: 16, fontWeight: '700', color: c.text, marginTop: 2 }}>
                 {ramadanDays} gün kaldı
               </Text>
+              <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 2 }}>
+                {nextRamadan?.dateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </Text>
               <View style={[styles.ramadanBar, { backgroundColor: `${palette.green500}15` }]}>
                 <View style={[styles.ramadanFill, {
-                  width: `${Math.max(0, Math.min(100, 100 - ramadanDays))}%`,
+                  width: `${Math.max(0, Math.min(100, 100 - Math.min(ramadanDays, 100)))}%`,
                   backgroundColor: palette.green400,
                 }]} />
               </View>
@@ -179,11 +196,15 @@ export default function IslamicCalendarScreen() {
         <View style={[styles.calCard, { backgroundColor: c.surface, borderColor: c.border }]}>
           {/* Month nav */}
           <View style={styles.calHeader}>
-            <Text onPress={prevMonth} style={[styles.calArrow, { color: c.text }]}>‹</Text>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: c.text }}>
+            <Text onPress={prevMonth} style={[styles.calArrow, { color: c.text }]} suppressHighlighting>‹</Text>
+            <Text
+              onPress={jumpToToday}
+              style={{ fontSize: 16, fontWeight: '700', color: c.text }}
+              suppressHighlighting
+            >
               {TR_MONTHS[calMonth]} {calYear}
             </Text>
-            <Text onPress={nextMonth} style={[styles.calArrow, { color: c.text }]}>›</Text>
+            <Text onPress={nextMonth} style={[styles.calArrow, { color: c.text }]} suppressHighlighting>›</Text>
           </View>
 
           {/* Day labels */}
@@ -200,26 +221,27 @@ export default function IslamicCalendarScreen() {
             <View key={row} style={styles.calRow}>
               {calCells.slice(row * 7, row * 7 + 7).map((date, col) => {
                 if (!date) return <View key={col} style={styles.calCell} />;
-                const dateKey = date.toISOString().slice(0, 10);
+                const dateKey = formatLocalISO(date);
                 const isToday = dateKey === todayKey;
-                const hasEvent = eventDateKeys.has(dateKey);
+                const event = eventByDateKey.get(dateKey);
                 const isFriday = date.getDay() === 5;
+                const dotColor = event ? TYPE_CONFIG[event.type].color : null;
                 return (
                   <View key={col} style={styles.calCell}>
                     <View style={[
                       styles.calDayInner,
                       isToday && { backgroundColor: c.primary },
-                      !isToday && hasEvent && { backgroundColor: `${palette.gold500}18`, borderWidth: 1, borderColor: `${palette.gold500}40` },
+                      !isToday && event && { backgroundColor: `${dotColor}18`, borderWidth: 1, borderColor: `${dotColor}40` },
                     ]}>
                       <Text style={{
                         fontSize: 13,
-                        fontWeight: isToday ? '900' : '400',
+                        fontWeight: isToday ? '900' : event ? '700' : '400',
                         color: isToday ? '#fff' : isFriday ? palette.gold500 : c.text,
                       }}>
                         {date.getDate()}
                       </Text>
-                      {hasEvent && !isToday && (
-                        <View style={[styles.eventDot, { backgroundColor: palette.gold500 }]} />
+                      {event && !isToday && dotColor && (
+                        <View style={[styles.eventDot, { backgroundColor: dotColor }]} />
                       )}
                     </View>
                   </View>
@@ -229,34 +251,41 @@ export default function IslamicCalendarScreen() {
           ))}
 
           <Text style={{ fontSize: 11, color: c.textSecondary, textAlign: 'center', marginTop: spacing.sm }}>
-            🟡 Altın nokta = mübarek gün &nbsp;|&nbsp; Altın renk = Cuma
+            Renkli nokta = mübarek gün · Altın = Cuma · Ay başlığına dokun = bugüne dön
           </Text>
         </View>
 
         {/* Upcoming events */}
         <View style={{ paddingHorizontal: spacing.lg }}>
           <Text style={[t.heading2, { color: c.text, marginBottom: spacing.sm }]}>
-            {upcomingEvents.length > 0 ? 'Yaklaşan Mübarek Günler' : 'Bu Yıl Özel Günler'}
+            Yaklaşan Mübarek Günler
           </Text>
 
           {events.length === 0 && (
             <View style={[styles.emptyCard, { backgroundColor: c.surface, borderColor: c.border }]}>
               <Text style={{ fontSize: 13, color: c.textSecondary, textAlign: 'center' }}>
-                Veri yüklenemedi. İnternet bağlantınızı kontrol edin.
+                Bu yıl için kayıtlı özel gün bulunamadı.
               </Text>
             </View>
           )}
 
-          {(upcomingEvents.length > 0 ? upcomingEvents : events.slice(0, 6)).map((e) => {
+          {upcomingEvents.length === 0 && events.length > 0 && (
+            <View style={[styles.emptyCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+              <Text style={{ fontSize: 13, color: c.textSecondary, textAlign: 'center' }}>
+                Yaklaşan özel gün yok. Gelecek yıl için takvim güncellenecek.
+              </Text>
+            </View>
+          )}
+
+          {upcomingEvents.map((e) => {
             const cfg = TYPE_CONFIG[e.type];
-            const diffMs = e.dateObj.getTime() - today.getTime();
-            const diffDays = Math.round(diffMs / 86400000);
+            const diffDays = daysBetween(today, e.dateObj);
             let badge = '';
-            if (diffDays === 0) badge = 'Bugün';
-            else if (diffDays === 1) badge = 'Yarın';
-            else if (diffDays > 0) badge = `${diffDays} gün kaldı`;
-            else if (diffDays === -1) badge = 'Dün';
-            else badge = `${Math.abs(diffDays)} gün önce`;
+            let badgeAccent = false;
+            if (diffDays === 0)      { badge = 'Bugün'; badgeAccent = true; }
+            else if (diffDays === 1) { badge = 'Yarın'; badgeAccent = true; }
+            else if (diffDays <= 7)  { badge = `${diffDays} gün kaldı`; badgeAccent = true; }
+            else                     { badge = `${diffDays} gün`; }
 
             return (
               <View key={e.id} style={[styles.eventCard, { backgroundColor: c.surface, borderColor: c.border, borderLeftColor: cfg.color, borderLeftWidth: 3 }]}>
@@ -268,18 +297,22 @@ export default function IslamicCalendarScreen() {
                       <Text style={{ fontSize: 10, fontWeight: '700', color: cfg.color }}>{cfg.label}</Text>
                     </View>
                     <Text style={{ fontSize: 12, color: c.textSecondary }}>
-                      {e.dateObj.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                      {e.dateObj.toLocaleDateString('tr-TR', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' })}
                     </Text>
                   </View>
-                  {e.description && (
-                    <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 2 }}>{e.description}</Text>
+                  {!!e.description && (
+                    <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 4 }} numberOfLines={2}>
+                      {e.description}
+                    </Text>
                   )}
                 </View>
-                {badge && (
-                  <View style={[styles.badgePill, { backgroundColor: diffDays === 0 ? `${cfg.color}20` : 'transparent', borderColor: `${cfg.color}40` }]}>
-                    <Text style={{ fontSize: 10, fontWeight: '700', color: cfg.color }}>{badge}</Text>
-                  </View>
-                )}
+                <View style={[
+                  styles.badgePill,
+                  { borderColor: `${cfg.color}40` },
+                  badgeAccent && { backgroundColor: `${cfg.color}20` },
+                ]}>
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: cfg.color }}>{badge}</Text>
+                </View>
               </View>
             );
           })}
@@ -294,19 +327,20 @@ const styles = StyleSheet.create({
   heroLabel:    { fontSize: 11, fontWeight: '800', color: palette.gold400, letterSpacing: 1.5, marginBottom: 4 },
   heroTitle:    { fontSize: 22, fontWeight: '900', color: '#fff', letterSpacing: -0.3 },
   heroHijri:    { fontSize: 13, color: 'rgba(255,255,255,0.65)', marginTop: 4 },
+  heroNext:     { fontSize: 13, color: palette.gold400, marginTop: 6, fontWeight: '600' },
   ramadanCard:  { flexDirection: 'row', alignItems: 'center', marginHorizontal: spacing.lg, marginTop: spacing.md, padding: spacing.md, borderRadius: radii.xl, borderWidth: 1, ...shadows.card },
   ramadanBar:   { height: 6, borderRadius: 3, marginTop: spacing.xs, overflow: 'hidden' },
   ramadanFill:  { height: '100%', borderRadius: 3 },
   calCard:      { margin: spacing.lg, borderRadius: radii.xl, borderWidth: StyleSheet.hairlineWidth, padding: spacing.md, ...shadows.card },
   calHeader:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
-  calArrow:     { fontSize: 24, fontWeight: '300', paddingHorizontal: spacing.sm },
+  calArrow:     { fontSize: 28, fontWeight: '300', paddingHorizontal: spacing.md, paddingVertical: 4 },
   calRow:       { flexDirection: 'row' },
   calCell:      { flex: 1, alignItems: 'center', paddingVertical: 3 },
   calDayInner:  { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   eventDot:     { width: 4, height: 4, borderRadius: 2, marginTop: 1 },
   emptyCard:    { padding: spacing.md, borderRadius: radii.lg, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center' },
   eventCard:    { flexDirection: 'row', alignItems: 'flex-start', borderRadius: radii.lg, marginBottom: spacing.sm, borderWidth: StyleSheet.hairlineWidth, padding: spacing.md, ...shadows.card },
-  eventMeta:    { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 3 },
+  eventMeta:    { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 3, flexWrap: 'wrap' },
   typeBadge:    { paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radii.full },
-  badgePill:    { paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radii.full, borderWidth: 1, alignSelf: 'flex-start', marginLeft: spacing.xs },
+  badgePill:    { paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radii.full, borderWidth: 1, alignSelf: 'flex-start', marginLeft: spacing.xs },
 });

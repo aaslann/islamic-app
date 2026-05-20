@@ -1,68 +1,44 @@
 {
+  "2025": [
+    { "id": "uc-aylar-2025",      "date": "2024-12-23", "title": "Üç Ayların Başlangıcı", "type": "uc_aylar", "description": "Receb, Şâban ve Ramazan aylarının başlangıcı. İbadet ve tevbe için büyük bir fırsat mevsimi." },
+    { "id": "regaib-2025",        "date": "2024-12-26", "title": "Regaib Kandili",        "type": "kandil",   "description": "Receb ayının ilk cuma gecesi. Dua, tövbe ve salavatla değerlendirilmesi tavsiye edilir." },
+    { "id": "mirac-2025",         "date": "2025-01-26", "title": "Miraç Kandili",         "type": "kandil",   "description": "Peygamberimizin (s.a.v.) Miraç hadisesini anma gecesi." },
+    { "id": "berat-2025",         "date": "2025-02-13", "title": "Berat Kandili",         "type": "kandil",   "description": "Şaban ayının 15. gecesi. Af ve kurtuluş gecesi." },
+    { "id": "ramazan-2025",       "date": "2025-03-01", "title": "Ramazan Başlangıcı",    "type": "ramazan",  "description": "1 Ramazan 1446. Oruç ve Kur'an ayının başlangıcı." },
+    { "id": "kadir-2025",         "date": "2025-03-26", "title": "Kadir Gecesi",          "type": "kandil",   "description": "Ramazan'ın 27. gecesi. Bin aydan daha hayırlı." },
+    { "id": "ramazan-bayram-2025","date": "2025-03-30", "title": "Ramazan Bayramı",       "type": "bayram",   "description": "1 Şevval 1446. Üç gün süren bayram." },
+    { "id": "arefe-kurban-2025",  "date": "2025-06-05", "title": "Arefe Günü",            "type": "kandil",   "description": "Kurban Bayramı arifesi. Oruç ve dua günü." },
+    { "id": "kurban-bayram-2025", "date": "2025-06-06", "title": "Kurban Bayramı",        "type": "bayram",   "description": "10 Zilhicce 1446. Dört gün süren bayram." },
+    { "id": "hicri-yilbasi-2025", "date": "2025-06-26", "title": "Hicrî Yılbaşı",         "type": "yilbasi",  "description": "1 Muharrem 1447. Yeni hicrî yılın başlangıcı." },
+    { "id": "asure-2025",         "date": "2025-07-05", "title": "Aşure Günü",            "type": "asure",    "description": "Muharrem ayının 10. günü. Oruç, sadaka ve dua günü." },
+    { "id": "mevlid-2025",        "date": "2025-09-04", "title": "Mevlid Kandili",        "type": "kandil",   "description": "Peygamber Efendimizin (s.a.v.) doğum gecesi." }
+  ],
   "2026": [
-    {
-      "id": "uc-aylar-2026",
-      "date": "2026-01-12",
-      "title": "Üç Ayların Başlangıcı",
-      "description": "Receb, Şâban ve Ramazan aylarının başlangıcı. İbadet ve tevbe için büyük bir fırsat mevsimi.",
-      "type": "uc_aylar"
-    },
-    {
-      "id": "regaib-2026",
-      "date": "2026-01-15",
-      "title": "Regaib Kandili",
-      "description": "Receb ayının ilk cuma gecesi. Dua, tövbe ve salavatla değerlendirilmesi tavsiye edilir.",
-      "type": "kandil"
-    },
-    {
-      "id": "mirac-2026",
-      "date": "2026-02-12",
-      "title": "Miraç Kandili",
-      "description": "Peygamberimizin (s.a.v.) mirac hadisesini anma gecesi. Namaz ve niyazın önemine dikkat çekilir.",
-      "type": "kandil"
-    },
-    {
-      "id": "berat-2026",
-      "date": "2026-03-02",
-      "title": "Berat Kandili",
-      "description": "Kurtuluş ve af gecesi. Gecenin bir kısmını istiğfar, Kur’an tilaveti ve dua ile geçirmek güzeldir.",
-      "type": "kandil"
-    },
-    {
-      "id": "ramazan-start-2026",
-      "date": "2026-03-19",
-      "title": "Ramazan Başlangıcı",
-      "description": "Oruç ve Kur’an ayının başlangıcı. Ramazan boyunca oruç, teravih ve Kur’an hatmi için niyet tazeleme zamanı.",
-      "type": "ramazan"
-    },
-    {
-      "id": "kadir-2026",
-      "date": "2026-04-14",
-      "title": "Kadir Gecesi",
-      "description": "Bin aydan daha hayırlı olduğu bildirilen gece. Kur’an tilaveti, dua ve istiğfarla ihya edilmesi tavsiye edilir.",
-      "type": "kandil"
-    },
-    {
-      "id": "hicri-yilbasi-2026",
-      "date": "2026-07-20",
-      "title": "Hicrî Yılbaşı",
-      "description": "Yeni hicrî yılın başlangıcı. Geçen yılı muhasebe etmek ve yeni yıla dua ile başlamak için güzel bir fırsat.",
-      "type": "yilbasi"
-    },
-    {
-      "id": "asure-2026",
-      "date": "2026-07-28",
-      "title": "Aşure Günü",
-      "description": "Muharrem ayının onuncu günü. Oruç, sadaka ve dua ile değerlendirilmesi tavsiye edilir.",
-      "type": "asure"
-    },
-    {
-      "id": "mevlid-2026",
-      "date": "2026-09-29",
-      "title": "Mevlid Kandili",
-      "description": "Peygamber Efendimizin (s.a.v.) dünyaya teşrifini anma gecesi. Salavat, siyer okumaları ve şükür ibadetleriyle değerlendirilir.",
-      "type": "kandil"
-    }
+    { "id": "uc-aylar-2026",      "date": "2025-12-23", "title": "Üç Ayların Başlangıcı", "type": "uc_aylar", "description": "Receb, Şâban ve Ramazan aylarının başlangıcı. İbadet ve tevbe için büyük bir fırsat mevsimi." },
+    { "id": "regaib-2026",        "date": "2025-12-25", "title": "Regaib Kandili",        "type": "kandil",   "description": "Receb ayının ilk cuma gecesi. Dua, tövbe ve salavatla değerlendirilmesi tavsiye edilir." },
+    { "id": "mirac-2026",         "date": "2026-01-16", "title": "Miraç Kandili",         "type": "kandil",   "description": "Peygamberimizin (s.a.v.) Miraç hadisesini anma gecesi. Recep ayının 27. gecesi." },
+    { "id": "berat-2026",         "date": "2026-02-01", "title": "Berat Kandili",         "type": "kandil",   "description": "Şaban ayının 15. gecesi. Af ve kurtuluş gecesi." },
+    { "id": "ramazan-2026",       "date": "2026-02-18", "title": "Ramazan Başlangıcı",    "type": "ramazan",  "description": "1 Ramazan 1447. Oruç ve Kur'an ayının başlangıcı." },
+    { "id": "kadir-2026",         "date": "2026-03-16", "title": "Kadir Gecesi",          "type": "kandil",   "description": "Ramazan'ın 27. gecesi. Bin aydan daha hayırlı." },
+    { "id": "ramazan-bayram-2026","date": "2026-03-20", "title": "Ramazan Bayramı",       "type": "bayram",   "description": "1 Şevval 1447. Üç gün süren bayram." },
+    { "id": "arefe-kurban-2026",  "date": "2026-05-26", "title": "Arefe Günü",            "type": "kandil",   "description": "Kurban Bayramı arifesi. Oruç ve dua günü." },
+    { "id": "kurban-bayram-2026", "date": "2026-05-27", "title": "Kurban Bayramı",        "type": "bayram",   "description": "10 Zilhicce 1447. Dört gün süren bayram." },
+    { "id": "hicri-yilbasi-2026", "date": "2026-06-16", "title": "Hicrî Yılbaşı",         "type": "yilbasi",  "description": "1 Muharrem 1448. Yeni hicrî yılın başlangıcı." },
+    { "id": "asure-2026",         "date": "2026-06-25", "title": "Aşure Günü",            "type": "asure",    "description": "Muharrem ayının 10. günü. Oruç, sadaka ve dua günü." },
+    { "id": "mevlid-2026",        "date": "2026-08-24", "title": "Mevlid Kandili",        "type": "kandil",   "description": "Peygamber Efendimizin (s.a.v.) doğum gecesi." }
+  ],
+  "2027": [
+    { "id": "uc-aylar-2027",      "date": "2026-12-12", "title": "Üç Ayların Başlangıcı", "type": "uc_aylar", "description": "Receb, Şâban ve Ramazan aylarının başlangıcı. İbadet ve tevbe için büyük bir fırsat mevsimi." },
+    { "id": "regaib-2027",        "date": "2026-12-17", "title": "Regaib Kandili",        "type": "kandil",   "description": "Receb ayının ilk cuma gecesi. Dua, tövbe ve salavatla değerlendirilmesi tavsiye edilir." },
+    { "id": "mirac-2027",         "date": "2027-01-05", "title": "Miraç Kandili",         "type": "kandil",   "description": "Peygamberimizin (s.a.v.) Miraç hadisesini anma gecesi. Recep ayının 27. gecesi." },
+    { "id": "berat-2027",         "date": "2027-01-22", "title": "Berat Kandili",         "type": "kandil",   "description": "Şaban ayının 15. gecesi. Af ve kurtuluş gecesi." },
+    { "id": "ramazan-2027",       "date": "2027-02-07", "title": "Ramazan Başlangıcı",    "type": "ramazan",  "description": "1 Ramazan 1448. Oruç ve Kur'an ayının başlangıcı." },
+    { "id": "kadir-2027",         "date": "2027-03-05", "title": "Kadir Gecesi",          "type": "kandil",   "description": "Ramazan'ın 27. gecesi. Bin aydan daha hayırlı." },
+    { "id": "ramazan-bayram-2027","date": "2027-03-09", "title": "Ramazan Bayramı",       "type": "bayram",   "description": "1 Şevval 1448. Üç gün süren bayram." },
+    { "id": "arefe-kurban-2027",  "date": "2027-05-15", "title": "Arefe Günü",            "type": "kandil",   "description": "Kurban Bayramı arifesi. Oruç ve dua günü." },
+    { "id": "kurban-bayram-2027", "date": "2027-05-16", "title": "Kurban Bayramı",        "type": "bayram",   "description": "10 Zilhicce 1448. Dört gün süren bayram." },
+    { "id": "hicri-yilbasi-2027", "date": "2027-06-06", "title": "Hicrî Yılbaşı",         "type": "yilbasi",  "description": "1 Muharrem 1449. Yeni hicrî yılın başlangıcı." },
+    { "id": "asure-2027",         "date": "2027-06-15", "title": "Aşure Günü",            "type": "asure",    "description": "Muharrem ayının 10. günü. Oruç, sadaka ve dua günü." },
+    { "id": "mevlid-2027",        "date": "2027-08-14", "title": "Mevlid Kandili",        "type": "kandil",   "description": "Peygamber Efendimizin (s.a.v.) doğum gecesi." }
   ]
 }
-
