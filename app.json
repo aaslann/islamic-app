@@ -3,7 +3,6 @@
     "name": "İslami Asistan",
     "slug": "islami-asistan",
     "version": "1.0.0",
-    "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -73,7 +72,8 @@
           "locationWhenInUsePermission": "Namaz vakitleri için konumunuza ihtiyaç var."
         }
       ],
-      "expo-av"
+      "expo-av",
+      "./plugins/withDisableLint.js"
     ],
 
     "extra": {
