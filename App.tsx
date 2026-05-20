@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts, Amiri_400Regular, Amiri_700Bold } from '@expo-google-fonts/amiri';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/core/theme/ThemeContext';
 import RootNavigator from './src/navigation/RootNavigator';
 import OnboardingScreen, { ONBOARDING_KEY } from './src/features/onboarding/screens/OnboardingScreen';
@@ -59,7 +60,10 @@ function AppShell() {
   }
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: theme.colors.navBar }]}>
+    <SafeAreaView
+      style={[styles.root, { backgroundColor: theme.colors.navBar }]}
+      edges={['top', 'left', 'right']}
+    >
       <StatusBar style={isDark ? 'light' : 'light'} />
       <OfflineBanner />
       <RootNavigator />
@@ -80,9 +84,11 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <AppShell />
-      </ThemeProvider>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AppShell />
+        </ThemeProvider>
+      </SafeAreaProvider>
     </ErrorBoundary>
   );
 }
