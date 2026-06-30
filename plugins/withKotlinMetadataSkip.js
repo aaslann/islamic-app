@@ -12,11 +12,17 @@ const { withProjectBuildGradle } = require('@expo/config-plugins');
 
 const MARKER = '-Xskip-metadata-version-check';
 
+// NOTE: use `subprojects` (not `allprojects`). The root project is already
+// evaluated by the time this block at the bottom of build.gradle runs, so
+// registering afterEvaluate on it throws "Cannot run Project.afterEvaluate(...)
+// when the project is already evaluated". Subprojects are evaluated AFTER the
+// root, so afterEvaluate registers safely — and Kotlin compile tasks only ever
+// live in subprojects anyway.
 const SNIPPET = `
 
 // Added by withKotlinMetadataSkip: allow consuming AdMob's newer Kotlin metadata.
-allprojects {
-  afterEvaluate { proj ->
+subprojects { proj ->
+  proj.afterEvaluate {
     try {
       proj.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         kotlinOptions {
