@@ -4,6 +4,7 @@ import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../../core/theme/ThemeContext';
 import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
+import { AdBanner } from '../../../shared/components/AdBanner';
 
 type Mosque = { id: string; name: string; address?: string; lat: number; lon: number; distanceKm: number };
 type LoadState = 'idle' | 'loading' | 'success' | 'error' | 'permission-denied';
@@ -216,6 +217,7 @@ export default function MosqueFinderScreen() {
         </>
       )}
 
+      <AdBanner />
       <View style={{ height: spacing.xxl }} />
     </ScrollView>
   );

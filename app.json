@@ -73,6 +73,14 @@
         }
       ],
       "expo-av",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
+          "userTrackingUsageDescription": "İzniniz, reklamların ilgi alanlarınıza göre gösterilmesi için kullanılır. İzin vermeseniz de uygulamanın tüm özellikleri çalışır."
+        }
+      ],
       "./plugins/withDisableLint.js"
     ],
 

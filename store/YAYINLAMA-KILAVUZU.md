@@ -6,11 +6,34 @@
 - [ ] [Apple Developer](https://developer.apple.com) üyeliği — $99/yıl
 - [ ] [Google Play Console](https://play.google.com/console) — $25 tek seferlik
 - [ ] [Expo](https://expo.dev) ücretsiz hesap + `eas-cli` kurulumu
+- [ ] [Google AdMob](https://admob.google.com) ücretsiz hesap (reklam geliri için)
 
 ```bash
 npm install -g eas-cli
 eas login
 ```
+
+---
+
+## 💰 Reklam (AdMob) Kurulumu — gelir için zorunlu
+
+Reklam altyapısı koda entegre edildi (`src/core/ads/`). Şu an **Google'ın TEST
+reklamları** gösteriliyor (güvenli). Gerçek gelir için kendi kimliklerinizi girin:
+
+1. [admob.google.com](https://admob.google.com) → hesap aç.
+2. **2 ayrı uygulama** oluştur (Android + iOS). Her biri sana bir **App ID** verir
+   (`ca-app-pub-XXXX~YYYY`). Bu ikisini `app.json` → `react-native-google-mobile-ads`
+   eklentisindeki `androidAppId` / `iosAppId` alanlarına yaz (şu an test ID'ler var).
+3. Her uygulama için **Banner** ve **Interstitial** reklam birimleri oluştur
+   (`ca-app-pub-XXXX/ZZZZ`). Bu 4 kimliği `src/core/ads/adConfig.ts` → `PROD_UNITS`
+   içine yaz.
+4. AdMob panelinde **app-ads.txt** doğrulaması ve **ödeme/vergi bilgileri** (ödeme
+   eşiği $100) tamamla.
+5. Gerçek kimlikleri yazınca `adConfig.ts` otomatik olarak production build'de gerçek
+   reklamlara, geliştirmede test reklamlarına geçer. **Kendi reklamlarına tıklama!**
+   (hesap kapatılır — test cihazını AdMob panelinden "test device" olarak ekle.)
+6. Reklam SDK'sı native modül olduğu için kod değişikliğinden sonra **mutlaka yeniden
+   `eas build`** alınmalı (OTA update yetmez).
 
 ### 2. app.json'ı güncelle
 ```json

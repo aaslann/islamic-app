@@ -218,37 +218,15 @@ export default function LoginScreen({ onComplete }: Props) {
                 style={StyleSheet.absoluteFill}
               />
             </Animated.View>
-            <Text style={styles.btnGoldText}>Giriş Yap</Text>
+            <Text style={styles.btnGoldText}>Başla</Text>
           </Pressable>
 
-          <View style={styles.row}>
-            <Pressable
-              onPress={enterApp}
-              style={({ pressed }) => [styles.btnGlass, pressed && styles.btnGlassPressed]}
-            >
-              <Ionicons name="logo-google" size={18} color="#fff" />
-              <Text style={styles.btnGlassText}>Google</Text>
-            </Pressable>
-            <Pressable
-              onPress={enterApp}
-              style={({ pressed }) => [styles.btnGlass, pressed && styles.btnGlassPressed]}
-            >
-              <Ionicons name="logo-apple" size={20} color="#fff" />
-              <Text style={styles.btnGlassText}>Apple</Text>
-            </Pressable>
-          </View>
-
-          <View style={styles.dividerOr}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>✦  VEYA  ✦</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <Pressable onPress={enterApp} style={styles.guestBtn}>
-            <Text style={styles.guestText}>
-              Misafir olarak devam et <Text style={{ color: '#C8A24A' }}>→</Text>
+          <View style={styles.privacyNoteRow}>
+            <Ionicons name="lock-closed" size={12} color="rgba(200,162,74,0.7)" />
+            <Text style={styles.privacyNote}>
+              Hesap gerekmez · Verileriniz yalnızca cihazınızda saklanır
             </Text>
-          </Pressable>
+          </View>
         </View>
       </View>
     </View>
@@ -611,55 +589,18 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 80,
   },
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  btnGlass: {
-    flex: 1,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+  privacyNoteRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
+    marginTop: 16,
+    paddingHorizontal: 12,
   },
-  btnGlassPressed: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    transform: [{ scale: 0.98 }],
-  },
-  btnGlassText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  dividerOr: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    marginVertical: 16,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(200,162,74,0.25)',
-  },
-  dividerText: {
-    fontSize: 10,
-    color: 'rgba(200,162,74,0.6)',
-    letterSpacing: 3,
-    fontWeight: '700',
-  },
-  guestBtn: {
-    alignItems: 'center',
-    padding: 8,
-  },
-  guestText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.65)',
+  privacyNote: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.5)',
+    textAlign: 'center',
   },
 });

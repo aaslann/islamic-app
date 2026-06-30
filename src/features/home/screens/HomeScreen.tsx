@@ -13,6 +13,8 @@ import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 import FridayBanner from '../../friday/components/FridayBanner';
 import { HADITHS } from '../../hadith/data/hadiths';
 import { ESMA_NAMES } from '../../esmaulhusna/data/names';
+import { AdBanner } from '../../../shared/components/AdBanner';
+import { maybeShowInterstitial } from '../../../core/ads/interstitial';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 type PrayerId = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
@@ -209,7 +211,13 @@ export default function HomeScreen({ navigation }: Props) {
   );
 
   const prayedCount = PRAYER_IDS.filter((id) => dayLog[id] === 'prayed').length;
-  const navigate = (route: keyof RootStackParamList) => navigation.navigate(route as never);
+  const navigate = (route: keyof RootStackParamList) => {
+    // Ölçülü tam ekran reklam: yalnızca sıklık sınırları uygunsa gösterilir.
+    // Kutsal içerik (Kur'an okuma, kıble, namaz) ekranlarından önce gösterme.
+    const SACRED: (keyof RootStackParamList)[] = ['QuranSurahDetail', 'Qibla', 'ElmaliliTafsir', 'FavoriteAyahs'];
+    if (!SACRED.includes(route)) maybeShowInterstitial();
+    navigation.navigate(route as never);
+  };
 
   return (
     <IslamicBackground>
@@ -375,6 +383,9 @@ export default function HomeScreen({ navigation }: Props) {
             c={c}
           />
         ))}
+
+        {/* ─── REKLAM (sayfa sonu) ─── */}
+        <AdBanner style={{ marginTop: spacing.lg }} />
       </ScrollView>
     </IslamicBackground>
   );

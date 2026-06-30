@@ -8,6 +8,7 @@ import { HADITHS, type Hadith } from '../data/hadiths';
 import { useTheme } from '../../../core/theme/ThemeContext';
 import { palette, radii, spacing } from '../../../core/theme/tokens';
 import type { RootStackParamList } from '../../../navigation/types';
+import { AdBanner } from '../../../shared/components/AdBanner';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -78,6 +79,7 @@ export default function HadithListScreen() {
             <Text style={[t.body, { color: c.textSecondary }]}>Sonuç bulunamadı.</Text>
           </View>
         }
+        ListFooterComponent={items.length > 0 ? <AdBanner /> : null}
       />
     </View>
   );

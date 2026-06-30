@@ -19,8 +19,62 @@ type DateInfo = { readable?: string; hijri?: string };
 type ActivePrayer = { currentLabel: string; currentTime: string; nextLabel: string; nextTime: string; untilNextText?: string; untilCurrentEndsText?: string; progress?: number };
 type Coords = { lat: number; lon: number };
 type CachedLocation = { coords: Coords; locationInfo: LocationInfo; timestamp: string };
+type CachedTimes = {
+  times: PrayerTime[];
+  locationInfo: LocationInfo;
+  dateInfo: DateInfo | null;
+  coords: Coords | null;
+  dateKey: string;   // YYYY-MM-DD — bu vakitlerin hangi güne ait olduğu
+  timestamp: string; // ISO — en son ne zaman güncellendiği
+};
 
 const LAST_LOCATION_KEY = 'last-location-v1';
+const PRAYER_TIMES_CACHE_KEY = 'prayer-times-cache-v1';
+
+/** Yerel tarihi YYYY-MM-DD biçiminde döndürür. */
+function localDateKey(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** Çevrimdışı banner için "bugün 14:32" / "21 Haz 09:10" gibi okunaklı metin. */
+function formatUpdatedAt(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const time = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    if (localDateKey(d) === localDateKey(new Date())) return `bugün ${time}`;
+    const date = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+    return `${date} ${time}`;
+  } catch {
+    return '';
+  }
+}
+
+async function saveTimesCache(r: { times: PrayerTime[]; locationInfo: LocationInfo; dateInfo: DateInfo | null; coords: Coords | null }) {
+  try {
+    const payload: CachedTimes = {
+      times: r.times,
+      locationInfo: r.locationInfo,
+      dateInfo: r.dateInfo,
+      coords: r.coords,
+      dateKey: localDateKey(new Date()),
+      timestamp: new Date().toISOString(),
+    };
+    await AsyncStorage.setItem(PRAYER_TIMES_CACHE_KEY, JSON.stringify(payload));
+  } catch {}
+}
+
+async function loadTimesCache(): Promise<CachedTimes | null> {
+  try {
+    const raw = await AsyncStorage.getItem(PRAYER_TIMES_CACHE_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw) as CachedTimes;
+    if (!c?.times?.length) return null;
+    return c;
+  } catch {
+    return null;
+  }
+}
 
 function parseTimeToDate(timeStr: string, base: Date): Date | null {
   const match = timeStr.match(/(\d{1,2}):(\d{2})/);
@@ -109,10 +163,11 @@ export default function PrayerTimesScreen() {
   const [now, setNow] = useState(new Date());
   const [dateInfo, setDateInfo] = useState<DateInfo | null>(null);
   const [usedCachedLocation, setUsedCachedLocation] = useState(false);
+  const [offlineInfo, setOfflineInfo] = useState<{ timestamp: string; stale: boolean } | null>(null);
 
   const loadTimes = async () => {
     let cached: CachedLocation | null = null;
-    setState('loading'); setErrorMessage(null); setUsedCachedLocation(false);
+    setState('loading'); setErrorMessage(null); setUsedCachedLocation(false); setOfflineInfo(null);
     try {
       try {
         const raw = await AsyncStorage.getItem(LAST_LOCATION_KEY);
@@ -123,6 +178,8 @@ export default function PrayerTimesScreen() {
       setTimes(fetchedTimes); setLocationInfo(info); setDateInfo(fd ?? null); setCoords(fc ?? null);
       setState('success');
       try { await AsyncStorage.setItem(LAST_LOCATION_KEY, JSON.stringify({ coords: fc, locationInfo: info, timestamp: new Date().toISOString() } satisfies CachedLocation)); } catch {}
+      // Çevrimdışı kullanım için vakitlerin kendisini de önbelleğe al.
+      await saveTimesCache({ times: fetchedTimes, locationInfo: info, dateInfo: fd ?? null, coords: fc ?? null });
 
       // Persist prayer schedule (excluding Sunrise) so Settings toggle can use it
       const scheduleItems = fetchedTimes
@@ -144,9 +201,27 @@ export default function PrayerTimesScreen() {
         try {
           const r = await getPrayerTimesFromApi({ coords: cached.coords, locationInfo: cached.locationInfo });
           setTimes(r.times); setLocationInfo(cached.locationInfo); setDateInfo(r.dateInfo ?? null); setCoords(cached.coords);
-          setUsedCachedLocation(true); setState('success'); return;
+          setUsedCachedLocation(true); setState('success');
+          await saveTimesCache({ times: r.times, locationInfo: cached.locationInfo, dateInfo: r.dateInfo ?? null, coords: cached.coords });
+          return;
         } catch {}
       }
+
+      // ── ÇEVRİMDIŞI FALLBACK ──
+      // İnternet yoksa veya API'ye ulaşılamıyorsa, en son kaydedilen vakitleri göster.
+      // Eski bir güne ait olsa bile "hiç göstermemekten" iyidir; banner ile uyarılır.
+      // İzin reddinde bunu yapmayız: kullanıcının izni açması gereken eylemli mesaj gösterilir.
+      const offline = code === 'permission-denied' ? null : await loadTimesCache();
+      if (offline) {
+        setTimes(offline.times);
+        setLocationInfo(offline.locationInfo);
+        setDateInfo(offline.dateInfo);
+        setCoords(offline.coords);
+        setOfflineInfo({ timestamp: offline.timestamp, stale: offline.dateKey !== localDateKey(new Date()) });
+        setState('success');
+        return;
+      }
+
       if (code === 'permission-denied') { setState('permission-denied'); setErrorMessage('Konum izni verilmedi. Lütfen ayarlardan konum iznini aç.'); }
       else if (code === 'location-disabled') { setState('location-disabled'); setErrorMessage('Konum servisleri kapalı görünüyor.'); }
       else if (code === 'location-timeout') { setState('location-timeout'); setErrorMessage('Konum alınması çok uzun sürdü.'); }
@@ -208,6 +283,17 @@ export default function PrayerTimesScreen() {
         >
           <Text style={[t.caption, { color: 'rgba(255,255,255,.6)', marginBottom: spacing.xs }]}>{locationText}</Text>
           {dateInfo?.hijri && <Text style={[t.caption, { color: 'rgba(255,255,255,.45)', marginBottom: spacing.sm }]}>{dateInfo.hijri}{dateInfo.readable ? ` · ${dateInfo.readable}` : ''}</Text>}
+
+          {offlineInfo && (
+            <View style={styles.offlinePill}>
+              <Text style={{ fontSize: 13 }}>📴</Text>
+              <Text style={[t.caption, { color: palette.gold300, flex: 1 }]}>
+                {offlineInfo.stale
+                  ? `Çevrimdışısınız — bu vakitler güncel olmayabilir (son güncelleme ${formatUpdatedAt(offlineInfo.timestamp)})`
+                  : `Çevrimdışı gösterim — son güncelleme ${formatUpdatedAt(offlineInfo.timestamp)}`}
+              </Text>
+            </View>
+          )}
 
           {state === 'loading' ? (
             <ActivityIndicator size="large" color={palette.gold500} style={{ marginVertical: spacing.xl }} />
@@ -295,6 +381,7 @@ const styles = StyleSheet.create({
   progressTrack:    { height: 6, borderRadius: radii.full, backgroundColor: 'rgba(255,255,255,.12)', overflow: 'hidden' },
   progressFill:     { height: '100%', borderRadius: radii.full },
   refreshBtn:       { marginTop: spacing.md, alignSelf: 'flex-start', padding: spacing.xs },
+  offlinePill:      { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, borderRadius: radii.md, backgroundColor: 'rgba(200,162,74,0.12)', borderWidth: 1, borderColor: 'rgba(200,162,74,0.3)' },
   listCard:         { borderRadius: radii.xl, padding: spacing.lg, borderWidth: StyleSheet.hairlineWidth, ...shadows.card },
   prayerRow:        { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm, paddingHorizontal: spacing.sm, borderRadius: radii.md, borderWidth: StyleSheet.hairlineWidth, borderColor: 'transparent', marginBottom: 4 },
   prayerRowDivider: { borderBottomWidth: 0 },

@@ -104,6 +104,33 @@ Namaz vakitleri, Kur'an okuyucu, zikir, ramazan takibi ve daha fazlası.
 ### Kategori
 Yaşam Tarzı
 
+### İçerik Reklamları (Play Console → "Reklam içerir" sorusu)
+**EVET — Bu uygulama reklam içerir.** (Google AdMob banner + interstitial)
+
+---
+
+## Veri Güvenliği / Uygulama Gizliliği Beyanı (ÖNEMLİ — reklam eklendi)
+
+Reklam (Google AdMob) eklendiği için her iki mağazada da veri toplama beyanı GÜNCELLENMELİDİR.
+
+### Google Play — "Data safety" formu
+- Reklam içerir mi? → **Evet**
+- Toplanan/paylaşılan veri türleri:
+  - **Konum → Yaklaşık konum** (AdMob, reklam için IP tabanlı) — "Paylaşılır"
+  - **Cihaz veya diğer kimlikler → Reklam kimliği (AAID)** — "Toplanır & Paylaşılır", amaç: Reklamcılık
+  - **Uygulama etkinliği → Uygulama etkileşimleri** (reklam ölçümü) — "Toplanır"
+- Veriler aktarım sırasında şifrelenir: Evet
+- Kullanıcı silme talebi: AdMob/Google üzerinden
+
+### Apple App Store — "App Privacy" (Nutrition Label)
+- **Identifiers → Device ID (IDFA)** — "Used for Tracking" + "Third-Party Advertising"
+- **Usage Data → Product Interaction** — "Third-Party Advertising"
+- **Location → Coarse Location** — "Third-Party Advertising" (AdMob)
+- App Tracking Transparency (ATT) izni isteniyor: **Evet** (NSUserTrackingUsageDescription tanımlı)
+
+> Not: AdMob SDK'sı SKAdNetwork kimliklerini ekler. Apple, IDFA toplayan uygulamalarda
+> ATT izin penceresinin gösterilmesini zorunlu kılar — bu uygulamada otomatik gösteriliyor.
+
 ---
 
 ## Sürüm Notları (v1.0.0)
