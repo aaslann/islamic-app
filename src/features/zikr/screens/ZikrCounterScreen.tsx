@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, TextInput } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../../core/theme/ThemeContext';
@@ -28,6 +28,7 @@ export default function ZikrCounterScreen() {
   const [presetData, setPresetData] = useState<Record<string, ZikrPresetState>>({});
   const [newPhrase, setNewPhrase] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
@@ -108,7 +109,14 @@ export default function ZikrCounterScreen() {
       colors={['#0A1F15', '#081A12', '#0D1F18']}
       style={styles.root}
     >
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+      >
 
         {/* Phrase selector */}
         <View style={styles.phraseRow}>
@@ -223,6 +231,9 @@ export default function ZikrCounterScreen() {
               placeholder="Zikir adı..." placeholderTextColor="rgba(255,255,255,.25)"
               style={[styles.addInput]}
               editable={isLoaded}
+              returnKeyType="done"
+              onSubmitEditing={handleAddPreset}
+              onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 250)}
             />
             <Pressable onPress={handleAddPreset} style={styles.addBtn}>
               <Text style={[{ fontSize: 12, fontWeight: '700', color: '#fff' }]}>Ekle</Text>
@@ -232,6 +243,7 @@ export default function ZikrCounterScreen() {
 
         <View style={{ height: spacing.xxl }} />
       </ScrollView>
+      </KeyboardAvoidingView>
     </LinearGradient>
   );
 }

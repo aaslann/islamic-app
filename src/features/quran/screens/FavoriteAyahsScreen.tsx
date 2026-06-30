@@ -114,7 +114,7 @@ export default function FavoriteAyahsScreen({ navigation }: Props) {
               Kur'an okurken bir ayetin yanındaki yıldız simgesine dokunarak buraya ekleyebilirsin.
             </Text>
             <Pressable
-              onPress={() => navigation.navigate('QuranSurahList')}
+              onPress={() => navigation.navigate('MainTabs', { screen: 'QuranSurahList' })}
               style={[styles.openQuranBtn, { backgroundColor: c.primary }]}
             >
               <Text style={{ fontSize: 14, fontWeight: '700', color: '#fff' }}>Kur'an'ı Aç →</Text>

@@ -23,11 +23,25 @@ function getNextFriday(): Date {
   return d;
 }
 
-async function fetchNearbyMosques(lat: number, lon: number): Promise<Mosque[]> {
-  const q = `[out:json];(node["amenity"="place_of_worship"]["religion"="muslim"](around:5000,${lat},${lon});way["amenity"="place_of_worship"]["religion"="muslim"](around:5000,${lat},${lon}););out center;`;
-  const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`);
-  const json = await res.json();
-  return ((json.elements ?? []) as any[])
+// overpass-api.de tek başına sık sık rate-limit/timeout verir; aynalar arasında sırayla dener.
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+];
+
+async function fetchWithTimeout(url: string, opts: RequestInit, ms: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...opts, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function mapMosques(json: any, lat: number, lon: number): Mosque[] {
+  return ((json?.elements ?? []) as any[])
     .map((el: any) => {
       const eLat = el.lat ?? el.center?.lat;
       const eLon = el.lon ?? el.center?.lon;
@@ -44,6 +58,30 @@ async function fetchNearbyMosques(lat: number, lon: number): Promise<Mosque[]> {
     .filter((m): m is Mosque => m !== null)
     .sort((a, b) => a.distanceKm - b.distanceKm)
     .slice(0, 25);
+}
+
+async function fetchNearbyMosques(lat: number, lon: number): Promise<Mosque[]> {
+  const q = `[out:json][timeout:25];(node["amenity"="place_of_worship"]["religion"="muslim"](around:5000,${lat},${lon});way["amenity"="place_of_worship"]["religion"="muslim"](around:5000,${lat},${lon}););out center;`;
+  let lastErr: unknown;
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const res = await fetchWithTimeout(
+        endpoint,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `data=${encodeURIComponent(q)}`,
+        },
+        25000,
+      );
+      if (!res.ok) { lastErr = new Error(`Overpass HTTP ${res.status}`); continue; }
+      const json = await res.json();
+      return mapMosques(json, lat, lon);
+    } catch (e) {
+      lastErr = e; // bu sunucu olmadı, sıradakini dene
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error('Overpass: tüm sunucular yanıt vermedi');
 }
 
 async function fetchFridayDhuhr(lat: number, lon: number): Promise<string> {
@@ -83,7 +121,8 @@ export default function MosqueFinderScreen() {
       setMosques(mosqueList); setFridayDhuhr(dhuhr);
       setLoadState('success');
     } catch (e) {
-      setErrorMsg('Veriler yüklenirken sorun oluştu. İnternet bağlantını kontrol et.');
+      console.warn('[MosqueFinder] yükleme başarısız:', e);
+      setErrorMsg('Cami verisi sunucusuna şu an ulaşılamadı. Lütfen tekrar deneyin.');
       setLoadState('error');
     }
   }, []);

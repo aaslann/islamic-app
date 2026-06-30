@@ -10,14 +10,7 @@ import PrayerTimesScreen from '../features/prayer/screens/PrayerTimesScreen';
 import QuranSurahListScreen from '../features/quran/screens/QuranSurahListScreen';
 import ZikrCounterScreen from '../features/zikr/screens/ZikrCounterScreen';
 import SettingsScreen from '../features/settings/screens/SettingsScreen';
-
-type TabParamList = {
-  Home: undefined;
-  PrayerTimes: undefined;
-  QuranSurahList: undefined;
-  ZikrCounter: undefined;
-  Settings: undefined;
-};
+import type { TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 

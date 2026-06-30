@@ -187,7 +187,7 @@ export default function HatimTrackerScreen() {
             </View>
 
             <Pressable
-              onPress={() => navigation.navigate('QuranSurahList')}
+              onPress={() => navigation.navigate('MainTabs', { screen: 'QuranSurahList' })}
               style={({ pressed }) => [
                 styles.openQuranBtn,
                 { backgroundColor: c.surface, borderColor: `${palette.gold500}40` },
