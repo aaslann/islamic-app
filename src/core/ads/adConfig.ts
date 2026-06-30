@@ -27,16 +27,20 @@ import { Platform } from 'react-native';
 // Mağaza (production) build'inde gerçek reklamlar gösterilir.
 export const USE_TEST_ADS = __DEV__;
 
-// Google'ın resmî test reklam birimi kimlikleri (değiştirmeyin)
+// Google'ın resmî test reklam birimi kimlikleri (değiştirmeyin).
+// NOT: `default` anahtarı şart — web'de Platform.select aksi halde undefined
+// döner ve modül yüklenirken çöker (reklamlar web'de zaten gösterilmez).
 const TEST_UNITS = {
   banner: Platform.select({
     ios: 'ca-app-pub-3940256099942544/2934735716',
     android: 'ca-app-pub-3940256099942544/6300978111',
-  })!,
+    default: 'ca-app-pub-3940256099942544/6300978111',
+  }),
   interstitial: Platform.select({
     ios: 'ca-app-pub-3940256099942544/4411468910',
     android: 'ca-app-pub-3940256099942544/1033173712',
-  })!,
+    default: 'ca-app-pub-3940256099942544/1033173712',
+  }),
 };
 
 // 🔴 BURAYA AdMob panelinden aldığınız GERÇEK reklam birimi kimliklerini yazın.
@@ -44,16 +48,18 @@ const PROD_UNITS = {
   banner: Platform.select({
     ios: 'ca-app-pub-0000000000000000/0000000000', // TODO: iOS banner birimi
     android: 'ca-app-pub-0000000000000000/0000000000', // TODO: Android banner birimi
-  })!,
+    default: 'ca-app-pub-0000000000000000/0000000000',
+  }),
   interstitial: Platform.select({
     ios: 'ca-app-pub-0000000000000000/0000000000', // TODO: iOS interstitial birimi
     android: 'ca-app-pub-0000000000000000/0000000000', // TODO: Android interstitial birimi
-  })!,
+    default: 'ca-app-pub-0000000000000000/0000000000',
+  }),
 };
 
 // Gerçek kimlikler henüz doldurulmadıysa (placeholder), kazara geçersiz birim
 // göstermemek için otomatik olarak test reklamlarına düş.
-const prodLooksUnset = PROD_UNITS.banner.includes('0000000000000000');
+const prodLooksUnset = (PROD_UNITS.banner ?? '').includes('0000000000000000');
 
 export const adUnits = USE_TEST_ADS || prodLooksUnset ? TEST_UNITS : PROD_UNITS;
 
