@@ -12,17 +12,22 @@ const { withProjectBuildGradle } = require('@expo/config-plugins');
 
 const MARKER = '-Xskip-metadata-version-check';
 
-// NOTE: use `subprojects` (not `allprojects`). The root project is already
-// evaluated by the time this block at the bottom of build.gradle runs, so
-// registering afterEvaluate on it throws "Cannot run Project.afterEvaluate(...)
-// when the project is already evaluated". Subprojects are evaluated AFTER the
-// root, so afterEvaluate registers safely — and Kotlin compile tasks only ever
-// live in subprojects anyway.
+// NOTE: Expo SDK 55's root project plugin eagerly EVALUATES the Expo module
+// subprojects while the root build.gradle is still running. So by the time this
+// appended block executes, some subprojects are already evaluated — calling
+// afterEvaluate on them throws "Cannot run Project.afterEvaluate(...) when the
+// project is already evaluated".
+//
+// We therefore branch on `proj.state.executed`: configure already-evaluated
+// projects immediately, and defer the rest with afterEvaluate. In both cases we
+// use `tasks.withType(...).configureEach`, which is lazy and stays valid even
+// after evaluation (it configures each Kotlin compile task before it runs).
+// We scope to `subprojects` because the root project has no Kotlin compile tasks.
 const SNIPPET = `
 
 // Added by withKotlinMetadataSkip: allow consuming AdMob's newer Kotlin metadata.
 subprojects { proj ->
-  proj.afterEvaluate {
+  def applyMetadataSkip = {
     try {
       proj.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         kotlinOptions {
@@ -32,6 +37,11 @@ subprojects { proj ->
     } catch (Throwable ignored) {
       // Kotlin plugin not applied to this project — nothing to do.
     }
+  }
+  if (proj.state.executed) {
+    applyMetadataSkip()
+  } else {
+    proj.afterEvaluate { applyMetadataSkip() }
   }
 }
 `;
