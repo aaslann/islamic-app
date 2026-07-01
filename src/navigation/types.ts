@@ -6,7 +6,7 @@ export type TabParamList = {
   Home: undefined;
   PrayerTimes: undefined;
   QuranSurahList: undefined;
-  Kesfet: undefined;
+  ZikrCounter: undefined;
   Settings: undefined;
 };
 
@@ -23,6 +23,7 @@ export type RootStackParamList = {
   ZikrCounter: undefined;
   Settings: undefined;
   // Detail screens in the root stack
+  Kesfet: undefined;
   PrayerGuide: undefined;
   PrayerLog: undefined;
   Qibla: undefined;

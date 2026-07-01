@@ -5,10 +5,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../../navigation/types';
+import type { RootStackParamList, TabParamList } from '../../../navigation/types';
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
 import { useTheme } from '../../../core/theme/ThemeContext';
-import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
+import { radii, shadows, spacing } from '../../../core/theme/tokens';
 import { AdBanner } from '../../../shared/components/AdBanner';
 import { maybeShowInterstitial } from '../../../core/ads/interstitial';
 
@@ -107,24 +107,24 @@ export default function KesfetScreen() {
   const c = theme.colors;
   const navigation = useNavigation<Nav>();
 
+  // Keşfet is a pushed root-stack screen, so bottom-tab targets must be reached
+  // via the nested MainTabs navigator (a bare tab name won't resolve from here).
+  const TAB_ROUTES: (keyof RootStackParamList)[] = ['Home', 'PrayerTimes', 'QuranSurahList', 'ZikrCounter', 'Settings'];
+
   const navigate = (route: keyof RootStackParamList) => {
     const SACRED: (keyof RootStackParamList)[] = ['QuranSurahDetail', 'Qibla', 'ElmaliliTafsir', 'FavoriteAyahs'];
     if (!SACRED.includes(route)) maybeShowInterstitial();
-    navigation.navigate(route as never);
+    if (TAB_ROUTES.includes(route)) {
+      navigation.navigate('MainTabs', { screen: route as keyof TabParamList });
+    } else {
+      navigation.navigate(route as never);
+    }
   };
 
   return (
     <IslamicBackground>
       <StatusBar style="light" />
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.headerLabel}>TÜM ÖZELLİKLER</Text>
-          <Text style={styles.headerTitle}>Keşfet</Text>
-          <Text style={[styles.headerSub, { color: c.textSecondary }]}>
-            Namaz, Kur'an, takip ve okuma — tüm bölümler burada.
-          </Text>
-        </View>
-
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         {SECTIONS.map((section) => (
           <SectionGroup key={section.label} label={section.label} items={section.items} onPress={navigate} c={c} />
         ))}
@@ -136,11 +136,6 @@ export default function KesfetScreen() {
 }
 
 const styles = StyleSheet.create({
-  header:      { paddingTop: 56, paddingBottom: spacing.md, paddingHorizontal: spacing.lg },
-  headerLabel: { fontSize: 11, fontWeight: '800', color: palette.gold400, letterSpacing: 1.5, marginBottom: 4 },
-  headerTitle: { fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: -0.5 },
-  headerSub:   { fontSize: 13, marginTop: spacing.xs, lineHeight: 18 },
-
   group:       { paddingHorizontal: spacing.lg, marginTop: spacing.lg },
   groupLabel:  { fontSize: 11, fontWeight: '700', letterSpacing: 1.2, marginBottom: spacing.xs, paddingLeft: 4 },
   groupCard:   { borderRadius: radii.xl, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden', ...shadows.card },

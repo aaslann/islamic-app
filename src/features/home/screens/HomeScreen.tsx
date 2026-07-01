@@ -127,7 +127,7 @@ export default function HomeScreen({ navigation }: Props) {
 
   const openKesfet = () => {
     maybeShowInterstitial();
-    navigation.navigate('MainTabs', { screen: 'Kesfet' });
+    navigation.navigate('Kesfet');
   };
 
   const onDailyScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
