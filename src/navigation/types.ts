@@ -6,7 +6,7 @@ export type TabParamList = {
   Home: undefined;
   PrayerTimes: undefined;
   QuranSurahList: undefined;
-  ZikrCounter: undefined;
+  Kesfet: undefined;
   Settings: undefined;
 };
 

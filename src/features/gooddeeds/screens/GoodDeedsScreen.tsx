@@ -113,6 +113,8 @@ export default function GoodDeedsScreen() {
       style={[styles.root, { backgroundColor: c.background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
     >
       <LinearGradient
         colors={[c.heroGradientStart, c.heroGradientEnd] as [string, string]}

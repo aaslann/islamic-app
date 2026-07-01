@@ -8,7 +8,7 @@ import { useTheme } from '../core/theme/ThemeContext';
 import HomeScreen from '../features/home/screens/HomeScreen';
 import PrayerTimesScreen from '../features/prayer/screens/PrayerTimesScreen';
 import QuranSurahListScreen from '../features/quran/screens/QuranSurahListScreen';
-import ZikrCounterScreen from '../features/zikr/screens/ZikrCounterScreen';
+import KesfetScreen from '../features/kesfet/screens/KesfetScreen';
 import SettingsScreen from '../features/settings/screens/SettingsScreen';
 import type { TabParamList } from './types';
 
@@ -102,12 +102,12 @@ export default function BottomTabNavigator() {
         }}
       />
       <Tab.Screen
-        name="ZikrCounter"
-        component={ZikrCounterScreen}
+        name="Kesfet"
+        component={KesfetScreen}
         options={{
-          title: 'Zikir',
+          title: 'Keşfet',
           tabBarIcon: ({ focused, color, size }) => (
-            <TabIcon name="infinite-outline" activeName="infinite" focused={focused} color={color} size={size} />
+            <TabIcon name="apps-outline" activeName="apps" focused={focused} color={color} size={size} />
           ),
         }}
       />

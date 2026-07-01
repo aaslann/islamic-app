@@ -214,6 +214,8 @@ export default function QuranSurahDetailScreen({ route }: Props) {
         style={styles.scroll}
         contentContainerStyle={[styles.content, { paddingBottom: isPlayerVisible ? 140 : 80 }]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
       >
         {loadState === 'loading' && (
           <View style={styles.center}>

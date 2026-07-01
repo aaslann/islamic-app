@@ -25,6 +25,7 @@ import HadithListScreen from '../features/hadith/screens/HadithListScreen';
 import HadithDetailScreen from '../features/hadith/screens/HadithDetailScreen';
 import GoodDeedsScreen from '../features/gooddeeds/screens/GoodDeedsScreen';
 import HatimTrackerScreen from '../features/hatim/screens/HatimTrackerScreen';
+import ZikrCounterScreen from '../features/zikr/screens/ZikrCounterScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -64,6 +65,7 @@ export default function RootNavigator() {
         <Stack.Screen name="HadithDetail"    component={HadithDetailScreen}    options={{ title: 'Hadis' }} />
         <Stack.Screen name="GoodDeeds"       component={GoodDeedsScreen}       options={{ title: 'İyilik Defteri' }} />
         <Stack.Screen name="HatimTracker"    component={HatimTrackerScreen}    options={{ title: 'Hatim Takibi' }} />
+        <Stack.Screen name="ZikrCounter"     component={ZikrCounterScreen}     options={{ title: 'Zikir Sayacı' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
