@@ -6,7 +6,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../../core/theme/ThemeContext';
 import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 import { getCache, setCache, TTL } from '../../../core/cache/appCache';
-import { AdBanner } from '../../../shared/components/AdBanner';
 
 const CACHE_KEY = 'qcache-surahlist-v1';
 
@@ -160,7 +159,6 @@ export default function QuranSurahListScreen({ navigation }: Props) {
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
-          ListFooterComponent={filtered.length > 0 ? <AdBanner /> : null}
           ListEmptyComponent={
             <View style={styles.center}>
               <Text style={{ fontSize: 40 }}>🔍</Text>

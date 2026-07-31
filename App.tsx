@@ -12,8 +12,6 @@ import { useAdhanOnPrayer } from './src/core/audio/useAdhanOnPrayer';
 import { palette } from './src/core/theme/tokens';
 import { ErrorBoundary } from './src/shared/components/ErrorBoundary';
 import { OfflineBanner } from './src/shared/components/OfflineBanner';
-import { initAds } from './src/core/ads/initAds';
-import { primeInterstitial } from './src/core/ads/interstitial';
 
 function AppShell() {
   const { theme, isDark } = useTheme();
@@ -21,12 +19,6 @@ function AppShell() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
   useAdhanOnPrayer();
-
-  useEffect(() => {
-    // Reklam SDK'sını başlat (rıza + ATT) ve ilk tam ekran reklamı hazırla.
-    // Çökme ihtimaline karşı tamamen güvenli; native modül yoksa no-op.
-    initAds().then(primeInterstitial).catch(() => {});
-  }, []);
 
   useEffect(() => {
     AsyncStorage.multiGet([ONBOARDING_KEY, LOGIN_KEY]).then((entries) => {

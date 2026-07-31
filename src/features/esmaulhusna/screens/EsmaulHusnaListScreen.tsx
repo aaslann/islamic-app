@@ -8,7 +8,6 @@ import { ESMA_NAMES, type EsmaName } from '../data/names';
 import { useTheme } from '../../../core/theme/ThemeContext';
 import { palette, radii, spacing } from '../../../core/theme/tokens';
 import type { RootStackParamList } from '../../../navigation/types';
-import { AdBanner } from '../../../shared/components/AdBanner';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -81,7 +80,6 @@ export default function EsmaulHusnaListScreen() {
             <Text style={[t.body, { color: c.textSecondary }]}>Sonuç bulunamadı.</Text>
           </View>
         }
-        ListFooterComponent={items.length > 0 ? <AdBanner /> : null}
       />
     </View>
   );

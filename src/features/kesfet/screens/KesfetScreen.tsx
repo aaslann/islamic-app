@@ -9,8 +9,6 @@ import type { RootStackParamList, TabParamList } from '../../../navigation/types
 import { IslamicBackground } from '../../../shared/components/IslamicBackground';
 import { useTheme } from '../../../core/theme/ThemeContext';
 import { radii, shadows, spacing } from '../../../core/theme/tokens';
-import { AdBanner } from '../../../shared/components/AdBanner';
-import { maybeShowInterstitial } from '../../../core/ads/interstitial';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -112,8 +110,6 @@ export default function KesfetScreen() {
   const TAB_ROUTES: (keyof RootStackParamList)[] = ['Home', 'PrayerTimes', 'QuranSurahList', 'ZikrCounter', 'Settings'];
 
   const navigate = (route: keyof RootStackParamList) => {
-    const SACRED: (keyof RootStackParamList)[] = ['QuranSurahDetail', 'Qibla', 'ElmaliliTafsir', 'FavoriteAyahs'];
-    if (!SACRED.includes(route)) maybeShowInterstitial();
     if (TAB_ROUTES.includes(route)) {
       navigation.navigate('MainTabs', { screen: route as keyof TabParamList });
     } else {
@@ -128,8 +124,6 @@ export default function KesfetScreen() {
         {SECTIONS.map((section) => (
           <SectionGroup key={section.label} label={section.label} items={section.items} onPress={navigate} c={c} />
         ))}
-
-        <AdBanner style={{ marginTop: spacing.md }} />
       </ScrollView>
     </IslamicBackground>
   );

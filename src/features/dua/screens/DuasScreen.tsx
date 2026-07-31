@@ -4,7 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../../core/theme/ThemeContext';
 import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
-import { AdBanner } from '../../../shared/components/AdBanner';
 
 type Dua = { id: string; category: 'sabah' | 'aksam' | 'gunluk'; title: string; arabic: string; translation: string };
 
@@ -99,7 +98,6 @@ export default function DuasScreen() {
         );
       })}
 
-      <AdBanner />
       <View style={{ height: spacing.xxl }} />
     </ScrollView>
   );

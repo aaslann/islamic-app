@@ -13,8 +13,6 @@ import { palette, radii, shadows, spacing } from '../../../core/theme/tokens';
 import FridayBanner from '../../friday/components/FridayBanner';
 import { HADITHS } from '../../hadith/data/hadiths';
 import { ESMA_NAMES } from '../../esmaulhusna/data/names';
-import { AdBanner } from '../../../shared/components/AdBanner';
-import { maybeShowInterstitial } from '../../../core/ads/interstitial';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 type PrayerId = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
@@ -120,13 +118,10 @@ export default function HomeScreen({ navigation }: Props) {
   const prayedCount = PRAYER_IDS.filter((id) => dayLog[id] === 'prayed').length;
 
   const navigate = (route: keyof RootStackParamList) => {
-    const SACRED: (keyof RootStackParamList)[] = ['QuranSurahDetail', 'Qibla', 'ElmaliliTafsir', 'FavoriteAyahs'];
-    if (!SACRED.includes(route)) maybeShowInterstitial();
     navigation.navigate(route as never);
   };
 
   const openKesfet = () => {
-    maybeShowInterstitial();
     navigation.navigate('Kesfet');
   };
 
@@ -296,9 +291,6 @@ export default function HomeScreen({ navigation }: Props) {
           <Text style={[styles.seeAllHint, { color: c.textSecondary }]}>Takvim · Cami · Hatim · Risale…</Text>
           <Ionicons name="chevron-forward" size={18} color={palette.gold400} />
         </Pressable>
-
-        {/* ─── REKLAM ─── */}
-        <AdBanner style={{ marginTop: spacing.lg }} />
       </ScrollView>
     </IslamicBackground>
   );
