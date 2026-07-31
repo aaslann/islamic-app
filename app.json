@@ -35,7 +35,7 @@
     },
     "android": {
       "package": "com.islamiasistan.app",
-      "versionCode": 8,
+      "versionCode": 9,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
