@@ -31,7 +31,14 @@
       padding-bottom: 6px;
       border-bottom: 1px solid rgba(200,162,74,0.2);
     }
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #EDF5F2;
+      margin: 20px 0 6px;
+    }
     p, li { font-size: 15px; color: rgba(237,245,242,0.75); }
+    p { margin-top: 8px; }
     ul { padding-left: 20px; margin-top: 8px; }
     li { margin-bottom: 6px; }
     .card {
@@ -63,87 +70,124 @@
 <body>
   <header>
     <h1>🌙 İslami Asistan</h1>
-    <p>Gizlilik Politikası &amp; Kullanım Koşulları</p>
+    <p>Gizlilik Politikası</p>
   </header>
 
   <div class="container">
 
     <div class="card">
-      <span class="badge">Son Güncelleme: Mayıs 2026</span>
+      <span class="badge">Son Güncelleme: 7 Ağustos 2026</span>
       <p>
-        Bu gizlilik politikası, <strong class="gold">İslami Asistan</strong> mobil uygulamasının
-        hangi verileri topladığını, nasıl kullandığını ve koruduğunu açıklamaktadır.
-        Uygulamayı kullanarak bu politikayı kabul etmiş sayılırsınız.
+        İslami Asistan uygulamasını kullandığınız için teşekkür ederiz.
+        Gizliliğiniz bizim için önemlidir. Bu politika, <strong class="gold">İslami Asistan</strong>
+        mobil uygulamasının hangi verileri topladığını ve bu verileri nasıl kullandığını açıklar.
       </p>
     </div>
 
-    <h2>1. Toplanan Veriler</h2>
-    <p>İslami Asistan, kullanıcı gizliliğini ön planda tutar. Toplanan veriler yalnızca uygulama işlevselliği için kullanılır:</p>
-    <ul>
-      <li><strong>Konum Bilgisi:</strong> Namaz vakitlerini hesaplamak amacıyla yalnızca uygulama açıkken ön plan konumunuz alınır. Konum verileri sunucularımıza gönderilmez; yalnızca cihazınızda işlenir ve aladhan.com API'sine anonim olarak iletilir.</li>
-      <li><strong>Uygulama Tercihleri:</strong> Tema, yazı boyutu, seçilen müezzin ve bildirim ayarları yalnızca cihazınızın yerel depolama alanında (AsyncStorage) saklanır.</li>
-      <li><strong>İbadet Takibi:</strong> Namaz kaydı, hatim takibi, zikir sayaçları ve iyilik defteri verileri cihazınızda yerel olarak tutulur. Bu veriler hiçbir sunucuya gönderilmez.</li>
-    </ul>
+    <h2>1. Topladığımız Veriler</h2>
 
-    <h2>2. Paylaşılmayan Veriler</h2>
+    <h3>Konum Verisi</h3>
+    <p>
+      Uygulama; namaz vakitlerini hesaplamak, kıble yönünü bulmak ve yakındaki camileri listelemek için
+      cihazınızın konumunu (enlem/boylam) kullanır.
+      Konum bilgisi <strong class="gold">bize ait hiçbir sunucuda saklanmaz</strong>; hesap oluşturulmaz ve
+      kimliğinizle ilişkilendirilmez. Yalnızca ilgili özelliği çalıştırmak için, aşağıda listelenen üçüncü
+      taraf hizmetlere anlık olarak (enlem/boylam parametresi şeklinde) gönderilir ve yanıt alındıktan sonra
+      sadece cihazınızın yerel önbelleğinde tutulur (çevrimdışıyken vakitleri gösterebilmek için).
+      Konum izni vermemeniz durumunda namaz vakitleri, kıble ve cami bulucu özellikleri çalışmayacaktır;
+      uygulamanın diğer bölümleri (Kur'an, zikir, dua, hadis vb.) çalışmaya devam eder.
+    </p>
+
+    <h3>Kullanıcı Tercihleri</h3>
+    <p>
+      Namaz günlükleri, zikir sayacı verileri, Kur'an notları ve favoriler gibi kişisel tercihler
+      yalnızca cihazınızdaki yerel depolama alanına (AsyncStorage) kaydedilir.
+      Bu veriler sunucularımıza gönderilmez.
+    </p>
+
+    <h3>Üçüncü Taraf API'leri</h3>
+    <p>Uygulama aşağıdaki üçüncü taraf hizmetlerini kullanır:</p>
+    <ul>
+      <li><strong>AlAdhan API</strong> (aladhan.com) — Namaz vakitleri hesaplama. Enlem/boylam ve IP adresiniz bu servisle paylaşılır.</li>
+      <li><strong>AlQuran Cloud API</strong> (alquran.cloud) — Kur'an metni ve çevirisi. Konum gönderilmez.</li>
+      <li><strong>Islamic Network CDN</strong> (islamic.network) — Kur'an ses dosyaları. Konum gönderilmez.</li>
+      <li><strong>Overpass API / OpenStreetMap</strong> (overpass-api.de ve yansıları) — Yakındaki camileri bulmak için enlem/boylam paylaşılır.</li>
+    </ul>
+    <p>
+      Bu servislere yalnızca özelliği çalıştırmak için gereken teknik veri gönderilir; adınız,
+      e-postanız veya kalıcı bir kullanıcı kimliği gönderilmez. Bu servislerin kendi gizlilik
+      politikaları geçerlidir.
+    </p>
+
+    <h3>Reklamlar</h3>
+    <p>
+      Uygulama <strong class="gold">reklam içermez</strong>. Herhangi bir reklam ağı, reklam SDK'sı veya
+      reklam kimliği (Android Advertising ID / iOS IDFA) kullanılmaz. Uygulama sizi reklam
+      amacıyla takip etmez ve reklam profili oluşturmaz.
+    </p>
+
+    <h3>Analitik ve Takip</h3>
+    <p>
+      Uygulama üçüncü taraf analitik, çökme raporlama veya kullanıcı takip aracı kullanmaz.
+      Kullanım davranışınız hiçbir sunucuya gönderilmez. Uygulama içindeki "Analiz" ve "İlerleme"
+      ekranları, yalnızca cihazınızda tuttuğunuz kayıtlardan hesaplanır.
+    </p>
+
+    <h2>2. Toplamadığımız Veriler</h2>
     <div class="card">
-      <p>Uygulama şu verileri <strong>toplamaz veya paylaşmaz</strong>:</p>
       <ul>
-        <li>Kişisel kimlik bilgileri (isim, e-posta, telefon numarası)</li>
-        <li>Ödeme veya finansal bilgiler</li>
-        <li>Cihaz kimliği veya reklam tanımlayıcıları</li>
-        <li>Üçüncü taraf analitik veya reklam SDK'ları</li>
+        <li>Adınız, e-posta adresiniz veya kimlik bilgileriniz (uygulama hesap açmanızı gerektirmez)</li>
+        <li>Reklam kimliği veya takip tanımlayıcıları</li>
+        <li>Uygulama içi satın alma veya ödeme bilgileri (uygulama tamamen ücretsizdir)</li>
+        <li>Kişiler, fotoğraflar, mesajlaşma, sağlık veya sosyal medya verileri</li>
       </ul>
     </div>
 
-    <h2>3. Üçüncü Taraf Hizmetler</h2>
-    <p>Uygulama aşağıdaki harici hizmetleri kullanmaktadır:</p>
-    <ul>
-      <li><strong>aladhan.com</strong> – Namaz vakitleri API'si. Yalnızca enlem/boylam gönderilir; kişisel veri iletilmez.</li>
-      <li><strong>alquran.cloud</strong> – Kur'an-ı Kerim metni ve ses API'si. Herkese açık, kimlik doğrulama gerektirmez.</li>
-      <li><strong>OpenStreetMap / Overpass API</strong> – Yakın camiler için. Koordinat verisi gönderilir; kişisel veri iletilmez.</li>
-      <li><strong>Wikimedia Commons</strong> – Ezan sesi MP3 dosyaları. Sabah Fakhry kaydı Kamu Malı (Public Domain); Aaqib Azeez kaydı CC BY-SA 4.0 lisansı altındadır (kaynak: Wikimedia Commons). Dosyalar doğrudan Wikimedia sunucularından akışla sunulur; yeniden dağıtılmaz.</li>
-      <li><strong>expo-notifications</strong> – Yerel bildirimler cihaz üzerinde planlanır; uzak sunucu gerektirmez.</li>
-    </ul>
+    <h2>3. Veri Güvenliği ve Saklama</h2>
+    <p>
+      Namaz günlükleri, zikir sayacı, hatim takibi, favoriler ve tercihler gibi verileriniz
+      yalnızca cihazınızda (AsyncStorage) saklanır ve sunucularımıza gönderilmez.
+      İnternet bağlantısı; namaz vakti hesaplama, Kur'an metni/sesi ve cami verisi almak için kullanılır.
+      Tüm bağlantılar HTTPS ile şifrelenir.
+      Verilerinizi silmek için uygulamayı kaldırmanız ya da cihaz ayarlarından uygulama verilerini
+      temizlemeniz yeterlidir; bizde saklanan bir kopya bulunmadığı için ayrıca silme talebi
+      göndermenize gerek yoktur.
+    </p>
 
     <h2>4. İzinler</h2>
     <ul>
-      <li><strong>Konum (Yalnızca Kullanım Sırasında):</strong> Namaz vakitleri ve kıble hesaplaması için.</li>
+      <li><strong>Konum (Yalnızca Kullanım Sırasında):</strong> Namaz vakitleri, kıble ve yakın cami bulucu için.</li>
       <li><strong>Bildirimler:</strong> Namaz vakti hatırlatmaları için. İstediğiniz zaman sistem ayarlarından kapatabilirsiniz.</li>
-      <li><strong>Arka Plan Ses:</strong> Ezan sesinin bildirimle birlikte çalması için. Yalnızca ezan özelliği etkinken aktiftir.</li>
     </ul>
 
-    <h2>5. Veri Güvenliği</h2>
+    <h2>5. Çocukların Gizliliği</h2>
     <p>
-      Tüm uygulama verileri cihazınızın yerel depolama alanında şifreli olarak saklanır.
-      Sunucularımıza hiçbir kişisel veri aktarılmaz. İnternet bağlantısı yalnızca
-      namaz vakitlerini, Kur'an metnini ve ezan seslerini indirmek için kullanılır.
+      Uygulama içeriği her yaş için uygundur; ancak konum kullanımı nedeniyle hedef kitlemiz
+      13 yaş ve üzeri kullanıcılardır. Uygulama çocuklara yönelik olarak tasarlanmamıştır ve
+      13 yaş altı çocuklardan bilerek kişisel veri toplamıyoruz.
     </p>
 
-    <h2>6. Çocukların Gizliliği</h2>
+    <h2>6. Haklarınız (KVKK / GDPR)</h2>
     <p>
-      İslami Asistan, 13 yaş altı çocuklara yönelik veri toplamaz.
-      Uygulamada hesap oluşturma veya kişisel veri girişi gerektiren herhangi bir özellik bulunmamaktadır.
+      Uygulama sizi kimliklendiren bir veri tutmadığı ve tüm kayıtlarınız cihazınızda kaldığı için
+      bizde erişilebilecek, düzeltilebilecek veya silinebilecek kişisel bir veriniz bulunmamaktadır.
+      Yine de sorularınız veya talepleriniz için aşağıdaki adresten bize ulaşabilirsiniz.
     </p>
 
     <h2>7. Değişiklikler</h2>
     <p>
-      Bu politika gerektiğinde güncellenebilir. Önemli değişiklikler uygulama içi bildirimle
-      duyurulacaktır. Güncel politikaya her zaman bu sayfadan ulaşabilirsiniz.
+      Bu gizlilik politikasını zaman zaman güncelleyebiliriz.
+      Değişiklikler bu sayfada yayınlandığında yürürlüğe girer.
     </p>
 
     <h2>8. İletişim</h2>
     <p>
-      Gizlilik politikasına ilişkin sorularınız için:<br />
-      <a href="https://github.com/aaslann/islami-asistan/issues">GitHub Issues</a> üzerinden
-      bize ulaşabilirsiniz.
+      Sorularınız için:
+      <a href="mailto:abdurrahman.aslan@roscatech.com">abdurrahman.aslan@roscatech.com</a>
     </p>
 
     <footer>
       <p>© 2026 İslami Asistan · Tüm hakları saklıdır</p>
-      <p style="margin-top:8px;">
-        <a href="https://github.com/aaslann/islami-asistan">GitHub</a>
-      </p>
     </footer>
 
   </div>
